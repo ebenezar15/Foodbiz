@@ -2,6 +2,8 @@
 
 A costing, pricing, order, stock and billing app for home food businesses: brownies, cookies, cakes, Indian sweets, snacks, pickles and home meals. All amounts are in rupees.
 
+**Live app: https://foodbiz-ashy.vercel.app/**
+
 It is a static web app (no server, no build step). Host it on Vercel, open the link on your phone and install it to the home screen. It then opens like an app and works offline.
 
 ## Put it online with Vercel
@@ -21,7 +23,7 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 - **Google Drive backup** (one-time setup): saves the backup file to your Google Drive and restores it with one tap. It needs a Google OAuth client ID:
   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable the **Google Drive API**.
   2. **APIs & Services → OAuth consent screen**: choose *External*, fill in the app name, and add your Gmail address as a test user.
-  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add your Vercel address, e.g. `https://your-app.vercel.app`.
+  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add `https://foodbiz-ashy.vercel.app`.
   4. Put the client ID in `config.js` (`googleClientId: '…apps.googleusercontent.com'`) and push, or paste it in the app under Setup → Your data → *Switch on Google Drive backup*.
 
   The app asks only for the `drive.file` permission, so it can see only the backup files it created. The last 10 backups are kept.
