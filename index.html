@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Batch &amp; Price</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky brand bar + scrollable tab strip; each tab is a form column beside a live result column, stacking to one column on phones */
+:root{
+  --bg:#F4F5EF; --surface:#FFFFFF; --surface-2:#EBEEE3; --ink:#2A1C15; --muted:#685E56; --line:#D8D9CD;
+  --accent:#4A772E; --accent-ink:#FFFFFF; --accent-soft:#E0EBD3;
+  --cocoa:#4B2F22; --cocoa-ink:#F7EFE8; --gold:#A86C00; --gold-soft:#F8EACA;
+  --good:#2C7444; --good-soft:#DCEFE1; --warn:#9A5F0C; --warn-soft:#FAEACD; --bad:#B42318; --bad-soft:#FBE2DE;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15110E; --surface:#1F1915; --surface-2:#29221D; --ink:#F0E9E2; --muted:#B3A89E; --line:#3A3029;
+    --accent:#9CCB7B; --accent-ink:#15210C; --accent-soft:#283A1E;
+    --cocoa:#2B1D16; --cocoa-ink:#F3E8DE; --gold:#E7B451; --gold-soft:#3A2D13;
+    --good:#73C890; --good-soft:#1C3324; --warn:#E6AC52; --warn-soft:#3A2B12; --bad:#F38B7E; --bad-soft:#3E1F1A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15110E; --surface:#1F1915; --surface-2:#29221D; --ink:#F0E9E2; --muted:#B3A89E; --line:#3A3029;
+  --accent:#9CCB7B; --accent-ink:#15210C; --accent-soft:#283A1E;
+  --cocoa:#2B1D16; --cocoa-ink:#F3E8DE; --gold:#E7B451; --gold-soft:#3A2D13;
+  --good:#73C890; --good-soft:#1C3324; --warn:#E6AC52; --warn-soft:#3A2B12; --bad:#F38B7E; --bad-soft:#3E1F1A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--cocoa)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.2}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.08rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+.num,.tnum{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--cocoa);color:var(--cocoa-ink)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand b{font-family:var(--font-display);font-size:1.15rem;letter-spacing:-.01em}
+.brand span{font-size:.8rem;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:0 8px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;color:var(--cocoa-ink);opacity:.78;text-decoration:none;padding:6px 12px;border-radius:999px;font-size:.88rem;font-weight:500}
+.tabs a:hover{opacity:1}
+.tabs a[aria-current="page"]{background:var(--cocoa-ink);color:var(--cocoa);opacity:1}
+.tabs a:focus-visible,.btn:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.x:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+main{padding-block:22px 60px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.head p{max-width:62ch;margin-top:4px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:880px){.grid2,.grid2.even{grid-template-columns:minmax(0,1fr)}}
+.stack{display:grid;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.card > h3{margin-bottom:12px}
+.card > h3 + p{margin-top:-6px;margin-bottom:12px}
+.sticky{position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px)}
+@media (max-width:880px),(max-height:760px){.sticky{position:static}}
+.result{background:var(--surface);border:1.5px solid var(--accent);}
+.qnum{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:.78rem;font-weight:700;margin-right:8px;font-family:var(--font-body)}
+
+/* form */
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.field{display:grid;gap:4px;align-content:start;min-width:0}
+.field > label,.lbl{font-size:.82rem;font-weight:600;color:var(--ink)}
+.hint{font-size:.78rem;color:var(--muted);line-height:1.4}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+input[type=number]{font-variant-numeric:tabular-nums}
+input[type=range]{padding:0;accent-color:var(--accent);background:transparent;border:0}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none;margin:0}
+textarea{min-height:90px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;cursor:pointer}
+.unitin{display:flex;align-items:center;gap:6px}
+.unitin input{width:90px}
+.unitin span{font-size:.8rem;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit;font-size:.88rem;font-weight:500;text-decoration:none;line-height:1.3}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{padding:4px 10px;font-size:.8rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.x{border:0;background:transparent;color:var(--muted);font-size:1.2rem;line-height:1;cursor:pointer;padding:4px 8px;border-radius:6px}
+.x:hover{color:var(--bad);background:var(--bad-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.86rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
+.chip[aria-pressed="true"]::before{content:"✓ ";color:var(--accent)}
+
+/* tables */
+.tbl{overflow-x:auto;margin-inline:-4px;padding-inline:4px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td select{min-width:150px}
+td input[type=number]{min-width:70px}
+td input[type=text],td input:not([type]){min-width:150px}
+tfoot td{font-weight:700;border-top:1.5px solid var(--ink)}
+
+/* results */
+.big{font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mid{font-family:var(--font-display);font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.92rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.kv .total{font-weight:700;color:var(--ink);border-top:1px solid var(--line);padding-top:6px}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:.86rem}
+.bar .track{grid-column:1/-1;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:4px}
+.bar .fill.gold{background:var(--gold)}
+.ladder{display:grid;gap:8px}
+.rung{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);align-items:center}
+.rung.rec{background:var(--accent-soft);outline:1.5px solid var(--accent)}
+.rung b{font-size:.95rem}
+.rung .p{font-family:var(--font-display);font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.rung.rec .p{font-size:1.8rem}
+.rung .d{grid-column:1/-1;font-size:.8rem;color:var(--muted)}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.74rem;font-weight:600;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--surface-2);color:var(--muted)}
+.tips{display:grid;gap:8px;padding:0;margin:0;list-style:none}
+.tips li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;font-size:.9rem;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.tips li.bad{background:var(--bad-soft)} .tips li.warn{background:var(--warn-soft)} .tips li.good{background:var(--good-soft)}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:7px;background:var(--muted)}
+.bad .dot{background:var(--bad)} .warn .dot{background:var(--warn)} .good .dot{background:var(--good)} .info .dot{background:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.tile .v{font-family:var(--font-display);font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .v.pos{color:var(--good)} .tile .v.neg{color:var(--bad)}
+.picker{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:16px}
+.empty{text-align:center;padding:28px;color:var(--muted)}
+.example{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--gold-soft);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:.88rem;margin-bottom:16px}
+.labelcard{border:1.5px dashed var(--ink);border-radius:10px;padding:14px;font-size:.86rem;display:grid;gap:4px;background:var(--bg)}
+.vegmark{display:inline-grid;place-items:center;width:16px;height:16px;border:1.5px solid var(--good);vertical-align:-3px;margin-right:6px}
+.vegmark::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--good)}
+.guide{display:grid;gap:16px}
+.guide ul,.guide ol{margin:6px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size:.92rem}
+.guide p{font-size:.92rem;max-width:70ch}
+.guide p + p{margin-top:8px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;font-size:.8rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:.88rem;z-index:20}
+pre.msg{white-space:pre-wrap;font-family:var(--font-body);font-size:.86rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0;max-height:340px;overflow:auto}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .25s ease}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="3" y="7" width="24" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 15.5h24M11 7v17M19 7v17" stroke="currentColor" stroke-width="1.6" opacity=".7"/><circle cx="24" cy="6" r="4" fill="#E7B451"/></svg>
+      <div style="display:grid;min-width:0"><b>Batch &amp; Price</b><span id="biz"></span></div>
+    </div>
+  </div>
+  <div class="wrap"><nav class="tabs" id="tabs" aria-label="Sections"></nav></div>
+</header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const uid = () => Math.random().toString(36).slice(2, 9);
+const today = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const thisMonth = () => today().slice(0, 7);
+function inr(n, dec){
+  if (n == null || !isFinite(n)) return '—';
+  const d = dec != null ? dec : (Math.abs(n) < 100 ? 2 : 0);
+  return (n < 0 ? '−₹' : '₹') + Math.abs(n).toLocaleString('en-IN', {maximumFractionDigits: d, minimumFractionDigits: 0});
+}
+const pct = n => isFinite(n) ? Math.round(n) + '%' : '—';
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2200); }
+function copyText(text){
+  try { navigator.clipboard.writeText(text).then(() => toast('Copied'), () => toast('Copy blocked. Select the text and copy it.')); }
+  catch(e){ toast('Copy blocked. Select the text and copy it.'); }
+}
+
+/* ============ reference data ============ */
+const UNITS = {kg:['g',1000], g:['g',1], L:['ml',1000], ml:['ml',1], pcs:['pcs',1], dozen:['pcs',12]};
+const CATS = [
+  {id:'moist', name:'Moist bakes: brownies, tea cakes, muffins, banana bread', room:3, fridge:7, freezer:60,
+   signs:'Sour or fermented smell, white or green fuzzy spots, a sticky wet surface.',
+   store:'Store in an airtight container at room temperature, away from sunlight. Refrigerate after day 2 in hot weather.'},
+  {id:'dry', name:'Dry bakes: cookies, nankhatai, rusk, biscotti', room:14, fridge:21, freezer:90,
+   signs:'Soft or chewy where it should snap, a stale or paint-like (rancid) smell from butter or nuts.',
+   store:'Keep in an airtight container in a cool, dry place. Do not refrigerate; it softens them.'},
+  {id:'cream', name:'Cream & frosted: fresh-cream cakes, cheesecake, cupcakes', room:0.25, fridge:3, freezer:30,
+   signs:'Weeping or sour cream, separated frosting, off smell.',
+   store:'Keep refrigerated (0–5 °C). Take out 15–20 minutes before serving.'},
+  {id:'milk', name:'Milk sweets: peda, barfi, kalakand, rasgulla', room:1, fridge:5, freezer:30,
+   signs:'Sour smell, slimy surface, hard dark edges, mould.',
+   store:'Keep refrigerated. Consume by the best-before date.'},
+  {id:'ghee', name:'Ghee & dry-fruit sweets: besan or rava laddoo, chikki, dry-fruit barfi', room:15, fridge:30, freezer:60,
+   signs:'Rancid smell from ghee or nuts, chikki turning sticky.',
+   store:'Store in an airtight container in a cool, dry place.'},
+  {id:'fried', name:'Fried snacks: namkeen, chakli, mathri, chips', room:30, fridge:null, freezer:null,
+   signs:'Rancid oil smell, loss of crunch.',
+   store:'Store in an airtight container in a cool, dry place. Reseal after opening.'},
+  {id:'choc', name:'Chocolates, bars & truffles', room:14, fridge:30, freezer:90,
+   signs:'White streaks (bloom) are safe but look stale. A sour smell in cream fillings means spoiled.',
+   store:'Store below 25 °C, away from heat and sunlight.'},
+  {id:'preserve', name:'Pickles, jams & preserves', room:180, fridge:365, freezer:null,
+   signs:'Mould on top, bulging lid, fizzing, off smell.',
+   store:'Store in a cool, dry place. Use a clean, dry spoon. Refrigerate jams after opening.'},
+  {id:'bread', name:'Breads & buns (no preservatives)', room:2, fridge:5, freezer:60,
+   signs:'Mould spots, sour or alcohol smell.',
+   store:'Keep in a bread bag at room temperature. Freeze for longer storage.'},
+  {id:'meal', name:'Home meals, curries, biryani', room:0.17, fridge:2, freezer:30,
+   signs:'Sour smell, bubbles, slimy texture.',
+   store:'Refrigerate within 2 hours of cooking. Reheat until piping hot.'}
+];
+const catById = id => CATS.find(c => c.id === id) || CATS[0];
+const PRODUCTS = ['Brownies','Cookies','Cakes & cupcakes','Indian sweets','Chocolates','Savoury snacks','Pickles & preserves','Breads','Home meals'];
+const CHANNELS = ['WhatsApp / Instagram','Home pickup','Swiggy / Zomato','Cafés & shops (resale)','Exhibitions & pop-ups','Corporate & events'];
+const EXP_CATS = ['Ingredients','Packaging','Gas & electricity','Equipment','Delivery','Marketing','Licences & fees','Other'];
+const SALE_CATS = ['Individual','Bulk','Corporate / event','Delivery app','Café / reseller'];
+
+/* ============ state ============ */
+const KEY = 'batchprice.v1';
+function sample(){
+  const I = (name, packQty, packUnit, packPrice) => ({id:uid(), name, packQty, packUnit, packPrice, updated:today()});
+  const ingredients = [
+    I('Maida (all-purpose flour)',1,'kg',52), I('Sugar',1,'kg',48), I('Brown sugar',500,'g',95),
+    I('Butter (salted)',500,'g',285), I('Eggs',30,'pcs',210), I('Cocoa powder',250,'g',320),
+    I('Dark compound chocolate',500,'g',240), I('Walnuts',250,'g',320), I('Vanilla essence',50,'ml',65),
+    I('Baking powder',100,'g',45), I('Salt',1,'kg',28), I('Besan (gram flour)',1,'kg',110),
+    I('Ghee',1,'kg',680), I('Cashews',250,'g',260), I('Cardamom',50,'g',220),
+    I('Milk',1,'L',68), I('Condensed milk',400,'g',155)
+  ];
+  const by = n => ingredients.find(i => i.name.startsWith(n)).id;
+  const K = (name, price, note) => ({id:uid(), name, price, note});
+  const packaging = [
+    K('Butter paper square',1,'One per piece'), K('Kraft brownie box, 6 cavity',24,'With window'),
+    K('Brand sticker / label',2,'Printed, 50 mm round'), K('Single-piece glassine bag',3,''),
+    K('Mithai box, 500 g',16,'Paper board with butter-paper liner'), K('Cookie zip pouch, 250 g',7,'Stand-up with window'),
+    K('Ribbon',3,'Gift orders only')
+  ];
+  const pby = n => packaging.find(p => p.name.startsWith(n)).id;
+  const L = (n, q) => ({id:uid(), ingId:by(n), qty:q});
+  const P = (n, per) => ({id:uid(), pkgId:pby(n), perPieces:per});
+  const recipes = [
+    {id:uid(), name:'Fudgy walnut brownie', cat:'moist', yield:16, unitName:'piece', pieceWeight:55, wastage:5, bakeMin:30, preheatMin:10, gasMin:5, activeMin:45, margin:45, mktLow:60, mktHigh:110,
+     lines:[L('Butter',200),L('Dark compound',200),L('Sugar',250),L('Eggs',4),L('Maida',120),L('Cocoa',40),L('Vanilla',5),L('Salt',2),L('Walnuts',60)],
+     pack:[P('Butter paper',1),P('Kraft brownie',6),P('Brand sticker',6)]},
+    {id:uid(), name:'Chocolate chip cookies', cat:'dry', yield:24, unitName:'cookie', pieceWeight:40, wastage:4, bakeMin:24, preheatMin:10, gasMin:0, activeMin:50, margin:45, mktLow:25, mktHigh:50,
+     lines:[L('Maida',280),L('Butter',225),L('Brown sugar',200),L('Sugar',100),L('Eggs',2),L('Dark compound',200),L('Baking powder',4),L('Vanilla',5),L('Salt',3)],
+     pack:[P('Cookie zip',8),P('Brand sticker',8)]},
+    {id:uid(), name:'Besan laddoo', cat:'ghee', yield:30, unitName:'laddoo', pieceWeight:40, wastage:3, bakeMin:0, preheatMin:0, gasMin:35, activeMin:70, margin:40, mktLow:18, mktHigh:35,
+     lines:[L('Besan',500),L('Ghee',300),L('Sugar',400),L('Cashews',50),L('Cardamom',3)],
+     pack:[P('Mithai box',12),P('Brand sticker',12)]}
+  ];
+  const F = (name, amt) => ({id:uid(), name, amt});
+  const profile = {
+    business:'', products:['Brownies','Cookies','Indian sweets'], channels:['WhatsApp / Instagram','Corporate & events'], buyers:'both',
+    monthlyPieces:400, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150,
+    margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2,
+    fixed:[F('Phone & internet (business share)',300), F('Instagram promotion',500), F('Equipment wear & repair',400), F('Cleaning supplies, foil, gloves',300), F('FSSAI registration (₹100 a year)',9)],
+    tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]
+  };
+  // example tracker entries, last 4 months
+  const entries = [];
+  const now = new Date();
+  for (let m = 3; m >= 0; m--){
+    const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    const ym = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const f = 1 + (3 - m) * 0.12;
+    const E = (day, kind, cat, desc, amount) => entries.push({id:uid(), date:ym+'-'+String(day).padStart(2,'0'), kind, cat, desc, amount:Math.round(amount), ex:true});
+    E(2,'expense','Ingredients','Monthly grocery: butter, chocolate, flour', 3400*f);
+    E(4,'expense','Packaging','Boxes, stickers, butter paper', 950*f);
+    E(6,'expense','Marketing','Instagram promotion', 500);
+    E(28,'expense','Gas & electricity','Share of LPG and power bill', 420*f);
+    E(8,'sale','Individual','Brownie boxes (WhatsApp orders)', 3900*f);
+    E(15,'sale','Bulk','Office order: 60 brownies', 3780*f);
+    E(21,'sale','Individual','Cookie pouches and laddoo boxes', 2300*f);
+    if (m === 1) E(12,'sale','Corporate / event','Festive hampers, 40 boxes', 6400);
+  }
+  return {
+    v:1, profile, ingredients, packaging, recipes, entries,
+    quote:{customer:'Office festive order', type:'bulk', rows:[{id:uid(), recipeId:recipes[0].id, qty:60},{id:uid(), recipeId:recipes[1].id, qty:30}], delivery:80, customPack:5, rush:0, advance:50, validDays:7},
+    shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'high', pack:'airtight'},
+    packAdv:{cat:'moist', purpose:'gift', distance:'city', eco:false},
+    ui:{recipe:recipes[0].id, month:thisMonth(), confirm:'', draft:{date:today(), kind:'expense', cat:'Ingredients', desc:'', amount:''}}
+  };
+}
+let S;
+function load(){
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
+  S = saved && saved.v === 1 ? saved : sample();
+  const base = sample();
+  for (const k of Object.keys(base)) if (S[k] == null) S[k] = base[k];
+  for (const k of Object.keys(base.profile)) if (S.profile[k] == null) S.profile[k] = base.profile[k];
+  S.ui = Object.assign({}, base.ui, S.ui, {confirm:''});
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ============ calculations ============ */
+const ingById = id => S.ingredients.find(i => i.id === id);
+const pkgById = id => S.packaging.find(p => p.id === id);
+const recById = id => S.recipes.find(r => r.id === id);
+const baseUnit = g => (UNITS[g.packUnit] || UNITS.g)[0];
+const perBase = g => { const m = (UNITS[g.packUnit] || UNITS.g)[1]; const q = num(g.packQty) * m; return q > 0 ? num(g.packPrice) / q : 0; };
+const sumFixed = () => S.profile.fixed.reduce((a, f) => a + num(f.amt), 0);
+function recipeCost(r){
+  const P = S.profile;
+  let ingr = 0;
+  r.lines.forEach(l => { const g = ingById(l.ingId); if (g) ingr += num(l.qty) * perBase(g); });
+  const ingW = ingr * (1 + num(r.wastage) / 100);
+  const ovenMin = num(r.bakeMin) > 0 ? num(r.bakeMin) + num(r.preheatMin) : 0;
+  const kwh = num(P.ovenWatts) / 1000 * ovenMin / 60 * 0.7;          // thermostat cycles ~70% of the time
+  const elec = kwh * num(P.elecRate);
+  const gas = num(r.gasMin) / 60 * num(P.burnerKgHr) * num(P.lpgPrice) / 14.2;
+  const labour = num(r.activeMin) / 60 * num(P.labourRate);
+  const batch = ingW + elec + gas + labour;
+  const y = Math.max(1, num(r.yield));
+  let pack = 0;
+  r.pack.forEach(p => { const k = pkgById(p.pkgId); if (k) pack += num(k.price) / Math.max(1, num(p.perPieces)); });
+  const fixed = sumFixed() / Math.max(1, num(P.monthlyPieces));
+  const perPiece = batch / y + pack + fixed;
+  return {ingr, ingW, elec, gas, labour, batch, pack, fixed, perPiece, variable: perPiece - fixed, y, kwh};
+}
+function priceFor(cost, margin, fee = 0){ const d = 1 - margin / 100 - fee / 100; return d > 0.05 ? cost / d : NaN; }
+function roundPrice(p){
+  if (!isFinite(p)) return p;
+  if (S.profile.rounding === 'none') return Math.ceil(p);
+  const step = p < 20 ? 1 : p < 100 ? 5 : p < 500 ? 10 : 50;
+  let c = Math.ceil(p / step) * step;
+  if (step >= 5 && c % 10 === 0 && c - 1 >= p) c -= 1;
+  return c;
+}
+const recPrice = r => roundPrice(priceFor(recipeCost(r).perPiece, num(r.margin)));
+function tierFor(qty){
+  let d = 0;
+  [...S.profile.tiers].sort((a, b) => num(a.min) - num(b.min)).forEach(t => { if (num(qty) >= num(t.min)) d = num(t.disc); });
+  return d;
+}
+const marginOf = (price, cost, fee = 0) => price > 0 ? (price * (1 - fee / 100) - cost) / price * 100 : NaN;
+const health = m => m >= 25 ? ['good','Healthy'] : m >= 10 ? ['warn','Thin'] : ['bad', m < 0 ? 'Loss' : 'Too low'];
+
+/* ============ small builders ============ */
+const fid = p => 'f-' + p.replace(/\./g, '-');
+const fld = (label, control, hint, forPath) => `<div class="field">${forPath ? `<label for="${fid(forPath)}">${label}</label>` : `<span class="lbl">${label}</span>`}${control}${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
+const numIn = (path, val, attrs = '') => `<input type="number" inputmode="decimal" step="any" min="0" id="${fid(path)}" data-path="${path}" data-num value="${esc(val)}" ${attrs}>`;
+const txtIn = (path, val, attrs = '') => `<input type="text" id="${fid(path)}" data-path="${path}" value="${esc(val)}" ${attrs}>`;
+const sel = (path, val, opts) => `<select id="${fid(path)}" data-path="${path}">${opts.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+const F = (label, path, val, hint, kind = 'num', extra) => fld(label, kind === 'num' ? numIn(path, val, extra) : txtIn(path, val, extra), hint, path);
+const tipList = list => `<ul class="tips">${list.map(t => `<li class="${t[0]}"><span class="dot"></span><span>${t[1]}</span></li>`).join('')}</ul>`;
+function confirmBtn(key, label, act, data = ''){
+  return S.ui.confirm === key
+    ? `<button class="btn small danger" data-act="${act}" ${data}>Confirm: ${label}</button> <button class="btn small" data-act="cancelConfirm">Keep</button>`
+    : `<button class="btn small" data-act="askConfirm" data-key="${key}">${label}</button>`;
+}
+function curRecipe(){ let r = recById(S.ui.recipe); if (!r && S.recipes.length){ r = S.recipes[0]; S.ui.recipe = r.id; } return r; }
+function recipePicker(){
+  return `<div class="picker" role="group" aria-label="Choose a product">
+    ${S.recipes.map(r => `<button class="chip" data-act="pickRecipe" data-id="${r.id}" aria-pressed="${r.id === S.ui.recipe}">${esc(r.name)}</button>`).join('')}
+    <button class="btn small" data-act="addRecipe">+ New product</button>
+  </div>`;
+}
+
+/* ============ VIEW: Start ============ */
+function suggestions(){
+  const P = S.profile, out = [];
+  const fixedPer = sumFixed() / Math.max(1, num(P.monthlyPieces));
+  if (num(P.labourRate) <= 0) out.push(['bad','Your time is set to ₹0 an hour. Prices that ignore your time look profitable on paper but leave you working for free. Put in what you would pay a helper.']);
+  else if (num(P.labourRate) < 80) out.push(['warn',`₹${P.labourRate} an hour is low for skilled kitchen work. If you later hire help, your prices must already cover it.`]);
+  if (P.fssai !== 'yes') out.push(['bad','Register with FSSAI before selling. Home businesses with turnover up to ₹12 lakh a year need only Basic Registration on the FoSCoS portal (₹100 a year). Print the 14-digit number on every label.']);
+  if (num(P.margin) < 25) out.push(['warn',`A ${P.margin}% margin leaves little room for failed batches, price rises or discounts. 35–50% is a sounder target for home food.`]);
+  if (num(P.margin) > 70) out.push(['info','Margins above 70% are possible for premium gifting, but check the Pricing tab against what others charge nearby.']);
+  if (P.channels.includes('Swiggy / Zomato') && num(P.platformFee) < 15) out.push(['warn','Delivery apps usually keep a commission plus fees on every order, often 20–30%. Enter it under "Delivery-app commission" so your app prices are set higher than direct prices.']);
+  if (P.channels.includes('Cafés & shops (resale)')) out.push(['info','Cafés and shops expect a wholesale price, often 25–35% below your retail price, so they can make their own margin. Check your bulk tiers still show "Healthy" at that discount.']);
+  if (P.channels.includes('Exhibitions & pop-ups')) out.push(['info','Add stall fees, travel and samples as a separate expense for each event, and price event packs so a typical day covers the stall at least three times over.']);
+  if (P.channels.includes('Corporate & events')) out.push(['info','Corporate buyers often ask for a GST invoice, a tasting sample and a fixed quote. Keep a printed rate card and quote validity (7 days is common).']);
+  if (P.buyers !== 'individual') out.push(['good',`For bulk orders: take a ${S.quote.advance || 50}% advance, set a minimum order (you have ${P.minOrder} pieces), and give at least ${P.leadDays} days' lead time. Bulk discounts come from your saved time, not your ingredient money.`]);
+  if (fixedPer > 8) out.push(['warn',`Your fixed costs add ${inr(fixedPer)} to every piece because monthly volume is ${P.monthlyPieces}. Selling more pieces, or trimming fixed costs, lowers this.`]);
+  if (P.products.includes('Indian sweets') || P.products.includes('Cakes & cupcakes')) out.push(['info','Milk sweets and fresh-cream cakes last only days. Make them to order and use the Shelf life tab to set a safe best-before date.']);
+  if (P.products.includes('Savoury snacks') || P.products.includes('Pickles & preserves') || P.products.includes('Cookies')) out.push(['good','Snacks, cookies and pickles keep well, so they suit courier orders and stock-ahead selling. A ₹1,000–1,500 heat sealer pays for itself quickly.']);
+  if (P.gst === 'yes') out.push(['info',`You are GST registered: add ${P.gstRate}% GST on invoices and show prices "inclusive of GST" on menus.`]);
+  else out.push(['info','Not GST registered? Then do not charge GST. For goods, registration is usually needed once yearly turnover crosses ₹40 lakh (₹20 lakh in some states), or earlier for some app or interstate selling. Check with a CA.']);
+  out.push(['info',`Check your electricity bill for the rate per unit in your slab. At ₹${P.elecRate}/unit, a ${P.ovenWatts} W oven costs about ${inr(P.ovenWatts/1000*0.7*P.elecRate)} an hour to run.`]);
+  return out;
+}
+function vStart(){
+  const P = S.profile, p = 'profile';
+  const chips = (path, list, cur) => `<div class="chips">${list.map(x => `<button class="chip" data-act="toggle" data-path="${path}" data-val="${esc(x)}" aria-pressed="${cur.includes(x)}">${esc(x)}</button>`).join('')}</div>`;
+  const q = (n, title, body, hint) => `<section class="card"><h3><span class="qnum">${n}</span>${title}</h3>${hint ? `<p class="hint">${hint}</p>` : ''}${body}</section>`;
+  return `
+  <div class="head"><div><h2>Set up your kitchen</h2><p class="muted">Answer these once. Every cost and price in the app uses them, and the panel on the right turns your answers into suggestions.</p></div></div>
+  <div class="grid2">
+    <div class="stack">
+      ${q(1,'What do you make and sell?', `<div class="row">${F('Business name','profile.business',P.business,'Shown on quotes and labels.','txt','placeholder="e.g. Cocoa Corner"')}</div><div style="margin-top:12px">${chips('profile.products', PRODUCTS, P.products)}</div>`)}
+      ${q(2,'Where and to whom do you sell?', `${chips('profile.channels', CHANNELS, P.channels)}<div class="row" style="margin-top:12px">${fld('Who buys most?', sel('profile.buyers', P.buyers, [['individual','Mostly individuals'],['bulk','Mostly bulk / corporate'],['both','Both']]), '', 'profile.buyers')}${F('Delivery-app commission (%)','profile.platformFee',P.platformFee,'Only if you sell on Swiggy, Zomato or similar.')}</div>`)}
+      ${q(3,'How much do you sell in a month?', `<div class="row">${F('Pieces sold per month (all products)','profile.monthlyPieces',P.monthlyPieces,'A rough count is fine. Fixed costs are spread over this.')}${F('Minimum order (pieces)','profile.minOrder',P.minOrder)}${F('Lead time for orders (days)','profile.leadDays',P.leadDays)}</div>`)}
+      ${q(4,'What does your kitchen run on?', `<div class="row">${F('Oven power (watts)','profile.ovenWatts',P.ovenWatts,'On the oven sticker. OTGs are often 1,200–2,000 W.')}${F('Electricity rate (₹ per unit)','profile.elecRate',P.elecRate,'From your bill. 1 unit = 1 kWh.')}${F('LPG cylinder price (₹, 14.2 kg)','profile.lpgPrice',P.lpgPrice)}${F('Burner use (kg of gas per hour)','profile.burnerKgHr',P.burnerKgHr,'About 0.15–0.2 for a medium burner.')}</div>`)}
+      ${q(5,'What is your time worth?', `<div class="row">${F('Your labour (₹ per hour)','profile.labourRate',P.labourRate,'What you would pay a helper, or what your time earns elsewhere. Counts only hands-on time.')}</div>`)}
+      ${q(6,'Monthly fixed costs', `<div class="tbl"><table><thead><tr><th>Cost</th><th class="num">₹ / month</th><th></th></tr></thead><tbody>
+        ${P.fixed.map((f, i) => `<tr><td>${txtIn(`profile.fixed.${i}.name`, f.name, 'aria-label="Cost name"')}</td><td class="num">${numIn(`profile.fixed.${i}.amt`, f.amt, 'aria-label="Amount per month"')}</td><td><button class="x" data-act="del" data-list="profile.fixed" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}
+        </tbody><tfoot><tr><td>Total</td><td class="num" id="fixedTotal">${inr(sumFixed())}</td><td></td></tr></tfoot></table></div>
+        <div class="actions"><button class="btn" data-act="addFixed">+ Add a cost</button></div>`,
+        'Costs you pay whether you bake or not: phone, ads, licences, equipment wear, rent share. Ingredients and packaging are not fixed costs.')}
+      ${q(7,'Profit, tax and licences', `<div class="row">${F('Target profit margin (%)','profile.margin',P.margin,'Share of the selling price you keep after all costs. New products start at this.')}
+        ${fld('Price rounding', sel('profile.rounding', P.rounding, [['nice','Customer-friendly (₹49, ₹65, ₹149)'],['none','Exact, rounded up to ₹1']]), '', 'profile.rounding')}
+        ${fld('FSSAI registered?', sel('profile.fssai', P.fssai, [['yes','Yes'],['no','Not yet']]), '', 'profile.fssai')}
+        ${fld('GST registered?', sel('profile.gst', P.gst, [['yes','Yes'],['no','No']]), '', 'profile.gst')}
+        ${P.gst === 'yes' ? F('GST rate on your products (%)','profile.gstRate',P.gstRate,'Most bakery items, sweets and namkeen moved to 5% in 2025. Confirm your HSN code with a CA.') : ''}</div>`)}
+      <section class="card"><h3>Your data</h3><p class="hint">Everything is saved in this browser only. Copy a backup now and then, and paste it here to restore on another phone or computer.</p>
+        <div class="actions"><button class="btn" data-act="backup">Copy backup</button>${confirmBtn('reset','Reset to sample data','reset')}${confirmBtn('wipe','Start empty','wipe')}</div>
+        <div class="field" style="margin-top:12px"><label for="restoreBox">Restore from a backup</label><textarea id="restoreBox" placeholder="Paste backup text here"></textarea></div>
+        <div class="actions"><button class="btn" data-act="restore">Restore</button></div></section>
+    </div>
+    <aside class="stack">
+      <section class="card result" id="out-snap"></section>
+      <section class="card"><h3>Suggestions for you</h3><div id="out-sugg"></div></section>
+    </aside>
+  </div>`;
+}
+function oStart(){
+  $('#fixedTotal') && ($('#fixedTotal').textContent = inr(sumFixed()));
+  $('#out-snap').innerHTML = `<p class="eyebrow">Your products at a glance</p>
+    ${S.recipes.length ? `<div class="tbl"><table><thead><tr><th>Product</th><th class="num">Cost</th><th class="num">Price</th><th class="num">Margin</th></tr></thead><tbody>
+    ${S.recipes.map(r => { const c = recipeCost(r), pr = recPrice(r), m = marginOf(pr, c.perPiece), h = health(m); return `<tr><td>${esc(r.name)}</td><td class="num">${inr(c.perPiece)}</td><td class="num"><b>${inr(pr)}</b></td><td class="num"><span class="pill ${h[0]}">${pct(m)}</span></td></tr>`; }).join('')}
+    </tbody></table></div><p class="hint" style="margin-top:8px">Cost and price per piece. Open <a href="#recipes">Recipe cost</a> to change a recipe, or <a href="#pricing">Pricing</a> to tune it.</p>`
+    : `<p class="muted">No products yet. <a href="#recipes">Add your first recipe</a>.</p>`}`;
+  $('#out-sugg').innerHTML = tipList(suggestions());
+}
+
+/* ============ VIEW: Pantry ============ */
+function vPantry(){
+  const unitOpts = Object.keys(UNITS);
+  return `
+  <div class="head"><div><h2>Ingredients &amp; packaging</h2><p class="muted">Enter what you pay for each pack. Recipes use these to work out cost per gram, millilitre or piece. Prices shown are samples: replace them with your own bills.</p></div></div>
+  <section class="card">
+    <h3>Ingredients</h3>
+    <div class="tbl"><table><thead><tr><th>Ingredient</th><th>Pack size</th><th>Unit</th><th class="num">Pack price (₹)</th><th class="num">Works out to</th><th>Price updated</th><th></th></tr></thead><tbody>
+    ${S.ingredients.map((g, i) => `<tr>
+      <td>${txtIn(`ingredients.${i}.name`, g.name, 'aria-label="Ingredient name"')}</td>
+      <td>${numIn(`ingredients.${i}.packQty`, g.packQty, 'aria-label="Pack size"')}</td>
+      <td>${sel(`ingredients.${i}.packUnit`, g.packUnit, unitOpts)}</td>
+      <td class="num">${numIn(`ingredients.${i}.packPrice`, g.packPrice, 'aria-label="Pack price"')}</td>
+      <td class="num" data-perunit="${i}"></td>
+      <td class="small muted" data-upd="${i}">${esc(g.updated || '')}</td>
+      <td><button class="x" data-act="del" data-list="ingredients" data-i="${i}" aria-label="Remove ${esc(g.name)}">×</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="actions"><button class="btn primary" data-act="addIng">+ Add ingredient</button></div>
+    <p class="hint" style="margin-top:10px">Tip: review prices once a month, and every time butter, chocolate, nuts or ghee go up. A 10% rise in those can wipe out a thin margin.</p>
+  </section>
+  <section class="card" style="margin-top:16px">
+    <h3>Packaging items</h3>
+    <p class="hint">Price of one unit (one box, one sticker). In each recipe you say how many pieces share one item. Not sure what to use? See the <a href="#packaging">Packaging</a> tab.</p>
+    <div class="tbl"><table><thead><tr><th>Item</th><th class="num">Price each (₹)</th><th>Note</th><th></th></tr></thead><tbody>
+    ${S.packaging.map((k, i) => `<tr><td>${txtIn(`packaging.${i}.name`, k.name, 'aria-label="Item"')}</td><td class="num">${numIn(`packaging.${i}.price`, k.price, 'aria-label="Price each"')}</td><td>${txtIn(`packaging.${i}.note`, k.note, 'aria-label="Note"')}</td><td><button class="x" data-act="del" data-list="packaging" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="actions"><button class="btn primary" data-act="addPkg">+ Add packaging item</button></div>
+  </section>`;
+}
+function oPantry(){
+  $$('[data-perunit]').forEach(el => {
+    const g = S.ingredients[+el.dataset.perunit]; if (!g) return;
+    const b = baseUnit(g), pu = perBase(g);
+    el.textContent = b === 'pcs' ? inr(pu) + ' / piece' : inr(pu * 1000) + (b === 'g' ? ' / kg' : ' / litre');
+  });
+}
+
+/* ============ VIEW: Recipes ============ */
+function vRecipes(){
+  const r = curRecipe();
+  if (!r) return `<div class="head"><h2>Recipe cost</h2></div><div class="card empty">No products yet.<div class="actions" style="justify-content:center"><button class="btn primary" data-act="addRecipe">Add your first product</button></div></div>`;
+  const i = S.recipes.indexOf(r), p = `recipes.${i}`;
+  const ingOpts = cur => S.ingredients.map(g => [g.id, g.name]);
+  return `
+  <div class="head"><div><h2>Recipe cost</h2><p class="muted">One batch, everything that goes into it: ingredients, wastage, oven and gas, your hands-on time, packaging and a share of monthly costs.</p></div></div>
+  ${recipePicker()}
+  <div class="grid2">
+    <div class="stack">
+      <section class="card"><h3>About this product</h3>
+        <div class="row">
+          ${F('Product name', `${p}.name`, r.name, '', 'txt')}
+          ${fld('Type', sel(`${p}.cat`, r.cat, CATS.map(c => [c.id, c.name])), 'Used for shelf-life and packaging advice.', `${p}.cat`)}
+          ${F('Pieces one batch makes', `${p}.yield`, r.yield, 'After cutting and trimming.')}
+          ${F('Call one piece a', `${p}.unitName`, r.unitName, 'piece, slice, cookie, laddoo, jar…', 'txt')}
+          ${F('Weight of one piece (g)', `${p}.pieceWeight`, r.pieceWeight, 'Optional. Gives a per-kg price for sweets.')}
+        </div>
+        <div class="actions">${confirmBtn('delRecipe:' + r.id, 'Delete product', 'delRecipe')}<button class="btn small" data-act="dupRecipe">Duplicate</button></div>
+      </section>
+      <section class="card"><h3>Ingredients for one batch</h3>
+        <div class="tbl"><table><thead><tr><th>Ingredient</th><th>Quantity</th><th class="num">Cost</th><th></th></tr></thead><tbody>
+        ${r.lines.map((l, j) => { const g = ingById(l.ingId); return `<tr>
+          <td>${sel(`${p}.lines.${j}.ingId`, l.ingId, ingOpts())}</td>
+          <td><div class="unitin">${numIn(`${p}.lines.${j}.qty`, l.qty, 'aria-label="Quantity"')}<span>${g ? baseUnit(g) : ''}</span></div></td>
+          <td class="num" data-linecost="${j}"></td>
+          <td><button class="x" data-act="del" data-list="${p}.lines" data-i="${j}" aria-label="Remove">×</button></td></tr>`; }).join('')}
+        </tbody></table></div>
+        <div class="actions"><button class="btn" data-act="addLine">+ Add ingredient</button><a class="btn" href="#pantry">Missing one? Add it to Ingredients</a></div>
+        <div class="row" style="margin-top:14px">${F('Wastage and loss (%)', `${p}.wastage`, r.wastage, 'Batter left in the bowl, trimmed edges, broken pieces, tasting. 3–8% is common.')}</div>
+      </section>
+      <section class="card"><h3>Time and fuel</h3>
+        <div class="row">
+          ${F('Oven baking time (min)', `${p}.bakeMin`, r.bakeMin, 'All trays together. 0 if no oven.')}
+          ${F('Preheat time (min)', `${p}.preheatMin`, r.preheatMin)}
+          ${F('Gas stove time (min)', `${p}.gasMin`, r.gasMin, 'Melting, roasting, frying, syrup.')}
+          ${F('Your hands-on time (min)', `${p}.activeMin`, r.activeMin, 'Shopping, mixing, shaping, cutting, packing, washing up. Not waiting time.')}
+        </div>
+      </section>
+      <section class="card"><h3>Packaging</h3>
+        <p class="hint">Say how many pieces share one item: 1 butter paper per piece, 1 box per 6 pieces.</p>
+        <div class="tbl"><table><thead><tr><th>Item</th><th>One for every</th><th class="num">Per piece</th><th></th></tr></thead><tbody>
+        ${r.pack.map((k, j) => `<tr>
+          <td>${sel(`${p}.pack.${j}.pkgId`, k.pkgId, S.packaging.map(x => [x.id, `${x.name} (${inr(num(x.price))})`]))}</td>
+          <td><div class="unitin">${numIn(`${p}.pack.${j}.perPieces`, k.perPieces, 'aria-label="Pieces per item"')}<span>pieces</span></div></td>
+          <td class="num" data-packcost="${j}"></td>
+          <td><button class="x" data-act="del" data-list="${p}.pack" data-i="${j}" aria-label="Remove">×</button></td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="actions"><button class="btn" data-act="addPack">+ Add packaging</button></div>
+      </section>
+    </div>
+    <aside class="card result sticky" id="out-recipe"></aside>
+  </div>`;
+}
+function oRecipes(){
+  const r = curRecipe(); if (!r) return;
+  const c = recipeCost(r);
+  $$('[data-linecost]').forEach(el => { const l = r.lines[+el.dataset.linecost]; const g = l && ingById(l.ingId); el.textContent = g ? inr(num(l.qty) * perBase(g)) : '—'; });
+  $$('[data-packcost]').forEach(el => { const k = r.pack[+el.dataset.packcost]; const x = k && pkgById(k.pkgId); el.textContent = x ? inr(num(x.price) / Math.max(1, num(k.perPieces))) : '—'; });
+  const parts = [
+    ['Ingredients (incl. wastage)', c.ingW / c.y], ['Your time', c.labour / c.y], ['Oven and gas', (c.elec + c.gas) / c.y],
+    ['Packaging', c.pack], ['Share of monthly costs', c.fixed]
+  ];
+  const max = Math.max(...parts.map(x => x[1]), 0.01);
+  const tips = [];
+  if (c.labour / c.y > c.perPiece * 0.45) tips.push(['info','Your time is the biggest cost. Bigger batches, or baking two products in one oven session, spread it thinner.']);
+  if (c.pack > c.perPiece * 0.25) tips.push(['warn','Packaging is over a quarter of the cost. Try sharing one box across more pieces, or buying boxes in 100s.']);
+  if (num(r.activeMin) === 0) tips.push(['bad','Hands-on time is 0. Add your real minutes, including packing and cleaning.']);
+  if (!r.lines.length) tips.push(['warn','Add the ingredients for one batch.']);
+  $('#out-recipe').innerHTML = `
+    <p class="eyebrow">Cost of one ${esc(r.unitName || 'piece')}</p>
+    <p class="big">${inr(c.perPiece)}</p>
+    <p class="muted small" style="margin:4px 0 14px">Batch of ${c.y}: ${inr(c.batch)} in ingredients, fuel and time, before packaging.${num(r.pieceWeight) > 0 ? ` Cost per kg: ${inr(c.perPiece / num(r.pieceWeight) * 1000)}.` : ''}</p>
+    <div class="bars">${parts.map(([l, v]) => `<div class="bar"><span>${l}</span><span class="tnum">${inr(v)}</span><div class="track"><div class="fill" style="width:${(v / max * 100).toFixed(1)}%"></div></div></div>`).join('')}</div>
+    <dl class="kv" style="margin-top:14px">
+      <dt>Ingredients for the batch</dt><dd>${inr(c.ingr)}</dd>
+      <dt>Electricity (${c.kwh.toFixed(2)} kWh)</dt><dd>${inr(c.elec)}</dd>
+      <dt>Gas</dt><dd>${inr(c.gas)}</dd>
+      <dt>Your time</dt><dd>${inr(c.labour)}</dd>
+    </dl>
+    ${tips.length ? `<div style="margin-top:14px">${tipList(tips)}</div>` : ''}
+    <div class="actions"><a class="btn primary" href="#pricing">Set the selling price →</a></div>`;
+}
+
+/* ============ VIEW: Pricing ============ */
+function vPricing(){
+  const r = curRecipe();
+  if (!r) return `<div class="head"><h2>Pricing</h2></div><div class="card empty">Add a product in <a href="#recipes">Recipe cost</a> first.</div>`;
+  const i = S.recipes.indexOf(r), p = `recipes.${i}`, P = S.profile;
+  return `
+  <div class="head"><div><h2>Pricing</h2><p class="muted">Pick a margin, check it against the market, then set bulk discounts that still leave you a profit.</p></div></div>
+  ${recipePicker()}
+  <div class="grid2">
+    <div class="stack">
+      <section class="card"><h3>How much do you want to keep?</h3>
+        <div class="field"><label for="${fid(p + '.margin')}">Profit margin: <b id="mval">${r.margin}%</b> of the selling price</label>
+          <input type="range" min="0" max="80" step="1" id="${fid(p + '.margin')}" data-path="${p}.margin" data-num value="${r.margin}">
+          <span class="hint">Margin is profit ÷ selling price. A 40% margin on ₹100 means ₹40 profit, which is a 67% markup on the ₹60 cost.</span></div>
+        <div class="row" style="margin-top:12px">
+          ${F('Others charge, from (₹)', `${p}.mktLow`, r.mktLow, 'Check 3–5 home bakers or shops near you, same size.')}
+          ${F('Others charge, up to (₹)', `${p}.mktHigh`, r.mktHigh)}
+          ${F('Delivery-app commission (%)', 'profile.platformFee', P.platformFee, 'Leave 0 if you sell direct only.')}
+        </div>
+      </section>
+      <section class="card"><h3>Bulk and order-size discounts</h3>
+        <p class="hint">Applies to every product by quantity in one order. A tier turns amber or red when the discount eats your margin.</p>
+        <div class="tbl"><table><thead><tr><th>From qty</th><th>Discount %</th><th class="num">Price each</th><th class="num">Order at this qty</th><th class="num">Margin</th><th></th></tr></thead><tbody>
+        ${P.tiers.map((t, j) => `<tr><td>${numIn(`profile.tiers.${j}.min`, t.min, 'aria-label="From quantity"')}</td><td>${numIn(`profile.tiers.${j}.disc`, t.disc, 'aria-label="Discount percent"')}</td><td class="num" data-tier="${j}" data-k="unit"></td><td class="num" data-tier="${j}" data-k="tot"></td><td class="num" data-tier="${j}" data-k="m"></td><td><button class="x" data-act="del" data-list="profile.tiers" data-i="${j}" aria-label="Remove tier">×</button></td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="actions"><button class="btn" data-act="addTier">+ Add tier</button></div>
+      </section>
+      <section class="card" id="out-what"></section>
+    </div>
+    <aside class="card result sticky" id="out-price"></aside>
+  </div>`;
+}
+function oPricing(){
+  const r = curRecipe(); if (!r) return;
+  const P = S.profile, c = recipeCost(r), m = num(r.margin), fee = num(P.platformFee);
+  $('#mval') && ($('#mval').textContent = m + '%');
+  const rung = (label, marg, desc, cls = '') => {
+    const raw = priceFor(c.perPiece, marg), pr = marg === 0 ? Math.ceil(raw) : roundPrice(raw);
+    const mm = marginOf(pr, c.perPiece);
+    return `<div class="rung ${cls}"><b>${label}</b><span class="p">${inr(pr)}</span><span class="d">${desc}${marg > 0 ? ` · keeps ${pct(mm)}, ${inr(pr - c.perPiece)} each` : ''}</span></div>`;
+  };
+  const rec = recPrice(r);
+  const lo = num(r.mktLow), hi = num(r.mktHigh);
+  let mkt = '';
+  if (hi > 0){
+    if (rec > hi) mkt = ['warn', `Your price is above what others charge (${inr(lo)}–${inr(hi)}). Justify it with better ingredients (couverture, real butter), a bigger piece or gift packaging, or make the piece smaller rather than cutting margin.`];
+    else if (lo > 0 && rec < lo) mkt = ['good', `You are below the market range (${inr(lo)}–${inr(hi)}). You can likely charge more: try ${inr(roundPrice((lo + hi) / 2))}.`];
+    else mkt = ['good', `Inside the market range of ${inr(lo)}–${inr(hi)}.`];
+  }
+  const app = roundPrice(priceFor(c.perPiece, m, fee));
+  const kg = num(r.pieceWeight) > 0 ? rec / num(r.pieceWeight) * 1000 : 0;
+  const gst = P.gst === 'yes' ? rec * (1 + num(P.gstRate) / 100) : 0;
+  $('#out-price').innerHTML = `
+    <p class="eyebrow">Price for one ${esc(r.unitName || 'piece')} · cost ${inr(c.perPiece)}</p>
+    <div class="ladder" style="margin-top:10px">
+      ${rung('Break-even', 0, 'Covers every cost, earns nothing. Never go below this.')}
+      ${rung('Lowest safe price', 15, 'For tastings, regulars or slow days.')}
+      ${rung('Recommended', m, 'Your target margin, rounded to a friendly price.', 'rec')}
+      ${rung('Premium', Math.min(m + 15, 80), 'Gift boxes, festivals, custom orders.')}
+    </div>
+    <dl class="kv" style="margin-top:14px">
+      ${kg ? `<dt>Per kg at the recommended price</dt><dd>${inr(kg)}</dd>` : ''}
+      ${fee > 0 ? `<dt>List on delivery apps at</dt><dd>${inr(app)}</dd>` : ''}
+      ${gst ? `<dt>With ${P.gstRate}% GST</dt><dd>${inr(gst)}</dd>` : ''}
+      <dt>Box of 6</dt><dd>${inr(rec * 6 * (1 - tierFor(6) / 100))}</dd>
+      <dt>Box of 12</dt><dd>${inr(Math.round(rec * (1 - tierFor(12) / 100)) * 12)}</dd>
+    </dl>
+    ${mkt ? `<div style="margin-top:14px">${tipList([mkt])}</div>` : ''}`;
+  // tiers
+  $$('[data-tier]').forEach(el => {
+    const t = P.tiers[+el.dataset.tier]; if (!t) return;
+    const unit = Math.round(rec * (1 - num(t.disc) / 100)), mm = marginOf(unit, c.perPiece), h = health(mm);
+    el.innerHTML = el.dataset.k === 'unit' ? inr(unit) : el.dataset.k === 'tot' ? inr(unit * Math.max(1, num(t.min))) : `<span class="pill ${h[0]}">${pct(mm)} ${h[1]}</span>`;
+  });
+  // what-if
+  const contrib = rec - c.variable;
+  const beUnits = contrib > 0 ? Math.ceil(sumFixed() / contrib) : Infinity;
+  const up10 = c.perPiece + c.ingW / c.y * 0.10;
+  const monthly = (rec - c.perPiece) * num(P.monthlyPieces);
+  $('#out-what').innerHTML = `<h3>What the numbers mean</h3>
+    <div class="tiles">
+      <div class="tile"><div class="eyebrow">Profit each</div><div class="v ${rec - c.perPiece >= 0 ? 'pos' : 'neg'}">${inr(rec - c.perPiece)}</div></div>
+      <div class="tile"><div class="eyebrow">To cover fixed costs</div><div class="v">${isFinite(beUnits) ? beUnits.toLocaleString('en-IN') : '—'}</div><div class="hint">pieces a month</div></div>
+      <div class="tile"><div class="eyebrow">If all sales were this</div><div class="v">${inr(monthly)}</div><div class="hint">profit at ${P.monthlyPieces} a month</div></div>
+    </div>
+    ${tipList([
+      ['info', `If ingredient prices rise 10%, cost goes to ${inr(up10)} and your margin at ${inr(rec)} drops to ${pct(marginOf(rec, up10))}.`],
+      ['info', 'Price feels too high for customers? Make the piece smaller or sell a mini size before you cut margin.'],
+      ['info', 'Charge delivery separately, and charge extra for custom messages, toppers or gift wrap.']
+    ])}`;
+}
+
+/* ============ VIEW: Quote ============ */
+function quoteCalc(){
+  const Q = S.quote, P = S.profile;
+  let sub = 0, cost = 0, pcs = 0;
+  const rows = Q.rows.map(row => {
+    const r = recById(row.recipeId); if (!r) return null;
+    const c = recipeCost(r), base = recPrice(r), qty = num(row.qty), disc = tierFor(qty);
+    const unit = Math.round(base * (1 - disc / 100)), line = unit * qty;
+    sub += line; cost += c.perPiece * qty; pcs += qty;
+    return {r, qty, base, disc, unit, line, cat:r.cat};
+  }).filter(Boolean);
+  const custom = num(Q.customPack) * pcs, rush = Math.round(sub * num(Q.rush) / 100), delivery = num(Q.delivery);
+  const taxable = sub + custom + rush;
+  const gst = P.gst === 'yes' ? Math.round(taxable * num(P.gstRate) / 100) : 0;
+  const total = taxable + delivery + gst;
+  const profit = sub + rush - cost;
+  return {rows, sub, cost, pcs, custom, rush, delivery, gst, total, profit, margin: marginOf(sub + rush, cost), advance: Math.ceil(total * num(Q.advance) / 100)};
+}
+function vQuote(){
+  const Q = S.quote;
+  return `
+  <div class="head"><div><h2>Quote an order</h2><p class="muted">Build a quote for one customer. Bulk discounts apply by quantity, and the message is ready to paste into WhatsApp.</p></div></div>
+  <div class="grid2">
+    <div class="stack">
+      <section class="card"><h3>Customer</h3><div class="row">
+        ${F('Customer or occasion', 'quote.customer', Q.customer, '', 'txt')}
+        ${fld('Order type', sel('quote.type', Q.type, [['individual','Individual'],['bulk','Bulk'],['corporate','Corporate / event'],['reseller','Café / reseller']]), '', 'quote.type')}
+      </div></section>
+      <section class="card"><h3>Items</h3>
+        <div class="tbl"><table><thead><tr><th>Product</th><th>Qty</th><th class="num">Price each</th><th class="num">Line total</th><th></th></tr></thead><tbody>
+        ${Q.rows.map((row, j) => `<tr><td>${sel(`quote.rows.${j}.recipeId`, row.recipeId, S.recipes.map(r => [r.id, r.name]))}</td><td>${numIn(`quote.rows.${j}.qty`, row.qty, 'aria-label="Quantity"')}</td><td class="num" data-qrow="${j}" data-k="u"></td><td class="num" data-qrow="${j}" data-k="l"></td><td><button class="x" data-act="del" data-list="quote.rows" data-i="${j}" aria-label="Remove">×</button></td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="actions"><button class="btn" data-act="addQRow">+ Add product</button></div>
+      </section>
+      <section class="card"><h3>Extras and terms</h3><div class="row">
+        ${F('Delivery charge (₹)', 'quote.delivery', Q.delivery, 'What delivery costs you. Charge it at cost.')}
+        ${F('Custom packaging (₹ per piece)', 'quote.customPack', Q.customPack, 'Printed boxes, ribbons, tags.')}
+        ${F('Rush or custom-design charge (%)', 'quote.rush', Q.rush, 'Orders under 24 hours, custom themes. 10–25% is common.')}
+        ${F('Advance to confirm (%)', 'quote.advance', Q.advance, '50% is standard for bulk. 100% for first-time customers.')}
+        ${F('Quote valid for (days)', 'quote.validDays', Q.validDays, 'Ingredient prices move. Keep it short.')}
+      </div></section>
+    </div>
+    <aside class="stack">
+      <section class="card result" id="out-quote"></section>
+      <section class="card"><h3>Message for the customer</h3><pre class="msg" id="out-msg"></pre>
+        <div class="actions"><button class="btn primary" data-act="copyMsg">Copy message</button><button class="btn" data-act="logSale">Record as a sale</button></div></section>
+    </aside>
+  </div>`;
+}
+function quoteMessage(q){
+  const P = S.profile, Q = S.quote;
+  const lines = [`Hi${Q.customer ? ' (' + Q.customer + ')' : ''}! Here is your quote${P.business ? ' from ' + P.business : ''}:`, ''];
+  q.rows.forEach(x => lines.push(`• ${x.r.name} × ${x.qty} @ ${inr(x.unit)} = ${inr(x.line)}${x.disc ? ` (${x.disc}% bulk discount)` : ''}`));
+  lines.push('');
+  if (q.custom) lines.push(`Custom packaging: ${inr(q.custom)}`);
+  if (q.rush) lines.push(`Rush / custom work: ${inr(q.rush)}`);
+  if (q.delivery) lines.push(`Delivery: ${inr(q.delivery)}`);
+  if (q.gst) lines.push(`GST (${P.gstRate}%): ${inr(q.gst)}`);
+  lines.push(`Total: ${inr(q.total)}`);
+  lines.push(`Advance to confirm (${Q.advance}%): ${inr(q.advance)}`);
+  lines.push('');
+  lines.push(`Ready ${P.leadDays} day${P.leadDays == 1 ? '' : 's'} after the advance is received. This quote is valid for ${Q.validDays} days.`);
+  const cats = [...new Set(q.rows.map(x => x.cat))];
+  cats.forEach(cid => { const c = catById(cid); const names = q.rows.filter(x => x.cat === cid).map(x => x.r.name).join(', '); lines.push(`Storage (${names}): ${c.store}`); });
+  return lines.join('\n');
+}
+function oQuote(){
+  const q = quoteCalc();
+  $$('[data-qrow]').forEach(el => {
+    const row = S.quote.rows[+el.dataset.qrow]; const x = row && q.rows.find(z => z.r.id === row.recipeId && z.qty === num(row.qty));
+    if (!x){ el.textContent = '—'; return; }
+    el.innerHTML = el.dataset.k === 'u' ? `${inr(x.unit)}${x.disc ? ` <span class="pill info">−${x.disc}%</span>` : ''}` : inr(x.line);
+  });
+  const h = health(q.margin);
+  const minWarn = q.pcs > 0 && q.pcs < num(S.profile.minOrder) ? tipList([['warn', `This order is ${q.pcs} pieces, below your minimum of ${S.profile.minOrder}. Add a small-order charge or ask them to round up.`]]) : '';
+  $('#out-quote').innerHTML = `
+    <p class="eyebrow">Quote total · ${q.pcs} pieces</p>
+    <p class="big">${inr(q.total)}</p>
+    <dl class="kv" style="margin-top:12px">
+      <dt>Items</dt><dd>${inr(q.sub)}</dd>
+      ${q.custom ? `<dt>Custom packaging</dt><dd>${inr(q.custom)}</dd>` : ''}
+      ${q.rush ? `<dt>Rush / custom work</dt><dd>${inr(q.rush)}</dd>` : ''}
+      ${q.delivery ? `<dt>Delivery</dt><dd>${inr(q.delivery)}</dd>` : ''}
+      ${q.gst ? `<dt>GST</dt><dd>${inr(q.gst)}</dd>` : ''}
+      <dt class="total">Advance to collect</dt><dd class="total">${inr(q.advance)}</dd>
+    </dl>
+    <dl class="kv" style="margin-top:14px">
+      <dt>Your cost to make</dt><dd>${inr(q.cost)}</dd>
+      <dt>Your profit</dt><dd>${inr(q.profit)} <span class="pill ${h[0]}">${pct(q.margin)}</span></dd>
+    </dl>
+    ${minWarn ? `<div style="margin-top:12px">${minWarn}</div>` : ''}`;
+  $('#out-msg').textContent = quoteMessage(q);
+}
+
+/* ============ VIEW: Tracker ============ */
+function monthSum(ym){
+  const es = S.entries.filter(e => e.date.startsWith(ym));
+  const sales = es.filter(e => e.kind === 'sale').reduce((a, e) => a + num(e.amount), 0);
+  const exp = es.filter(e => e.kind === 'expense').reduce((a, e) => a + num(e.amount), 0);
+  return {es, sales, exp, profit: sales - exp};
+}
+const monthLabel = ym => { const [y, m] = ym.split('-'); return new Date(+y, +m - 1, 1).toLocaleDateString('en-IN', {month:'short', year:'numeric'}); };
+function shiftMonth(ym, k){ const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + k, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function vTracker(){
+  const D = S.ui.draft, ym = S.ui.month;
+  const months = [...new Set([thisMonth(), ...S.entries.map(e => e.date.slice(0, 7))])].sort().reverse();
+  const m = monthSum(ym);
+  const hasEx = S.entries.some(e => e.ex);
+  const byCat = {}; m.es.filter(e => e.kind === 'expense').forEach(e => byCat[e.cat] = (byCat[e.cat] || 0) + num(e.amount));
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const maxC = Math.max(1, ...cats.map(c => c[1]));
+  const list = [...m.es].sort((a, b) => b.date.localeCompare(a.date));
+  return `
+  <div class="head"><div><h2>Sales &amp; expense tracker</h2><p class="muted">Log every order and every purchase. Your real profit shows up here, not in the price list.</p></div>
+    <div class="field" style="min-width:170px"><label for="f-ui-month">Month</label>${sel('ui.month', ym, months.map(x => [x, monthLabel(x)])).replace('id="f-ui-month"', 'id="f-ui-month"')}</div></div>
+  ${hasEx ? `<div class="example"><span>The entries below are examples so you can see how the tracker works.</span>${confirmBtn('clearEx', 'Remove examples', 'clearEx')}</div>` : ''}
+  <div class="tiles">
+    <div class="tile"><div class="eyebrow">Sales</div><div class="v">${inr(m.sales)}</div></div>
+    <div class="tile"><div class="eyebrow">Expenses</div><div class="v">${inr(m.exp)}</div></div>
+    <div class="tile"><div class="eyebrow">Profit</div><div class="v ${m.profit >= 0 ? 'pos' : 'neg'}">${inr(m.profit)}</div></div>
+    <div class="tile"><div class="eyebrow">Margin</div><div class="v">${m.sales ? pct(m.profit / m.sales * 100) : '—'}</div></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="stack">
+      <section class="card"><h3>Add an entry</h3>
+        <div class="row">
+          ${fld('Date', `<input type="date" id="f-ui-draft-date" data-path="ui.draft.date" value="${esc(D.date)}">`, '', 'ui.draft.date')}
+          ${fld('Type', sel('ui.draft.kind', D.kind, [['expense','Expense'],['sale','Sale']]), '', 'ui.draft.kind')}
+          ${fld('Category', sel('ui.draft.cat', D.cat, D.kind === 'sale' ? SALE_CATS : EXP_CATS), '', 'ui.draft.cat')}
+          ${F('Amount (₹)', 'ui.draft.amount', D.amount)}
+        </div>
+        <div class="row" style="margin-top:12px">${F('Note', 'ui.draft.desc', D.desc, '', 'txt', 'placeholder="e.g. 2 kg butter, Amul"')}</div>
+        <div class="actions"><button class="btn primary" data-act="addEntry">Add ${D.kind === 'sale' ? 'sale' : 'expense'}</button></div>
+      </section>
+      <section class="card"><h3>${monthLabel(ym)} entries</h3>
+        ${list.length ? `<div class="tbl"><table><thead><tr><th>Date</th><th>Category</th><th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody>
+        ${list.map(e => `<tr><td class="small tnum">${e.date.slice(8)} ${monthLabel(ym).split(' ')[0]}</td><td><span class="pill ${e.kind === 'sale' ? 'good' : 'info'}">${esc(e.cat)}</span></td><td>${esc(e.desc)}${e.ex ? ' <span class="pill warn">example</span>' : ''}</td><td class="num">${e.kind === 'sale' ? '+' : '−'}${inr(num(e.amount))}</td><td><button class="x" data-act="delEntry" data-id="${e.id}" aria-label="Remove entry">×</button></td></tr>`).join('')}
+        </tbody></table></div>` : `<p class="muted">Nothing logged for this month yet.</p>`}
+      </section>
+    </div>
+    <aside class="stack">
+      <section class="card chart"><h3>Last 6 months</h3>${chart6(ym)}<div class="legend"><span><i style="background:var(--accent)"></i>Sales</span><span><i style="background:var(--gold)"></i>Expenses</span></div></section>
+      <section class="card"><h3>Where the money went</h3>
+        ${cats.length ? `<div class="bars">${cats.map(([k, v]) => `<div class="bar"><span>${esc(k)}</span><span class="tnum">${inr(v)} · ${pct(v / m.exp * 100)}</span><div class="track"><div class="fill gold" style="width:${(v / maxC * 100).toFixed(1)}%"></div></div></div>`).join('')}</div>` : '<p class="muted">No expenses this month.</p>'}
+        <div style="margin-top:14px">${tipList(trackerTips(m, byCat))}</div>
+      </section>
+    </aside>
+  </div>`;
+}
+function trackerTips(m, byCat){
+  const t = [];
+  if (m.sales && m.profit / m.sales < 0.2) t.push(['warn', 'Profit is under 20% of sales this month. Compare your actual prices with the Pricing tab, and check for discounts you did not plan.']);
+  if (m.sales && (byCat['Ingredients'] || 0) / m.sales > 0.45) t.push(['warn', 'Ingredients are more than 45% of sales. Buy butter, chocolate and nuts in bulk, or review recipe quantities and wastage.']);
+  if (m.sales && (byCat['Packaging'] || 0) / m.sales > 0.15) t.push(['warn', 'Packaging is above 15% of sales. Order boxes in larger lots or use simpler packaging for everyday orders.']);
+  if (!t.length && m.sales) t.push(['good', 'Spending looks balanced against sales this month.']);
+  t.push(['info', 'Keep a photo of every bill. Pay yourself from profit on a fixed date each month, and keep business money in a separate UPI or bank account.']);
+  return t;
+}
+function chart6(ym){
+  const ms = [5,4,3,2,1,0].map(k => shiftMonth(ym, -k));
+  const data = ms.map(x => monthSum(x));
+  const W = 560, H = 220, L = 52, B = 26, T = 10, R = 8;
+  const max = Math.max(1000, ...data.map(d => Math.max(d.sales, d.exp)));
+  const mag = Math.pow(10, Math.floor(Math.log10(max)));
+  const stepv = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => max / s <= 5) || mag * 10;
+  const top = Math.ceil(max / stepv) * stepv;
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const gw = (W - L - R) / 6, bw = Math.min(26, gw / 3);
+  let g = '';
+  for (let v = 0; v <= top + 0.1; v += stepv){
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+    g += `<text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${v >= 1000 ? '₹' + (v / 1000).toLocaleString('en-IN') + 'k' : '₹' + v}</text>`;
+  }
+  data.forEach((d, i) => {
+    const cx = L + gw * i + gw / 2;
+    g += `<rect x="${cx - bw - 1}" y="${y(d.sales)}" width="${bw}" height="${Math.max(0, H - B - y(d.sales))}" rx="3" fill="var(--accent)"><title>${monthLabel(ms[i])} sales ${inr(d.sales)}</title></rect>`;
+    g += `<rect x="${cx + 1}" y="${y(d.exp)}" width="${bw}" height="${Math.max(0, H - B - y(d.exp))}" rx="3" fill="var(--gold)"><title>${monthLabel(ms[i])} expenses ${inr(d.exp)}</title></rect>`;
+    g += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="11" fill="${ms[i] === ym ? 'var(--ink)' : 'var(--muted)'}" font-weight="${ms[i] === ym ? 700 : 400}">${monthLabel(ms[i]).split(' ')[0]}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales and expenses for the last six months">${g}</svg>`;
+}
+
+/* ============ VIEW: Shelf life ============ */
+function shelfCalc(s){
+  const c = catById(s.cat);
+  let room = c.room, fridge = c.fridge, freezer = c.freezer;
+  const notes = [];
+  if (s.climate === 'hot'){ room *= 0.6; notes.push(['warn', 'A hot or humid kitchen without AC cuts room-temperature life by about 40%. Indian summers and monsoons are when most home bakes spoil early.']); }
+  if (s.fresh){ room = Math.min(room, 0.25); fridge = fridge == null ? 3 : Math.min(fridge, 3); notes.push(['bad', 'Fresh fruit, fresh cream, cream cheese or custard: keep it chilled, and treat 3 days in the fridge as the limit.']); }
+  if (s.dairy && !['milk', 'cream'].includes(s.cat)){ room *= 0.7; if (fridge) fridge *= 0.85; notes.push(['warn', 'Khoya, paneer, milk or mawa in the recipe shortens life.']); }
+  if (s.moisture === 'high'){ room *= 0.8; if (fridge) fridge *= 0.85; notes.push(['info', 'Very moist or gooey centres spoil faster than firm, dry ones.']); }
+  if (s.moisture === 'low') room *= 1.15;
+  const pk = {open:0.6, airtight:1, sealed:1.3}[s.pack] || 1;
+  room *= pk; if (fridge) fridge *= Math.min(pk, 1.15);
+  if (s.pack === 'open') notes.push(['warn', 'Loose wrapping (butter paper, an open tray) lets in air and moisture. Use a closed box or pouch.']);
+  if (s.pack === 'sealed') notes.push(['good', 'Heat-sealed or vacuum packs slow staling and drying. They do not stop bacteria in moist or dairy foods.']);
+  const useFridge = room < 1 || s.fresh || s.cat === 'cream' || s.cat === 'milk';
+  return {c, room, fridge, freezer, useFridge, notes, label: (useFridge ? fridge : room) * 0.7};
+}
+function dur(d){
+  if (d == null) return 'Not advised';
+  if (d < 1) return Math.max(1, Math.round(d * 24)) + ' hours';
+  if (d >= 60) return Math.round(d / 30) + ' months';
+  const f = Math.floor(d); return f + (f === 1 ? ' day' : ' days');
+}
+function vShelf(){
+  const s = S.shelf, x = shelfCalc(s), P = S.profile;
+  const box = (label, v, hint, hl) => `<div class="tile" ${hl ? 'style="border-color:var(--accent)"' : ''}><div class="eyebrow">${label}</div><div class="v">${dur(v)}</div><div class="hint">${hint}</div></div>`;
+  return `
+  <div class="head"><div><h2>Shelf life</h2><p class="muted">Answer a few questions to get a cautious best-before date, then confirm it with your own trial. Home kitchens have no lab, so this app always leaves a safety margin.</p></div></div>
+  <div class="grid2">
+    <div class="stack">
+      <section class="card"><h3>About the product</h3><div class="row">
+        ${fld('What kind of product is it?', sel('shelf.cat', s.cat, CATS.map(c => [c.id, c.name])), '', 'shelf.cat')}
+        ${fld('Where is it kept before eating?', sel('shelf.climate', s.climate, [['hot','Hot or humid room, no AC'],['cool','Cool room or AC (below 25 °C)']]), '', 'shelf.climate')}
+        ${fld('How moist is it?', sel('shelf.moisture', s.moisture, [['low','Dry and crisp'],['normal','Soft but firm'],['high','Very moist, gooey or syrupy']]), '', 'shelf.moisture')}
+        ${fld('How is it packed?', sel('shelf.pack', s.pack, [['open','Butter paper or open tray'],['airtight','Closed box or zip pouch'],['sealed','Heat-sealed or vacuum pack']]), '', 'shelf.pack')}
+      </div>
+      <div style="display:grid;gap:10px;margin-top:14px">
+        <label class="check"><input type="checkbox" id="f-shelf-fresh" data-path="shelf.fresh" data-bool ${s.fresh ? 'checked' : ''}><span>Has fresh fruit, fresh cream, cream cheese, custard or ganache made with fresh cream</span></label>
+        <label class="check"><input type="checkbox" id="f-shelf-dairy" data-path="shelf.dairy" data-bool ${s.dairy ? 'checked' : ''}><span>Has khoya, mawa, paneer or milk as a main ingredient</span></label>
+      </div></section>
+      <section class="card"><h3>Confirm it with a home trial</h3>
+        <ol class="guide" style="display:grid;gap:6px;padding-left:1.2em;margin:0;font-size:.92rem">
+          <li>Keep 3–4 pieces from one batch, packed exactly as customers get them, in the place customers will keep them.</li>
+          <li>Check one each day at the same time: smell, look (spots, sweating, dark edges), texture and taste.</li>
+          <li>Note the first day anything changes. That is the end of its life, not the last good day.</li>
+          <li>Your best-before should be about two-thirds of that day. If it changed on day 6, print 4 days.</li>
+          <li>Repeat in summer and monsoon. Shelf life in May is not shelf life in December.</li>
+        </ol>
+        <p class="hint" style="margin-top:10px">Selling to shops, exporting or claiming more than a few weeks? Get a shelf-life test from an FSSAI-notified or NABL-accredited food lab.</p>
+      </section>
+    </div>
+    <aside class="stack">
+      <section class="card result">
+        <p class="eyebrow">Suggested best-before</p>
+        <p class="big">${dur(x.label)}</p>
+        <p class="muted small" style="margin-top:4px">${x.useFridge ? 'Refrigerated' : 'At room temperature'}, from the date of making. About 70% of the estimated life.</p>
+        <div class="tiles" style="margin-top:14px">
+          ${box('Room temp', x.room, 'Estimated', !x.useFridge)}
+          ${box('Fridge', x.fridge, x.fridge == null ? 'Not needed' : '0–5 °C', x.useFridge)}
+          ${box('Freezer', x.freezer, 'Wrapped airtight')}
+        </div>
+        <p class="eyebrow" style="margin-top:16px">For your label</p>
+        <div class="labelcard">
+          <b>${esc(P.business || 'Your business name')}</b>
+          <span><span class="vegmark" aria-hidden="true"></span>Vegetarian (use the brown mark if it has egg)</span>
+          <span>Best before: ${dur(x.label)} from date of manufacture</span>
+          <span>Storage: ${esc(x.c.store)}</span>
+          <span class="muted">FSSAI Reg. No.: ____________</span>
+        </div>
+      </section>
+      <section class="card"><h3>What changes the estimate</h3>${x.notes.length ? tipList(x.notes) : '<p class="muted">Nothing that shortens it. Good.</p>'}
+        <p class="eyebrow" style="margin-top:14px">Signs it has gone off</p><p class="small">${esc(x.c.signs)}</p></section>
+    </aside>
+  </div>`;
+}
+
+/* ============ VIEW: Packaging ============ */
+const PK = {
+  moist:[['Butter paper or parchment wrap per piece', 0.5, 1.5], ['Glassine bag for single pieces', 2, 4], ['Kraft cavity box with window, 4–9 pieces', 15, 30], ['Aluminium foil tray with lid, for a whole slab', 8, 15]],
+  dry:[['Stand-up zip pouch with window, 200–250 g', 4, 10], ['PET jar, 250–500 ml', 10, 25], ['Kraft tin-tie bag', 5, 10]],
+  cream:[['Cake box with base board, ½ kg', 15, 40], ['Cupcake box with inserts, 4 or 6', 10, 25], ['Ice gel pack for delivery (reusable)', 20, 50]],
+  milk:[['Mithai box with butter-paper liner, 250–500 g', 10, 25], ['Food-grade plastic tub with lid, for syrupy sweets', 5, 12], ['Paper cups for each piece', 0.5, 1]],
+  ghee:[['Mithai box with butter-paper liner, 250–500 g', 10, 25], ['Grease-proof paper cups for each piece', 0.5, 1], ['PET jar for laddoos, 500 g', 12, 25]],
+  fried:[['Laminated zip pouch with heat seal, 200 g', 4, 10], ['PET jar with lid, 250–500 g', 10, 25], ['Heat sealer, one-time cost', 800, 1500]],
+  choc:[['Cavity tray with lid, 4–12 pieces', 5, 15], ['Foil wraps for each piece', 0.5, 1.5], ['Rigid gift box', 40, 120]],
+  preserve:[['Glass jar with lug cap, 200–500 g', 15, 35], ['Shrink band for tamper evidence', 1, 2], ['Cloth or paper lid cover', 2, 5]],
+  bread:[['Printed bread bag', 2, 5], ['Twist tie or sticker seal', 0.5, 1]],
+  meal:[['Tamper-proof container with lid', 6, 15], ['Kraft paper carry bag', 5, 10], ['Insulated bag for delivery (reusable)', 150, 300]]
+};
+function packAdvice(a){
+  const c = catById(a.cat);
+  const items = (PK[a.cat] || []).map(x => ({name:x[0], lo:x[1], hi:x[2]}));
+  const tips = [];
+  if (a.purpose === 'gift'){ items.push({name:'Rigid or window gift box', lo:40, hi:120}, {name:'Ribbon or twine', lo:2, hi:5}, {name:'Thank-you card or tag', lo:1, hi:3}); tips.push(['info', 'Gift orders can carry premium packaging. Price them at the Premium rung, not the everyday price.']); }
+  if (a.purpose === 'everyday') tips.push(['good', 'For everyday orders keep packaging to about 5–12% of the selling price. Customers pay for what is inside.']);
+  if (a.purpose === 'bulk'){ items.push({name:'Bulk tray or large box, 25–50 pieces', lo:20, hi:60}, {name:'Outer 3-ply corrugated carton', lo:15, hi:40}); tips.push(['info', 'Bulk and corporate orders: pack in trays and charge per-piece wrapping only if they will hand pieces out one by one.']); }
+  if (a.distance === 'city') tips.push(['warn', 'Across the city: use a rigid box with the lid taped or stickered shut, keep boxes flat in a delivery bag, and do not stack heavy boxes on soft bakes.']);
+  if (a.distance === 'courier'){
+    items.push({name:'Bubble wrap', lo:5, hi:15}, {name:'Outer 3-ply corrugated box', lo:15, hi:40});
+    const life = shelfCalc({cat:a.cat, climate:'hot', fresh:false, dairy:false, moisture:'normal', pack:'sealed'});
+    tips.push(life.label >= 7 ? ['good', 'This product keeps long enough to courier. Heat-seal the inner pack, cushion it, and mark the box "Food, handle with care".'] : ['bad', `Not suited to courier. It keeps about ${dur(life.label)}, and courier takes 2–5 days. Sell it locally only.`]);
+    if (a.cat === 'choc') tips.push(['warn', 'Chocolate melts above about 28 °C. Avoid shipping in summer, or use insulated packs and express delivery.']);
+  }
+  if (a.eco){ items.push({name:'Bagasse (sugarcane) box or tray', lo:6, hi:15}); tips.push(['info', 'Kraft paper and bagasse look good and compost, but paper is not a moisture barrier. Line it with butter paper, and keep crisp items in a sealed inner pouch.']); }
+  if (a.cat === 'cream' || a.cat === 'milk') tips.push(['warn', 'Keep these cold until handover. Put a "Keep refrigerated" sticker on every box.']);
+  tips.push(['info', 'Every pack needs a label: product name, ingredients, allergens, net weight, date of making, best-before, veg/non-veg mark, FSSAI number and your address. See the Guide tab.']);
+  return {c, items, tips};
+}
+function vPackaging(){
+  const a = S.packAdv, adv = packAdvice(a);
+  const have = new Set(S.packaging.map(p => p.name));
+  return `
+  <div class="head"><div><h2>Packaging</h2><p class="muted">Tell the app what you are packing and where it is going. It suggests what to use and roughly what it costs. Prices are typical small-lot prices: check your local packaging wholesaler.</p></div></div>
+  <div class="grid2 even">
+    <section class="card"><h3>What are you packing?</h3><div class="row">
+      ${fld('Product type', sel('packAdv.cat', a.cat, CATS.map(c => [c.id, c.name])), '', 'packAdv.cat')}
+      ${fld('Who is it for?', sel('packAdv.purpose', a.purpose, [['everyday','Everyday orders'],['gift','Gifts and festivals'],['bulk','Bulk or corporate']]), '', 'packAdv.purpose')}
+      ${fld('How far does it travel?', sel('packAdv.distance', a.distance, [['local','Pickup or nearby, under 30 min'],['city','Across the city, 30–90 min'],['courier','Courier to another city']]), '', 'packAdv.distance')}
+    </div>
+    <label class="check" style="margin-top:14px"><input type="checkbox" id="f-packAdv-eco" data-path="packAdv.eco" data-bool ${a.eco ? 'checked' : ''}><span>Prefer plastic-free or eco-friendly options</span></label>
+    <h3 style="margin-top:20px">What to keep in mind</h3>${tipList(adv.tips)}
+    </section>
+    <section class="card result"><h3>Suggested packaging</h3>
+      <div class="tbl"><table><thead><tr><th>Item</th><th class="num">Typical price</th><th></th></tr></thead><tbody>
+      ${adv.items.map((it, i) => `<tr><td>${esc(it.name)}</td><td class="num">${inr(it.lo)}–${inr(it.hi)}</td><td>${have.has(it.name) ? '<span class="pill good">Added</span>' : `<button class="btn small" data-act="addAdvPkg" data-i="${i}">Add</button>`}</td></tr>`).join('')}
+      </tbody></table></div>
+      <p class="hint" style="margin-top:10px">"Add" puts the item in your packaging list at the middle of the range. Edit the price there to what you actually pay, then use it in a recipe.</p>
+    </section>
+  </div>`;
+}
+
+/* ============ VIEW: Guide ============ */
+function vGuide(){
+  return `
+  <div class="head"><div><h2>Guide</h2><p class="muted">The questions to ask yourself, the rules to follow, and the habits that keep a home food business profitable.</p></div></div>
+  <div class="guide">
+    <div class="cols">
+      <section class="card"><h3>Questions to answer before you set a price</h3><ol>
+        <li>What does one batch really cost, including wastage, gas, power and your time? (Recipe cost tab)</li>
+        <li>What do 3–5 sellers near you charge for the same size and quality?</li>
+        <li>Is this an everyday treat or a gift? Gifts carry higher prices.</li>
+        <li>What makes yours different: couverture chocolate, real butter, eggless, no refined sugar, fresh each day?</li>
+        <li>How many can you make in a week without burning out? Price so that number pays you well.</li>
+        <li>Who is buying: one person, an office, a café? Each needs its own price.</li>
+        <li>What happens to your margin if butter or chocolate goes up 10%?</li>
+      </ol></section>
+      <section class="card"><h3>Pricing rules that protect you</h3><ul>
+        <li>Never price below break-even, even for friends. Give a smaller piece instead.</li>
+        <li>Count your own time. If you cannot afford to pay a helper at your price, the price is too low.</li>
+        <li>Discount bulk orders because they save time and packaging, never by more than your margin allows.</li>
+        <li>Charge delivery, rush orders, custom designs and gift wrap separately.</li>
+        <li>Take an advance: 50% for bulk, full payment for first-time or custom orders.</li>
+        <li>Set a minimum order and a lead time, and write both on your menu.</li>
+        <li>Review ingredient prices every month and your selling prices every 3–6 months.</li>
+        <li>Round to friendly prices (₹49, ₹99, ₹149) and sell in boxes of 4, 6, 9 or 12.</li>
+      </ul></section>
+    </div>
+    <div class="cols">
+      <section class="card"><h3>Individual vs bulk customers</h3>
+        <p><b>Individuals</b> pay the full price per piece or box. They care about taste, looks and convenience. Offer small boxes (2, 4, 6) and a tasting box.</p>
+        <p><b>Bulk and corporate</b> buyers order 25 to several hundred pieces. They want a fixed quote, a GST invoice (if you are registered), a tasting sample, on-time delivery and uniform packing. Give tiered discounts (the Pricing tab), confirm the order in writing and take an advance.</p>
+        <p><b>Cafés and shops</b> resell your product and need their own margin, usually 25–35% off your retail price. Agree on delivery days, shelf life, who takes back unsold stock and when they pay.</p>
+      </section>
+      <section class="card"><h3>FSSAI and GST, in brief</h3><ul>
+        <li><b>FSSAI:</b> required for anyone selling food. Turnover up to ₹12 lakh a year needs Basic Registration (₹100 a year) on the FoSCoS portal. Above that, a State licence.</li>
+        <li>Show the FSSAI logo and your registration number on every label and on your Instagram or WhatsApp catalogue.</li>
+        <li><b>GST:</b> usually needed once turnover for goods crosses ₹40 lakh a year (₹20 lakh in some states). Selling on delivery apps or to other states can bring different rules.</li>
+        <li>If you are not registered, do not add GST to your bills.</li>
+        <li>Rules change. Confirm the current position with a CA or the official portals before you rely on it.</li>
+      </ul></section>
+    </div>
+    <div class="cols">
+      <section class="card"><h3>What a label must show</h3><p class="small muted">For pre-packed food under FSSAI labelling rules:</p><ul>
+        <li>Name of the product</li>
+        <li>Ingredients, heaviest first, with allergens called out (wheat/gluten, milk, egg, nuts, soy)</li>
+        <li>Nutrition information</li>
+        <li>Green veg mark, or brown non-veg mark (eggs count as non-veg)</li>
+        <li>Net weight or count</li>
+        <li>Date of manufacture and best-before or use-by date</li>
+        <li>Batch number (the date works for small batches)</li>
+        <li>Your name and address, FSSAI logo and number</li>
+        <li>Storage instructions and MRP (inclusive of all taxes)</li>
+      </ul></section>
+      <section class="card"><h3>How to decide shelf life</h3><ul>
+        <li><b>Water</b> is the main driver. Dry and crisp keeps for weeks; moist and gooey for days.</li>
+        <li><b>Milk, cream, fresh fruit and cream cheese</b> need the fridge and last 2–5 days.</li>
+        <li><b>Sugar and ghee</b> preserve: laddoos and chikki keep for 2–3 weeks; jams and pickles for months.</li>
+        <li><b>Fat goes rancid</b>: nuts, butter and fried snacks stay safe but taste stale. Airtight packs slow it.</li>
+        <li><b>Heat and humidity</b> cut life sharply. Plan for summer and monsoon.</li>
+        <li>Run a home trial (Shelf life tab) and print about two-thirds of the day the product first changed.</li>
+        <li>When unsure, use a shorter date. A customer remembers one bad piece longer than ten good ones.</li>
+      </ul></section>
+    </div>
+    <div class="cols">
+      <section class="card"><h3>Choosing packaging</h3><ul>
+        <li>Protect first: moisture barrier for crisp items, rigid box for soft or decorated ones, cold chain for cream and milk.</li>
+        <li>Match it to the price: everyday packs at about 5–12% of the price; gifting can go higher.</li>
+        <li>Buy in 100s from a wholesaler. Per-box prices fall sharply.</li>
+        <li>Use one branded sticker on plain boxes rather than printing boxes too early.</li>
+        <li>Tamper-evident seals build trust for delivered orders.</li>
+        <li>Test-drop one packed box from waist height and take it on a bike ride before you sell it.</li>
+      </ul></section>
+      <section class="card"><h3>Habits that keep you profitable</h3><ul>
+        <li>Log every purchase and every sale the same day (Tracker tab).</li>
+        <li>Keep business money in a separate account or UPI ID.</li>
+        <li>Batch your baking: two products per oven session halves fuel and setup time per piece.</li>
+        <li>Track which products earn the most per hour of your time, and push those.</li>
+        <li>Plan festive menus (Diwali, Rakhi, Christmas, Eid) 4–6 weeks ahead and take pre-orders.</li>
+        <li>Ask happy customers for a review or a photo. Word of mouth is your cheapest marketing.</li>
+      </ul></section>
+    </div>
+  </div>`;
+}
+
+/* ============ router & render ============ */
+const VIEWS = {
+  start:['Start here', vStart, oStart], recipes:['Recipe cost', vRecipes, oRecipes], pricing:['Pricing', vPricing, oPricing],
+  quote:['Quote', vQuote, oQuote], tracker:['Tracker', vTracker], pantry:['Ingredients & packaging', vPantry, oPantry],
+  'shelf-life':['Shelf life', vShelf], packaging:['Packaging', vPackaging], guide:['Guide', vGuide]
+};
+const cur = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'start'; };
+function render(){
+  const t = cur();
+  $('#tabs').innerHTML = Object.entries(VIEWS).map(([k, v]) => `<a href="#${k}" ${k === t ? 'aria-current="page"' : ''}>${v[0]}</a>`).join('');
+  $('#biz').textContent = S.profile.business || 'Costing and pricing for home food';
+  $('#app').innerHTML = VIEWS[t][1]();
+  refresh();
+}
+function refresh(){ const o = VIEWS[cur()][2]; if (o) o(); }
+window.addEventListener('hashchange', () => { S.ui.confirm = ''; render(); window.scrollTo(0, 0); const a = $('#tabs a[aria-current]'); a && a.scrollIntoView({inline:'nearest', block:'nearest'}); });
+
+/* ============ events ============ */
+function getPath(path){ return path.split('.').reduce((o, k) => o == null ? o : o[k], S); }
+function setPath(path, val){ const ks = path.split('.'); let o = S; for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = val; }
+function onField(e, final){
+  const t = e.target; const path = t.dataset && t.dataset.path; if (!path) return;
+  const val = t.dataset.bool != null ? t.checked : t.dataset.num != null ? num(t.value) : t.value;
+  setPath(path, val);
+  if (/^ingredients\.\d+\.(packPrice|packQty|packUnit)$/.test(path)){ const g = getPath(path.split('.').slice(0, 2).join('.')); g.updated = today(); const u = $(`[data-upd="${path.split('.')[1]}"]`); u && (u.textContent = g.updated); }
+  if (path === 'ui.draft.kind') S.ui.draft.cat = val === 'sale' ? SALE_CATS[0] : EXP_CATS[0];
+  save();
+  if (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'date' || final === 'change-struct') render(); else refresh();
+}
+document.addEventListener('input', e => { if (e.target.tagName !== 'SELECT' && e.target.type !== 'checkbox') onField(e); });
+document.addEventListener('change', e => {
+  if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') onField(e);
+  else if (e.target.dataset && e.target.dataset.path && /\.(name|unitName)$/.test(e.target.dataset.path) && (cur() === 'recipes' || cur() === 'pantry')) render();
+});
+const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, lines:[], pack:[]});
+const ACT = {
+  pickRecipe: el => { S.ui.recipe = el.dataset.id; },
+  addRecipe: () => { const r = blankRecipe(); if (S.ingredients[0]) r.lines.push({id:uid(), ingId:S.ingredients[0].id, qty:100}); S.recipes.push(r); S.ui.recipe = r.id; if (cur() !== 'recipes') location.hash = 'recipes'; },
+  dupRecipe: () => { const r = JSON.parse(JSON.stringify(curRecipe())); r.id = uid(); r.name += ' (copy)'; S.recipes.push(r); S.ui.recipe = r.id; },
+  delRecipe: () => { S.recipes = S.recipes.filter(r => r.id !== S.ui.recipe); S.ui.recipe = S.recipes[0] ? S.recipes[0].id : ''; S.quote.rows = S.quote.rows.filter(q => recById(q.recipeId)); },
+  addLine: () => { const r = curRecipe(); r.lines.push({id:uid(), ingId:S.ingredients[0] ? S.ingredients[0].id : '', qty:0}); },
+  addPack: () => { const r = curRecipe(); r.pack.push({id:uid(), pkgId:S.packaging[0] ? S.packaging[0].id : '', perPieces:1}); },
+  addIng: () => { S.ingredients.push({id:uid(), name:'New ingredient', packQty:1, packUnit:'kg', packPrice:0, updated:today()}); },
+  addPkg: () => { S.packaging.push({id:uid(), name:'New item', price:0, note:''}); },
+  addFixed: () => { S.profile.fixed.push({id:uid(), name:'New cost', amt:0}); },
+  addTier: () => { const t = S.profile.tiers; const last = t[t.length - 1]; t.push({id:uid(), min:last ? num(last.min) * 2 : 1, disc:last ? num(last.disc) + 3 : 0}); },
+  addQRow: () => { S.quote.rows.push({id:uid(), recipeId:S.recipes[0] ? S.recipes[0].id : '', qty:S.profile.minOrder || 6}); },
+  del: el => { const arr = getPath(el.dataset.list); arr.splice(+el.dataset.i, 1); },
+  toggle: el => { const arr = getPath(el.dataset.path); const v = el.dataset.val; const i = arr.indexOf(v); i >= 0 ? arr.splice(i, 1) : arr.push(v); },
+  addEntry: () => {
+    const D = S.ui.draft; if (!num(D.amount)) { toast('Enter an amount first'); return false; }
+    S.entries.push({id:uid(), date:D.date || today(), kind:D.kind, cat:D.cat, desc:D.desc, amount:num(D.amount)});
+    S.ui.month = (D.date || today()).slice(0, 7); D.amount = ''; D.desc = ''; toast(D.kind === 'sale' ? 'Sale added' : 'Expense added');
+  },
+  delEntry: el => { S.entries = S.entries.filter(e => e.id !== el.dataset.id); },
+  clearEx: () => { S.entries = S.entries.filter(e => !e.ex); },
+  copyMsg: () => { copyText($('#out-msg').textContent); return false; },
+  logSale: () => {
+    const q = quoteCalc(); if (!q.total) { toast('The quote is empty'); return false; }
+    const catMap = {individual:'Individual', bulk:'Bulk', corporate:'Corporate / event', reseller:'Café / reseller'};
+    S.entries.push({id:uid(), date:today(), kind:'sale', cat:catMap[S.quote.type] || 'Individual', desc:(S.quote.customer || 'Order') + ` (${q.pcs} pcs)`, amount:q.total - q.gst});
+    toast('Recorded in the Tracker'); save(); return false;
+  },
+  addAdvPkg: el => { const it = packAdvice(S.packAdv).items[+el.dataset.i]; S.packaging.push({id:uid(), name:it.name, price:Math.round((it.lo + it.hi) / 2), note:'From packaging advice'}); toast('Added to your packaging list'); },
+  askConfirm: el => { S.ui.confirm = el.dataset.key; },
+  cancelConfirm: () => { S.ui.confirm = ''; },
+  backup: () => { copyText(JSON.stringify(S)); return false; },
+  restore: () => {
+    try { const d = JSON.parse($('#restoreBox').value); if (!d || d.v !== 1 || !d.profile) throw 0; localStorage.setItem(KEY, JSON.stringify(d)); load(); toast('Backup restored'); }
+    catch(e){ toast('That text is not a Batch & Price backup'); return false; }
+  },
+  reset: () => { S = sample(); toast('Sample data loaded'); },
+  wipe: () => { const s = sample(); S = Object.assign(s, {ingredients:[], packaging:[], recipes:[], entries:[]}); S.quote.rows = []; S.ui.recipe = ''; toast('Started empty'); }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act; if (!ACT[a]) return;
+  e.preventDefault();
+  if (a !== 'askConfirm') S.ui.confirm = '';
+  const keep = ACT[a](el);
+  save();
+  if (keep !== false) render();
+});
+
+load();
+render();
+</script>
+</body>
+</html>
