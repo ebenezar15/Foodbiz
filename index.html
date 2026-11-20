@@ -5,7 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Batch &amp; Price</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#3F271C">
+<meta name="theme-color" content="#2E1A12">
+<meta name="description" content="Cost, price, orders, stock and break-even for home bakers and sweet makers, in rupees.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Batch & Price">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600;700&display=swap">
@@ -13,8 +22,8 @@
 /* Layout: app shell. Desktop = dark sidebar + sticky page bar + content; phone/tablet = coloured top bar + bottom tab bar + "More" sheet.
    Colour: every palette defines light (-l) and dark (-d) raw values; the mode blocks map them onto the working tokens. */
 :root{
-  --bg-l:#F4F5EF; --sf-l:#FFFFFF; --s2-l:#EBEEE3; --ln-l:#D8D9CD; --ac-l:#4A772E; --ch-l:#3F271C;
-  --bg-d:#15110E; --sf-d:#1F1915; --s2-d:#29221D; --ln-d:#3A3029; --ac-d:#9CCB7B; --ch-d:#1C1410;
+  --bg-l:#F7F2EC; --sf-l:#FFFFFF; --s2-l:#EFE5DA; --ln-l:#DFD1C2; --ac-l:#8A4B22; --ch-l:#2E1A12;
+  --bg-d:#15100C; --sf-d:#201813; --s2-d:#2B211A; --ln-d:#3D2F25; --ac-d:#E2A66B; --ch-d:#1A0F0A;
   --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --r:14px; --pad:18px; --gap:16px;
@@ -26,10 +35,12 @@
   --good-soft:#DCEFE1; --warn-soft:#FAEACD; --bad-soft:#FBE2DE;
   --shadow:0 1px 2px rgb(30 20 10 / .06), 0 4px 16px rgb(30 20 10 / .05);
 }
-:root[data-palette="berry"]{--bg-l:#F7F3F4;--s2-l:#F0E6EA;--ln-l:#E2D4DA;--ac-l:#A3245E;--ch-l:#34101F;--bg-d:#140E10;--sf-d:#1E1418;--s2-d:#2A1E23;--ln-d:#3D2B33;--ac-d:#F08DB8;--ch-d:#1A0B12}
-:root[data-palette="ocean"]{--bg-l:#F1F5F6;--s2-l:#E2ECEE;--ln-l:#CFDCDF;--ac-l:#0B7480;--ch-l:#0E2433;--bg-d:#0E1417;--sf-d:#141D21;--s2-d:#1C2A2F;--ln-d:#2B3B41;--ac-d:#5FD0D9;--ch-d:#0A1821}
-:root[data-palette="saffron"]{--bg-l:#F7F4EE;--s2-l:#EFE9DD;--ln-l:#DED6C6;--ac-l:#B45F00;--ch-l:#272320;--bg-d:#14120F;--sf-d:#1E1B17;--s2-d:#29241D;--ln-d:#3A3329;--ac-d:#F2A54A;--ch-d:#161412}
-:root[data-palette="slate"]{--bg-l:#F3F4F7;--s2-l:#E6E8EF;--ln-l:#D3D6E0;--ac-l:#3B4FC4;--ch-l:#1B2030;--bg-d:#101218;--sf-d:#171A22;--s2-d:#20232D;--ln-d:#313543;--ac-d:#8FA0F5;--ch-d:#0F121B}
+/* Dessert colour schemes */
+:root[data-palette="strawberry"]{--bg-l:#FBF4F5;--s2-l:#F6E6EA;--ln-l:#EBD3DA;--ac-l:#C2185B;--ch-l:#4A1530;--bg-d:#160E11;--sf-d:#21151A;--s2-d:#2D1D24;--ln-d:#422934;--ac-d:#F58FB5;--ch-d:#1E0B14}
+:root[data-palette="pistachio"]{--bg-l:#F5F7EF;--s2-l:#E9EEDC;--ln-l:#D6DDC4;--ac-l:#557A26;--ch-l:#2F3B1E;--bg-d:#11140D;--sf-d:#1A1F14;--s2-d:#242B1C;--ln-d:#343E28;--ac-d:#B5D98A;--ch-d:#141A0D}
+:root[data-palette="blueberry"]{--bg-l:#F5F4FA;--s2-l:#E9E7F4;--ln-l:#D6D3E8;--ac-l:#5146A8;--ch-l:#231E46;--bg-d:#100F17;--sf-d:#181622;--s2-d:#221F30;--ln-d:#332F45;--ac-d:#ACA3F2;--ch-d:#110F24}
+:root[data-palette="kesar"]{--bg-l:#FBF6EC;--s2-l:#F5EAD3;--ln-l:#E7D7B8;--ac-l:#B25400;--ch-l:#3D2408;--bg-d:#15110A;--sf-d:#201A10;--s2-d:#2C2416;--ln-d:#3F3420;--ac-d:#FFB55C;--ch-d:#1B1006}
+:root[data-palette="redvelvet"]{--bg-l:#FAF4F2;--s2-l:#F3E6E3;--ln-l:#E5D2CE;--ac-l:#A3192E;--ch-l:#3A0D14;--bg-d:#150D0D;--sf-d:#201515;--s2-d:#2C1D1D;--ln-d:#402B2B;--ac-d:#F2848F;--ch-d:#1A070A}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-mode="light"]){
     --bg:var(--bg-d); --surface:var(--sf-d); --surface-2:var(--s2-d); --line:var(--ln-d);
@@ -268,6 +279,21 @@ dialog::backdrop{background:rgb(15 10 5 / .5)}
 .swatch[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .swatch .sw{display:flex;border-radius:7px;overflow:hidden;width:60px;height:22px}
 .swatch .sw i{flex:1}
+.onlyNarrow{display:none}
+@media (max-width:1100px){.onlyNarrow{display:inline-flex}}
+@media (pointer:coarse){input,select,textarea{font-size:16px}}
+.steps{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.steps li.done{opacity:.7}
+@media (max-width:560px){.steps li{grid-template-columns:28px minmax(0,1fr)}.steps li>:last-child:not(:empty){grid-column:2;justify-self:start}}
+#out-plan{scroll-margin-top:96px}
+.steps .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.steps li.done .n{background:var(--good);color:#fff;border-color:var(--good)}
+.steps li.done b{text-decoration:line-through;text-decoration-color:var(--muted)}
+details.more{margin-top:12px}
+details.more summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
+details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size:.86rem}
+.billsum{display:grid;gap:4px;padding:12px;border-radius:10px;background:var(--surface-2)}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
 </style>
 </head>
@@ -343,7 +369,8 @@ const I = {
   packaging:'M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-2-3-5-3-5-1s5 1 5 1 5 1 5-1-3-2-5 1',
   guide:'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z',
   setup:'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
-  more:'M5 12h.01M12 12h.01M19 12h.01'
+  more:'M5 12h.01M12 12h.01M19 12h.01',
+  reports:'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5'
 };
 const icon = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"${k === 'more' ? ' style="stroke-width:3.2"' : ''}><path d="${I[k]}"/></svg>`;
 
@@ -391,12 +418,19 @@ const SALE_CATS = ['Individual','Bulk','Corporate / event','Delivery app','Café
 const ORDER_TYPES = [['individual','Individual'],['bulk','Bulk'],['corporate','Corporate / event'],['reseller','Café / reseller']];
 const TYPE_TO_SALE = {individual:'Individual', bulk:'Bulk', corporate:'Corporate / event', reseller:'Café / reseller'};
 const PALETTES = [
-  ['cocoa','Cocoa & pistachio',['#3F271C','#4A772E','#F4F5EF']],
-  ['berry','Raspberry',['#34101F','#A3245E','#F7F3F4']],
-  ['ocean','Teal & navy',['#0E2433','#0B7480','#F1F5F6']],
-  ['saffron','Saffron & charcoal',['#272320','#B45F00','#F7F4EE']],
-  ['slate','Professional slate',['#1B2030','#3B4FC4','#F3F4F7']]
+  ['fudge','Chocolate fudge',['#2E1A12','#8A4B22','#F7F2EC']],
+  ['strawberry','Strawberry shortcake',['#4A1530','#C2185B','#FBF4F5']],
+  ['pistachio','Pistachio kulfi',['#2F3B1E','#557A26','#F5F7EF']],
+  ['blueberry','Blueberry cheesecake',['#231E46','#5146A8','#F5F4FA']],
+  ['kesar','Kesar mango',['#3D2408','#B25400','#FBF6EC']],
+  ['redvelvet','Red velvet',['#3A0D14','#A3192E','#FAF4F2']]
 ];
+const OLD_PALETTE = {cocoa:'fudge', berry:'strawberry', ocean:'blueberry', saffron:'kesar', slate:'blueberry'};
+const STARTER_ING = [['Maida (all-purpose flour)',1,'kg'],['Sugar',1,'kg'],['Powdered sugar',500,'g'],['Brown sugar',500,'g'],['Butter',500,'g'],['Eggs',30,'pcs'],['Milk',1,'L'],
+  ['Cocoa powder',250,'g'],['Dark chocolate or compound',500,'g'],['Baking powder',100,'g'],['Baking soda',100,'g'],['Vanilla essence',50,'ml'],['Salt',1,'kg'],['Refined oil',1,'L'],
+  ['Ghee',1,'kg'],['Besan (gram flour)',1,'kg'],['Condensed milk',400,'g'],['Cashews',250,'g'],['Walnuts',250,'g'],['Cardamom',50,'g']];
+const STARTER_PKG = ['Butter paper square','Brownie box, 6 cavity','Cake box, ½ kg','Mithai box, 500 g','Zip pouch, 250 g','Brand sticker / label'];
+const FIXED_IDEAS = ['Phone & internet (business share)','Instagram or WhatsApp ads','Equipment wear & repair','Cleaning supplies, foil, gloves','FSSAI registration (₹100 a year = ₹9)','Rent or kitchen share'];
 
 /* =========================================================
    state
@@ -452,7 +486,7 @@ function sample(){
   const [rB, rC, rL] = recipes;
   const F = (name, amt) => ({id:uid(), name, amt});
   const profile = {
-    business:'', products:['Brownies','Cookies','Indian sweets'], channels:['WhatsApp / Instagram','Corporate & events','Cafés & shops (resale)'], buyers:'both',
+    business:'', address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!', products:['Brownies','Cookies','Indian sweets'], channels:['WhatsApp / Instagram','Corporate & events','Cafés & shops (resale)'], buyers:'both',
     monthlyPieces:400, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150, climate:'hot',
     margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2,
     fixed:[F('Phone & internet (business share)',300), F('Instagram promotion',500), F('Equipment wear & repair',400), F('Cleaning supplies, foil, gloves',300), F('FSSAI registration (₹100 a year)',9)],
@@ -489,9 +523,9 @@ function sample(){
     {id:uid(), recipeId:rL.id, qty:12, left:12, made:dAdd(T, -5), exp:dAdd(T, 2)}
   ];
   const st = {
-    v:2, sample:true, profile, ingredients, packaging, recipes, entries, orders, finished,
+    v:3, sample:true, backup:{email:'', last:'', clientId:''}, profile, ingredients, packaging, recipes, entries, orders, finished,
     be:{investment:25000, invNote:'OTG oven, moulds, hand mixer, scale', start:entries[0].date.slice(0, 7), autoFixed:true, ownerPay:0},
-    settings:{palette:'cocoa', mode:'system', accent:'', density:'comfortable', textSize:100},
+    settings:{palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100},
     quote:{customer:'Office festive order', type:'bulk', rows:[{id:uid(), recipeId:rB.id, qty:60},{id:uid(), recipeId:rC.id, qty:30}], delivery:80, customPack:5, rush:0, advance:50, validDays:7},
     shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'high', pack:'airtight'},
     packAdv:{cat:'moist', purpose:'gift', distance:'city', eco:false},
@@ -504,8 +538,25 @@ function sample(){
   S = prevS;
   return st;
 }
-function UI_DEFAULT(){ return {recipe:'', month:thisMonth(), confirm:'', ofilter:'open', stab:'ing', mtab:'be', setTab:'business', q:'', of:null, scale:0,
+function UI_DEFAULT(){ return {recipe:'', month:thisMonth(), confirm:'', ofilter:'open', stab:'ing', mtab:'be', setTab:'business', q:'', of:null, scale:0, rp:{period:'month', from:'', to:''},
   draft:{date:today(), kind:'expense', cat:'Ingredients', desc:'', amount:''}}; }
+function blankState(){
+  const F = (name, amt) => ({id:uid(), name, amt});
+  return {
+    v:3, sample:false, backup:{email:'', last:'', clientId:''},
+    profile:{business:'', address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!',
+      products:[], channels:[], buyers:'both', monthlyPieces:200, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150, climate:'hot',
+      margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2, fixed:[],
+      tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]},
+    ingredients:[], packaging:[], recipes:[], entries:[], orders:[], finished:[],
+    be:{investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0},
+    settings:{palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100},
+    quote:{customer:'', type:'individual', rows:[], delivery:0, customPack:0, rush:0, advance:50, validDays:7},
+    shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'normal', pack:'airtight'},
+    packAdv:{cat:'moist', purpose:'everyday', distance:'local', eco:false},
+    ui:UI_DEFAULT()
+  };
+}
 function migrate(d){
   if (!d || !d.profile) return null;
   if (d.v === 1){
@@ -513,22 +564,30 @@ function migrate(d){
     d.packaging.forEach(k => { k.stock = 0; k.low = 0; k.barcode = ''; });
     d.orders = []; d.finished = []; d.sample = false;
     d.be = {investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0};
-    d.settings = {palette:'cocoa', mode:'system', accent:'', density:'comfortable', textSize:100};
+    d.settings = {palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100};
     d.v = 2;
   }
-  return d.v === 2 ? d : null;
+  if (d.v === 2){
+    if (d.settings) d.settings.palette = OLD_PALETTE[d.settings.palette] || d.settings.palette;
+    if (d.sample){ const b = blankState(); b.settings = d.settings || b.settings; return b; }   // untouched sample data: start clean
+    d.entries = (d.entries || []).filter(e => !e.ex);                                         // drop example entries
+    d.backup = d.backup || {email:'', last:'', clientId:''};
+    d.v = 3;
+  }
+  if (d.settings && !PALETTES.some(x => x[0] === d.settings.palette)) d.settings.palette = 'fudge';
+  return d.v === 3 ? d : null;
 }
 function load(){
   let saved = null;
   try { saved = migrate(JSON.parse(localStorage.getItem(KEY))); } catch(e){}
-  const base = sample();
+  const base = blankState();
   S = saved || base;
-  if (saved){
-    for (const k of Object.keys(base)) if (S[k] == null) S[k] = base[k];
-    for (const k of Object.keys(base.profile)) if (S.profile[k] == null) S.profile[k] = base.profile[k];
-  }
+  for (const k of Object.keys(base)) if (S[k] == null) S[k] = base[k];
+  for (const k of Object.keys(base.profile)) if (S.profile[k] == null) S.profile[k] = base.profile[k];
+  for (const k of Object.keys(base.backup)) if (S.backup[k] == null) S.backup[k] = base.backup[k];
   S.ui = Object.assign(UI_DEFAULT(), S.ui || {}, {confirm:'', of:null});
   if (!recById(S.ui.recipe) && S.recipes[0]) S.ui.recipe = S.recipes[0].id;
+  save();
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
@@ -582,7 +641,7 @@ function shelfCalc(s){
   const c = catById(s.cat);
   let room = c.room, fridge = c.fridge, freezer = c.freezer;
   const notes = [];
-  if (s.climate === 'hot'){ room *= 0.6; notes.push(['warn', 'A hot or humid kitchen without AC cuts room-temperature life by about 40%. Indian summers and monsoons are when most home bakes spoil early.']); }
+  if (s.climate === 'hot'){ room *= 0.75; notes.push(['warn', 'A hot or humid kitchen without AC cuts room-temperature life by about a quarter. Indian summers and monsoons are when most home bakes spoil early.']); }
   if (s.fresh){ room = Math.min(room, 0.25); fridge = fridge == null ? 3 : Math.min(fridge, 3); notes.push(['bad', 'Fresh fruit, fresh cream, cream cheese or custard: keep it chilled, and treat 3 days in the fridge as the limit.']); }
   if (s.dairy && !['milk', 'cream'].includes(s.cat)){ room *= 0.7; if (fridge) fridge *= 0.85; notes.push(['warn', 'Khoya, paneer, milk or mawa in the recipe shortens life.']); }
   if (s.moisture === 'high'){ room *= 0.8; if (fridge) fridge *= 0.85; notes.push(['info', 'Very moist or gooey centres spoil faster than firm, dry ones.']); }
@@ -658,10 +717,11 @@ function orderCalc(o){
     sub += unit * qty; cost += recipeCost(r).perPiece * qty; pcs += qty;
     return {r, qty, unit, line:unit * qty};
   }).filter(Boolean);
-  const taxable = Math.max(0, sub - num(o.discount));
+  const goods = Math.max(0, sub - num(o.discount)), taxable = goods + num(o.extras);
   const gst = S.profile.gst === 'yes' ? Math.round(taxable * num(S.profile.gstRate) / 100) : 0;
   const total = taxable + gst + num(o.delivery);
-  return {lines, sub, cost, pcs, gst, total, profit:taxable - cost, balance:total - num(o.advance)};
+  const paid = o.status === 'delivered' ? total : num(o.advance);
+  return {lines, sub, cost, pcs, gst, total, paid, profit:goods - cost, balance:total - paid};
 }
 const openOrders = () => S.orders.filter(o => o.status === 'open');
 function plan(orders){
@@ -771,12 +831,13 @@ function vHome(){
   const ym = thisMonth(), be = monthBE(ym), oo = S.orders.filter(o => o.status !== 'delivered'), al = alerts();
   const opcs = oo.reduce((a, o) => a + orderCalc(o).pcs, 0);
   const contrib = avgContribution(), short = Math.max(0, -be.profit);
-  const beTile = be.ok ? `<div class="v pos">Reached</div><div class="hint">${be.date ? 'on ' + fmtDate(be.date) : 'this month'}</div>`
+  const beTile = !be.sales && !be.costs ? `<div class="v">—</div><div class="hint">No sales or costs yet</div>` : be.ok ? `<div class="v pos">Reached</div><div class="hint">${be.date ? 'on ' + fmtDate(be.date) : 'this month'}</div>`
     : `<div class="v neg">${inr(short)}</div><div class="hint">to go${contrib ? `, about ${Math.ceil(short / contrib)} pieces` : ''}</div>`;
   const upcoming = [...oo].sort((a, b) => a.due.localeCompare(b.due)).slice(0, 4);
   const pb = payback();
   return `
-  ${S.sample ? `<div class="banner"><span>You are looking at sample data so you can see how everything works.</span><span class="actions"><button class="btn small" data-act="keepSample">Keep it and edit</button>${confirmBtn('wipe', 'Start empty', 'wipe')}</span></div>` : ''}
+  ${S.sample ? `<div class="banner"><span>You are looking at sample data.</span><span class="actions">${confirmBtn('wipe', 'Clear sample data', 'wipe')}</span></div>` : ''}
+  ${installNudge()}${backupNudge()}${getStarted()}
   <div class="tiles">
     <div class="tile"><div class="eyebrow">Sales · ${monthLabel(ym)}</div><div class="v">${inr(be.sales)}</div></div>
     <div class="tile"><div class="eyebrow">Profit after all costs</div><div class="v ${be.profit >= 0 ? 'pos' : 'neg'}">${inr(be.profit)}</div></div>
@@ -806,10 +867,40 @@ function vHome(){
     </div>
   </div>`;
 }
+function getStarted(){
+  const P = S.profile, priced = S.ingredients.length > 0 && S.ingredients.every(g => num(g.packPrice) > 0);
+  const steps = [
+    [!!P.business, 'Tell the app about your business', 'Answer the setup questions', 'data-act="go" data-hash="setup" data-tab="business"'],
+    [priced, S.ingredients.length ? 'Fill in what you pay for each ingredient' : 'Add your ingredients and what you pay', S.ingredients.length ? 'Add prices' : 'Add ingredients', 'data-act="go" data-hash="stock" data-stab="ing"'],
+    [S.recipes.length > 0, 'Add a recipe to get its cost and selling price', 'Add a recipe', 'data-act="addRecipe"'],
+    [S.orders.length > 0, 'Add your first order', 'Add an order', 'data-act="newOrder"'],
+    [!!S.backup.last, 'Back up to your Google account or Gmail', 'Set up backup', 'data-act="go" data-hash="setup" data-tab="data"']
+  ];
+  const done = steps.filter(x => x[0]).length;
+  if (done === steps.length) return '';
+  return `<section class="card" style="margin-bottom:var(--gap)"><div class="card-h"><h3>Get started</h3><span class="pill acc">${done} of ${steps.length} done</span></div>
+    <ol class="steps">${steps.map((x, i) => `<li class="${x[0] ? 'done' : ''}"><span class="n">${x[0] ? '✓' : i + 1}</span><b>${x[1]}</b>${x[0] ? '<span></span>' : `<button class="btn small primary" ${x[3]}>${x[2]}</button>`}</li>`).join('')}</ol></section>`;
+}
+function backupNudge(){
+  const hasData = S.recipes.length || S.entries.length || S.orders.length;
+  if (!hasData || !S.backup.last) return '';
+  const days = Math.floor((Date.now() - new Date(S.backup.last)) / 864e5);
+  if (days < 7) return '';
+  return `<div class="banner"><span>Your last backup was ${days} days ago.</span><button class="btn small" data-act="go" data-hash="setup" data-tab="data">Back up now</button></div>`;
+}
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+let INSTALL = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL = e; if (['home', 'setup'].includes(cur())) render(); });
+window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Batch & Price from your home screen.'); });
+function installNudge(){
+  if (!INSTALL || isStandalone()) return '';
+  return `<div class="banner" style="background:var(--accent-soft)"><span>Install Batch & Price on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
+}
 function beBar(be){
+  if (!be.sales && !be.costs) return `<p class="muted">Nothing to show yet. Record sales (mark orders delivered) and expenses (add stock or log them on the Money page), and add your fixed costs in Setup.</p>`;
   const pctv = be.costs > 0 ? Math.min(100, be.sales / be.costs * 100) : (be.sales > 0 ? 100 : 0);
   const contrib = avgContribution(), short = Math.max(0, -be.profit);
-  return `<div class="bar-r"><span>Sales ${inr(be.sales)} of ${inr(be.costs)} costs</span><span class="tnum"><b>${pct(be.costs ? be.sales / be.costs * 100 : 0)}</b></span>
+  return `<div class="bar-r"><span>${be.costs ? `Sales ${inr(be.sales)} of ${inr(be.costs)} costs` : `Sales ${inr(be.sales)}, no costs logged yet`}</span><span class="tnum"><b>${pct(be.costs ? be.sales / be.costs * 100 : 100)}</b></span>
     <div class="track progress"><div class="fill ${be.ok ? 'good' : 'gold'}" style="width:${pctv}%"></div></div></div>
     <p style="margin-top:10px">${be.ok ? `<span class="pill good">Broke even${be.date ? ' on ' + fmtDate(be.date) : ''}</span> Every sale from here is profit: ${inr(be.profit)} so far.`
       : `<span class="pill warn">Not yet</span> ${inr(short)} more in sales${contrib ? `, about ${Math.ceil(short / contrib)} pieces at your average profit of ${inr(contrib)} each` : ''}.`}</p>
@@ -832,11 +923,12 @@ function orderCard(o, compact){
     <div class="top"><b>${esc(o.customer || 'Order')}</b>${statusPill(o.status)}<span class="pill">${esc((ORDER_TYPES.find(t => t[0] === o.type) || ['', 'Individual'])[1])}</span>
       <span class="due ${late ? 'late' : ''}">${dueTxt}</span></div>
     <div class="items">${c.lines.map(l => `${l.qty} × ${esc(l.r.name)}`).join(' · ') || '<span class="muted">No items</span>'}</div>
-    <div class="money"><span>Total <b>${inr(c.total)}</b></span><span>Paid <b>${inr(num(o.advance))}</b></span><span>${o.status === 'delivered' ? 'Profit' : 'Still to collect'} <b>${inr(o.status === 'delivered' ? c.profit : c.balance)}</b></span></div>
+    <div class="money"><span>Total <b>${inr(c.total)}</b></span><span>Paid <b>${inr(c.paid)}</b></span><span>${o.status === 'delivered' ? 'Profit' : 'Still to collect'} <b>${inr(o.status === 'delivered' ? c.profit : c.balance)}</b></span></div>
     ${!compact && o.notes ? `<div class="small muted">${esc(o.notes)}</div>` : ''}
     <div class="actions">
       ${o.status === 'open' ? `<button class="btn small primary" data-act="orderMade" data-id="${o.id}">Mark as made</button>` : ''}
       ${o.status !== 'delivered' ? `<button class="btn small ${o.status === 'made' ? 'primary' : ''}" data-act="orderDelivered" data-id="${o.id}">Delivered &amp; paid</button>` : ''}
+      <button class="btn small" data-act="bill" data-id="${o.id}">${o.status === 'delivered' ? 'Bill' : 'Bill / estimate'}</button>
       ${!compact ? `<button class="btn small" data-act="editOrder" data-id="${o.id}">Edit</button>${confirmBtn('delOrder:' + o.id, 'Delete', 'delOrder', `data-id="${o.id}"`)}` : ''}
     </div></article>`;
 }
@@ -851,7 +943,7 @@ function vOrders(){
     <div class="stack">
       <section class="card">
         <div class="card-h">${seg('ofilter', f, [['open','To make',counts.open],['made','Ready',counts.made],['delivered','Delivered',counts.delivered],['all','All',S.orders.length]])}
-          ${S.ui.of ? '' : '<button class="btn primary small" data-act="newOrder">+ New order</button>'}</div>
+          <span class="actions"><button class="btn small onlyNarrow" data-act="toPlan">Production plan ↓</button>${S.ui.of ? '' : '<button class="btn primary small" data-act="newOrder">+ New order</button>'}</span></div>
         ${list.length ? list.map(o => orderCard(o)).join('') : `<div class="empty">No orders here.</div>`}
       </section>
     </div>
@@ -874,6 +966,7 @@ function orderForm(){
     <div class="actions" style="margin-top:8px"><button class="btn small" data-act="addOItem">+ Add product</button><span class="hint">Price each fills in from your recommended price and bulk discount. Change it if you agreed a different price.</span></div>
     <div class="row" style="margin-top:12px">
       ${F('Delivery charge', P + '.delivery', o.delivery, '', 'money')}
+      ${F('Packaging & extras', P + '.extras', o.extras, 'Custom boxes, toppers, rush work.', 'money')}
       ${F('Discount (₹ off)', P + '.discount', o.discount, '', 'money')}
       ${F('Advance received', P + '.advance', o.advance, '', 'money')}
       ${F('Notes', P + '.notes', o.notes, '', 'txt', 'placeholder="Message on box, allergies…"')}
@@ -940,7 +1033,7 @@ function vStock(){
       <div><button class="linkish" data-act="pkgEdit" data-id="${k.id}">${esc(k.name)}</button><div class="meta">${esc(k.note || '')}</div>
         <div class="price"><span>Price each</span>${moneyIn(`packaging.${i}.price`, k.price, `aria-label="Price of ${esc(k.name)}"`)}</div></div>
       <div><div class="qty">${num(k.stock)} pcs</div>${s[0] ? `<span class="pill ${s[0]}">${s[1]}</span>` : '<span class="hint">Not tracked</span>'}</div>
-      <div class="acts"><button class="btn small primary" data-act="stockIn" data-kind="pkg" data-id="${k.id}">+ Stock</button><button class="btn small" data-act="stockOut" data-kind="pkg" data-id="${k.id}">Use</button><button class="btn small" data-act="pkgEdit" data-id="${k.id}">Details</button></div></div>`; }).join('') || '<div class="empty">No packaging items yet.</div>'}</div></section>`;
+      <div class="acts"><button class="btn small primary" data-act="stockIn" data-kind="pkg" data-id="${k.id}">+ Stock</button><button class="btn small" data-act="stockOut" data-kind="pkg" data-id="${k.id}">Use</button><button class="btn small" data-act="pkgEdit" data-id="${k.id}">Details</button></div></div>`; }).join('') || `<div class="empty">No packaging items yet.<div class="actions" style="justify-content:center;margin-top:12px"><button class="btn primary" data-act="starterPkg">Add a starter list</button><a class="btn" href="#packaging">Get packaging ideas</a></div></div>`}</div></section>`;
   if (t === 'ready') return head + `<section class="card">
     <div class="card-h"><h3>Ready to sell</h3><button class="btn small primary" data-act="bake">Bake for stock</button><p class="hint">Products you made ahead. Best-before comes from the product type and your kitchen climate. Orders use ready stock first, oldest first.</p></div>
     <div class="list">${S.finished.filter(f => num(f.left) > 0).sort((a, b) => a.exp.localeCompare(b.exp)).map(f => { const r = recById(f.recipeId); if (!r) return ''; const n = daysUntil(f.exp); return `<div class="lrow">
@@ -952,10 +1045,10 @@ function vStock(){
       <span class="actions"><button class="btn small" data-act="scan">Scan</button><button class="btn small" data-act="bulkPrice">Change prices</button><button class="btn small primary" data-act="addIng">+ Add</button></span></div>
     <input type="search" id="stockSearch" placeholder="Search ingredients" value="${esc(S.ui.q)}" aria-label="Search ingredients" style="margin-bottom:6px">
     <div class="list" id="ingList">${S.ingredients.map((g, i) => { const s = ingStatus(g), u = baseUnit(g); return `<div class="lrow" data-name="${esc(g.name.toLowerCase())}">
-      <div><button class="linkish" data-act="ingEdit" data-id="${g.id}">${esc(g.name)}</button>${g.barcode ? ' <span class="pill" title="Barcode saved">barcode</span>' : ''}
+      <div><button class="linkish" data-act="ingEdit" data-id="${g.id}">${esc(g.name)}</button>${g.barcode ? ' <span class="pill" title="Barcode saved">barcode</span>' : ''}${num(g.packPrice) ? '' : ' <span class="pill bad">Add price</span>'}
         <div class="price"><span>${trimN(num(g.packQty), 2)} ${g.packUnit} pack</span>${moneyIn(`ingredients.${i}.packPrice`, g.packPrice, `aria-label="Price of one pack of ${esc(g.name)}"`)}<span data-rate="${i}">${rateText(g)}</span></div></div>
       <div><div class="qty">${fmtQty(stockOf(g), u)}</div>${s[0] ? `<span class="pill ${s[0]}">${s[1]}</span>` : '<span class="hint">Not tracked</span>'}</div>
-      <div class="acts"><button class="btn small primary" data-act="stockIn" data-kind="ing" data-id="${g.id}">+ Stock</button><button class="btn small" data-act="stockOut" data-kind="ing" data-id="${g.id}">Use</button><button class="btn small" data-act="ingEdit" data-id="${g.id}">Details</button></div></div>`; }).join('') || '<div class="empty">No ingredients yet.</div>'}</div>
+      <div class="acts"><button class="btn small primary" data-act="stockIn" data-kind="ing" data-id="${g.id}">+ Stock</button><button class="btn small" data-act="stockOut" data-kind="ing" data-id="${g.id}">Use</button><button class="btn small" data-act="ingEdit" data-id="${g.id}">Details</button></div></div>`; }).join('') || `<div class="empty">No ingredients yet. Start with a list of common baking ingredients and fill in your prices, scan a pack, or add your own.<div class="actions" style="justify-content:center;margin-top:12px"><button class="btn primary" data-act="starterIng">Add a starter list</button><button class="btn" data-act="scan">Scan a pack</button><button class="btn" data-act="addIng">Add one</button></div></div>`}</div>
   </section>`;
 }
 function oStock(){
@@ -994,6 +1087,7 @@ function vRecipes(){
           <td class="num" data-linecost="${j}"></td>
           <td><button class="x" data-act="del" data-list="${p}.lines" data-i="${j}" aria-label="Remove">×</button></td></tr>`; }).join('')}
         </tbody></table></div>
+        ${S.ingredients.length ? '' : '<p class="hint" style="margin-top:8px">You have no ingredients yet. <button class="btn small" data-act="starterIng">Add a starter list</button></p>'}
         <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addLine">+ Add ingredient</button><button class="btn small" data-act="addIng">Create a new ingredient</button></div>
         <div class="row" style="margin-top:14px">${F('Wastage and loss (%)', `${p}.wastage`, r.wastage, 'Batter left in the bowl, trimmed edges, broken pieces, tasting. 3–8% is common.')}</div>
       </section>
@@ -1032,6 +1126,8 @@ function oRecipes(){
   if (c.pack > c.perPiece * 0.25) tips.push(['warn', 'Packaging is over a quarter of the cost. Try sharing one box across more pieces, or buying boxes in 100s.']);
   if (num(r.activeMin) === 0) tips.push(['bad', 'Hands-on time is 0. Add your real minutes, including packing and cleaning.']);
   if (!r.lines.length) tips.push(['warn', 'Add the ingredients for one batch.']);
+  const noPrice = [...new Set(r.lines.map(l => ingById(l.ingId)).filter(g => g && !num(g.packPrice)).map(g => g.name))];
+  if (noPrice.length) tips.unshift(['bad', `No price yet for ${noPrice.map(esc).join(', ')}. The cost is too low until you add ${noPrice.length > 1 ? 'them' : 'it'} on the Stock page.`, 'stock']);
   $('#out-recipe').innerHTML = `
     <p class="eyebrow">Cost of one ${esc(r.unitName || 'piece')}</p>
     <p class="big">${inr(c.perPiece)}</p>
@@ -1183,7 +1279,7 @@ function vQuote(){
     <aside class="stack">
       <section class="card result" id="out-quote"></section>
       <section class="card"><h3 style="margin-bottom:10px">Message for the customer</h3><pre class="msg" id="out-msg"></pre>
-        <div class="actions" style="margin-top:12px"><button class="btn primary" data-act="copyMsg">Copy message</button><button class="btn" data-act="quoteToOrder">Turn into an order</button></div></section>
+        <div class="actions" style="margin-top:12px"><button class="btn primary" data-act="copyMsg">Copy message</button><button class="btn" data-act="quotePdf">Quote as PDF</button><button class="btn" data-act="quoteToOrder">Turn into an order</button></div></section>
     </aside>
   </div>`;
 }
@@ -1534,13 +1630,23 @@ function setupBusiness(){
     ${q(6, 'Monthly fixed costs', `<div class="tbl"><table><thead><tr><th>Cost</th><th class="num">₹ / month</th><th></th></tr></thead><tbody>
       ${P.fixed.map((f, i) => `<tr><td>${txtIn(`profile.fixed.${i}.name`, f.name, 'aria-label="Cost name"')}</td><td class="num">${numIn(`profile.fixed.${i}.amt`, f.amt, 'aria-label="Amount per month"')}</td><td><button class="x" data-act="del" data-list="profile.fixed" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}
       </tbody><tfoot><tr><td>Total</td><td class="num" id="fixedTotal">${inr(sumFixed())}</td><td></td></tr></tfoot></table></div>
-      <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addFixed">+ Add a cost</button></div>`,
+      <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addFixed">+ Add a cost</button>${FIXED_IDEAS.filter(n => !P.fixed.some(f => f.name === n)).map(n => `<button class="chip" data-act="addFixedNamed" data-v="${esc(n)}">+ ${esc(n)}</button>`).join('')}</div>`,
       'Costs you pay whether you bake or not: phone, ads, licences, equipment wear, rent share. Ingredients and packaging are not fixed costs.')}
     ${q(7, 'Profit, tax and licences', `<div class="row">${F('Target profit margin (%)', 'profile.margin', P.margin, 'Share of the selling price you keep after all costs.')}
       ${fld('Price rounding', sel('profile.rounding', P.rounding, [['nice','Customer-friendly (₹49, ₹65, ₹149)'],['none','Exact, rounded up to ₹1']]), '', fid('profile.rounding'))}
       ${fld('FSSAI registered?', sel('profile.fssai', P.fssai, [['yes','Yes'],['no','Not yet']]), '', fid('profile.fssai'))}
       ${fld('GST registered?', sel('profile.gst', P.gst, [['yes','Yes'],['no','No']]), '', fid('profile.gst'))}
       ${P.gst === 'yes' ? F('GST rate (%)', 'profile.gstRate', P.gstRate, 'Most bakery items, sweets and namkeen are at 5% after the 2025 changes. Confirm your HSN code.') : ''}</div>`)}
+    ${q(8, 'Details for your bills', `<div class="row">
+      ${F('Phone', 'profile.phone', P.phone, '', 'txt', 'inputmode="tel" autocomplete="tel"')}
+      ${F('Email', 'profile.email', P.email, '', 'txt', 'inputmode="email" autocomplete="email"')}
+      ${F('UPI ID for payments', 'profile.upi', P.upi, 'Printed on bills, e.g. name@okhdfcbank.', 'txt')}
+      ${F('FSSAI registration no.', 'profile.fssaiNo', P.fssaiNo, '14 digits.', 'txt', 'inputmode="numeric"')}
+      ${P.gst === 'yes' ? F('GSTIN', 'profile.gstin', P.gstin, '', 'txt') : ''}
+      ${F('Bill number prefix', 'profile.invPrefix', P.invPrefix, `Next bill: ${esc((P.invPrefix || '') + String(num(P.invNext) || 1).padStart(4, '0'))}`, 'txt')}
+    </div>
+    <div class="row" style="margin-top:12px">${F('Address', 'profile.address', P.address, '', 'txt', 'autocomplete="street-address"')}${F('Note at the bottom of bills', 'profile.billNote', P.billNote, '', 'txt')}</div>`,
+      'Shown on PDF bills and quotes. Only what you fill in is printed.')}
   </div>
   <aside class="stack"><section class="card result"><h3 style="margin-bottom:10px">Suggestions for you</h3><div id="out-sugg"></div></section></aside></div>`;
 }
@@ -1550,7 +1656,7 @@ function setupLook(){
   <div class="grid2 even">
     <section class="card"><h3 style="margin-bottom:12px">Colour scheme</h3>
       <div class="swatches">${PALETTES.map(([id, name, cs]) => `<button class="swatch" data-act="setPalette" data-v="${id}" aria-pressed="${st.palette === id && !st.accent}"><span class="sw">${cs.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name}</button>`).join('')}</div>
-      <div style="margin-top:16px">${fld('Or use your brand colour', `<div class="actions"><input type="color" id="f-accent" data-act-input="accent" value="${esc(st.accent || '#4A772E')}">${st.accent ? '<button class="btn small" data-act="clearAccent">Use the scheme colour</button>' : ''}</div>`, 'Buttons, highlights and charts use it. Pick a fairly dark shade so white text stays readable.', 'f-accent')}</div></section>
+      <div style="margin-top:16px">${fld('Or use your brand colour', `<div class="actions"><input type="color" id="f-accent" data-act-input="accent" value="${esc(st.accent || accentHex())}">${st.accent ? '<button class="btn small" data-act="clearAccent">Use the scheme colour</button>' : ''}</div>`, 'Buttons, highlights and charts use it. Pick a fairly dark shade so white text stays readable.', 'f-accent')}</div></section>
     <section class="card"><h3 style="margin-bottom:12px">Display</h3>
       <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', st.mode, [['system','Match my device'],['light','Light'],['dark','Dark']], segS)}</div>
       <div class="field" style="margin-top:14px"><span class="lbl">Spacing</span>${seg('settings.density', st.density, [['comfortable','Comfortable'],['compact','Compact']], segS)}<span class="hint">Compact fits more on small screens.</span></div>
@@ -1559,21 +1665,45 @@ function setupLook(){
   </div>`;
 }
 function setupData(){
-  return `<p class="lead">Everything is saved in this browser on this device. Keep a backup, especially before clearing your browser or changing phones.</p>
+  const B = S.backup, cid = gClientId(), last = B.last ? new Date(B.last).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
+  const inst = isStandalone() ? '<p><span class="pill good">Installed</span> You are using the installed app.</p>'
+    : INSTALL ? '<div class="actions"><button class="btn primary" data-act="installApp">Install on this device</button></div>'
+    : `<ol class="guide" style="margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.88rem"><li><b>Android (Chrome):</b> open the app link, tap ⋮, then <b>Install app</b> or <b>Add to Home screen</b>.</li><li><b>iPhone (Safari):</b> open the app link, tap the Share button, then <b>Add to Home Screen</b>.</li><li><b>Computer (Chrome or Edge):</b> click the install icon at the right of the address bar.</li></ol>`;
+  return `<p class="lead">Your data is saved on this device. Back it up to your Google account so you can restore it on a new phone or after clearing the browser.</p>
   <div class="grid2 even">
-    <section class="card"><h3 style="margin-bottom:8px">Back up</h3><p class="hint" style="margin-bottom:12px">Download a backup file, or copy it as text and send it to yourself on WhatsApp or email.</p>
-      <div class="actions"><button class="btn primary" data-act="backupFile">Download backup</button><button class="btn" data-act="backup">Copy backup text</button><button class="btn" data-act="csv">Sales &amp; expenses as CSV</button></div></section>
-    <section class="card"><h3 style="margin-bottom:8px">Restore</h3>
-      <div class="field"><label for="restoreFile">From a backup file</label><input type="file" id="restoreFile" accept=".json,application/json,text/plain"></div>
-      <div class="field" style="margin-top:12px"><label for="restoreBox">Or paste backup text</label><textarea id="restoreBox" placeholder="Paste backup text here"></textarea></div>
-      <div class="actions" style="margin-top:12px"><button class="btn" data-act="restore">Restore</button></div></section>
-    <section class="card"><h3 style="margin-bottom:8px">Start over</h3><p class="hint" style="margin-bottom:12px">Both replace everything on this device. Download a backup first.</p>
-      <div class="actions">${confirmBtn('reset', 'Load sample data', 'reset')}${confirmBtn('wipe', 'Start empty', 'wipe')}</div></section>
+    <section class="card result"><div class="card-h"><h3>Google account backup</h3>${last ? `<span class="pill good">Last backup ${esc(last)}</span>` : '<span class="pill warn">Not backed up yet</span>'}</div>
+      <div class="row">${F('Your Gmail address', 'backup.email', B.email, 'Used to pick the right Google account and to send backups to.', 'txt', 'inputmode="email" autocomplete="email" placeholder="you@gmail.com"')}</div>
+      <h4 style="margin:16px 0 6px">Google Drive</h4>
+      ${cid ? `<p class="hint" style="margin-bottom:10px">Saves a backup file in your Google Drive. The last 10 backups are kept.</p>
+        <div class="actions"><button class="btn primary" data-act="driveBackup">Back up to Google Drive</button><button class="btn" data-act="driveList">Restore from Google Drive</button></div>`
+        : `<p class="hint">Drive backup needs a one-time Google sign-in key for this app. Until it is added, use “Email the backup” below.</p>`}
+      <details class="more"><summary>${cid ? 'Change the Google sign-in key' : 'Switch on Google Drive backup'}</summary>
+        <ol><li>Go to <b>console.cloud.google.com</b>, create a project, and enable the <b>Google Drive API</b>.</li>
+          <li>Under <b>APIs &amp; Services → OAuth consent screen</b>, choose External and add your Gmail as a test user.</li>
+          <li>Under <b>Credentials</b>, create an <b>OAuth client ID</b> of type <b>Web application</b>. Add your app's web address (your Vercel link) under Authorised JavaScript origins.</li>
+          <li>Copy the client ID and paste it here, or put it in <code>config.js</code> so every device gets it.</li></ol>
+        <div class="row" style="margin-top:10px">${F('Google OAuth client ID', 'backup.clientId', B.clientId, '', 'txt', 'placeholder="…apps.googleusercontent.com"')}</div></details>
+      <h4 style="margin:18px 0 6px">Email the backup</h4>
+      <p class="hint" style="margin-bottom:10px">On a phone, choose Gmail in the share menu and send it to yourself. On a computer, the file downloads and an email opens for you to attach it.</p>
+      <div class="actions"><button class="btn" data-act="shareBackup">Email the backup</button>${B.email ? `<a class="btn ghost" href="mailto:${esc(B.email)}?subject=${encodeURIComponent('Batch & Price backup ' + today())}">Open an email to ${esc(B.email)}</a>` : ''}</div>
+    </section>
+    <div class="stack">
+      <section class="card"><h3 style="margin-bottom:8px">Restore</h3><p class="hint" style="margin-bottom:10px">Open the backup file from your Gmail or Drive, save it, then choose it here. Restoring replaces what is on this device.</p>
+        <div class="field"><label for="restoreFile">Backup file</label><input type="file" id="restoreFile" accept=".json,application/json,text/plain"></div>
+        <details class="more"><summary>Paste backup text instead</summary><div class="field" style="margin-top:8px"><textarea id="restoreBox" aria-label="Backup text" placeholder="Paste backup text here"></textarea></div><div class="actions" style="margin-top:8px"><button class="btn" data-act="restore">Restore from text</button></div></details>
+      </section>
+      <section class="card"><h3 style="margin-bottom:8px">Download a copy</h3>
+        <div class="actions"><button class="btn" data-act="backupFile">Backup file</button><button class="btn" data-act="backup">Copy as text</button><a class="btn" href="#reports">Reports &amp; exports</a></div></section>
+      <section class="card"><h3 style="margin-bottom:8px">Use it like an app</h3>${inst}</section>
+      <section class="card"><h3 style="margin-bottom:8px">Start over</h3><p class="hint" style="margin-bottom:12px">Both replace everything on this device. Back up first.</p>
+        <div class="actions">${confirmBtn('reset', 'Explore with sample data', 'reset')}${confirmBtn('wipe', 'Start empty', 'wipe')}</div></section>
+    </div>
   </div>`;
 }
 function oSetup(){
   $('#fixedTotal') && ($('#fixedTotal').textContent = inr(sumFixed()));
   $('#out-sugg') && ($('#out-sugg').innerHTML = tipList(suggestions()));
+  const nb = $('#f-profile-invPrefix'); if (nb && nb.nextElementSibling) nb.nextElementSibling.textContent = 'Next bill: ' + (S.profile.invPrefix || '') + String(num(S.profile.invNext) || 1).padStart(4, '0');
 }
 
 /* =========================================================
@@ -1707,6 +1837,22 @@ const MODALS = {
       ${mChk('expense', 'Also record this purchase as an expense')}`,
       `<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="saveScanNew">Save</button>`);
   },
+  bill(){
+    const m = MODAL, d = m.data, P = S.profile, missing = [!P.business && 'business name', !P.phone && 'phone', !P.upi && 'UPI ID'].filter(Boolean);
+    return dlgShell(m.kind === 'quote' ? 'Quote PDF' : `Bill ${esc(d.no)}`, `
+      <div class="billsum"><b>${esc(d.customer || 'Customer')}</b><span class="small muted">${d.lines.map(l => `${l.qty} × ${esc(l.name)}`).join(' · ')}</span>
+        <dl class="kv" style="margin-top:6px"><dt>Total</dt><dd><b>${inr(d.total)}</b></dd>${m.kind === 'quote' ? `<dt>Advance to confirm</dt><dd>${inr(d.advanceDue)}</dd>` : `<dt>Paid</dt><dd>${inr(d.paid)}</dd><dt>Balance due</dt><dd><b>${inr(d.balance)}</b></dd>`}</dl></div>
+      ${missing.length ? `<p class="small"><span class="pill warn">Tip</span> Add your ${missing.join(', ')} in <a href="#setup" data-act="go" data-hash="setup" data-tab="business">Setup → Details for your bills</a> so they print on the bill.</p>` : ''}
+      ${mChk('storage', 'Add storage advice and best-before for each product')}
+      <p class="hint">Share sends the PDF straight to WhatsApp, Gmail or any app on your phone.</p>`,
+      `<button class="btn" data-act="billText">Copy as text</button><button class="btn" data-act="pdfDownload">Download PDF</button><button class="btn primary" data-act="pdfShare">Share PDF</button>`);
+  },
+  drive(){
+    const m = MODAL;
+    return dlgShell('Restore from Google Drive', m.loading ? '<p>Looking for your backups…</p>' : m.err ? `<p><span class="pill bad" style="white-space:normal">${esc(m.err)}</span></p>`
+      : m.files && m.files.length ? `<p class="hint">Restoring replaces everything on this device with the backup you choose.</p><div class="list">${m.files.map(f => `<div class="lrow" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${esc(new Date(f.modifiedTime).toLocaleString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit'}))}</b><div class="meta">${esc(f.name)} · ${Math.max(1, Math.round(num(f.size) / 1024))} KB</div></div><div class="acts">${confirmBtn('drv:' + f.id, 'Restore', 'driveRestore', `data-id="${f.id}"`)}</div></div>`).join('')}</div>`
+      : '<p>No backups found in this Google account yet.</p>');
+  },
   more(){
     return dlgShell('All pages', `<div class="morelist">${Object.entries(VIEWS).map(([k, v]) => `<a href="#${k}" ${k === cur() ? 'aria-current="page"' : ''} data-act="closeModalNav">${icon(v.icon)}${v.title}</a>`).join('')}</div>
       <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', S.settings.mode, [['system','Auto'],['light','Light'],['dark','Dark']], 'margin:0')}</div>`);
@@ -1816,6 +1962,277 @@ async function onCode(raw){
 }
 
 /* =========================================================
+   VIEW: Reports
+   ========================================================= */
+const daysInMonth = ym => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).getDate(); };
+function periodRange(){
+  const R = S.ui.rp, t = today(), ym = thisMonth();
+  if (R.period === 'last'){ const p = shiftMonth(ym, -1); return [p + '-01', p + '-' + pad2(daysInMonth(p)), monthLabel(p)]; }
+  if (R.period === '3m'){ const p = shiftMonth(ym, -2); return [p + '-01', t, `${monthLabel(p)} – ${monthLabel(ym)}`]; }
+  if (R.period === 'fy'){ const d = new Date(), y = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1; return [`${y}-04-01`, t, `Financial year ${y}–${String(y + 1).slice(2)}`]; }
+  if (R.period === 'all'){ const first = S.entries.map(e => e.date).sort()[0] || t; return [first, t, 'All time']; }
+  if (R.period === 'custom'){ const f = R.from || ym + '-01', to = R.to || t; return f <= to ? [f, to, `${fmtDate(f)} – ${fmtDate(to)}`] : [to, f, `${fmtDate(to)} – ${fmtDate(f)}`]; }
+  return [ym + '-01', t, monthLabel(ym)];
+}
+function reportData(){
+  const [from, to, label] = periodRange();
+  const es = S.entries.filter(e => e.date >= from && e.date <= to);
+  const sales = es.filter(e => e.kind === 'sale').reduce((a, e) => a + num(e.amount), 0);
+  const exp = es.filter(e => e.kind === 'expense').reduce((a, e) => a + num(e.amount), 0);
+  const months = []; let ym = from.slice(0, 7);
+  while (ym <= to.slice(0, 7) && months.length < 60){ months.push(monthBE(ym)); ym = shiftMonth(ym, 1); }
+  const fixed = months.reduce((a, b) => a + b.base, 0), profit = sales - exp - fixed;
+  const group = kind => { const o = {}; es.filter(e => e.kind === kind).forEach(e => o[e.cat] = (o[e.cat] || 0) + num(e.amount)); return Object.entries(o).sort((a, b) => b[1] - a[1]); };
+  const delivered = S.orders.filter(o => o.status === 'delivered' && (o.deliveredOn || o.due) >= from && (o.deliveredOn || o.due) <= to);
+  const prod = {};
+  delivered.forEach(o => orderCalc(o).lines.forEach(l => { const p = prod[l.r.id] || (prod[l.r.id] = {name:l.r.name, qty:0, rev:0, cost:0}); p.qty += l.qty; p.rev += l.line; p.cost += recipeCost(l.r).perPiece * l.qty; }));
+  const stockIng = S.ingredients.reduce((a, g) => a + stockOf(g) * perBase(g), 0);
+  const stockPkg = S.packaging.reduce((a, k) => a + num(k.stock) * num(k.price), 0);
+  const stockReady = S.finished.reduce((a, f) => { const r = recById(f.recipeId); return a + (r ? num(f.left) * recipeCost(r).perPiece : 0); }, 0);
+  const expiring = [];
+  S.ingredients.forEach(g => (g.lots || []).filter(l => num(l.left) > 0 && l.exp && daysUntil(l.exp) <= 14).forEach(l => expiring.push({name:g.name, qty:fmtQty(l.left, baseUnit(g)), exp:l.exp})));
+  S.finished.filter(f => num(f.left) > 0 && daysUntil(f.exp) <= 3).forEach(f => { const r = recById(f.recipeId); if (r) expiring.push({name:r.name + ' (ready)', qty:f.left + ' pcs', exp:f.exp}); });
+  expiring.sort((a, b) => a.exp.localeCompare(b.exp));
+  const prices = [];
+  S.ingredients.forEach(g => (g.history || []).forEach((h, i, arr) => { if (i > 0 && h.date >= from && h.date <= to && num(arr[i - 1].price) !== num(h.price)) prices.push({name:g.name, date:h.date, from:num(arr[i - 1].price), to:num(h.price)}); }));
+  const open = openOrders().concat(S.orders.filter(o => o.status === 'made'));
+  return {from, to, label, es, sales, exp, fixed, profit, months, expCats:group('expense'), saleCats:group('sale'), delivered, products:Object.values(prod).sort((a, b) => b.rev - a.rev),
+    stockIng, stockPkg, stockReady, expiring, prices, openCount:open.length, openValue:open.reduce((a, o) => a + orderCalc(o).balance, 0)};
+}
+function vReports(){
+  const R = S.ui.rp, D = reportData(), okM = D.months.filter(b => b.ok).length;
+  const tbl = (head, rows, empty) => rows.length ? `<div class="tbl"><table><thead><tr>${head.map((h, i) => `<th class="${i ? 'num' : ''}">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i ? 'num' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : `<p class="muted">${empty}</p>`;
+  return `<p class="lead">Pick a period, check the numbers, then download a PDF for your records or a CSV for Excel or Google Sheets.</p>
+  ${seg('rp.period', R.period, [['month','This month'],['last','Last month'],['3m','3 months'],['fy','Financial year'],['all','All time'],['custom','Custom']])}
+  ${R.period === 'custom' ? `<div class="row" style="max-width:420px;margin-bottom:var(--gap)">${fld('From', `<input type="date" id="f-ui-rp-from" data-path="ui.rp.from" value="${esc(R.from)}">`, '', 'f-ui-rp-from')}${fld('To', `<input type="date" id="f-ui-rp-to" data-path="ui.rp.to" value="${esc(R.to)}">`, '', 'f-ui-rp-to')}</div>` : ''}
+  <section class="card result" style="margin-bottom:var(--gap)"><div class="card-h"><h3>${esc(D.label)}</h3><span class="actions"><button class="btn small primary" data-act="reportPdf">Download PDF</button><button class="btn small" data-act="reportShare">Share PDF</button><button class="btn small" data-act="reportCsv">Sales &amp; expenses CSV</button><button class="btn small" data-act="stockCsv">Stock CSV</button></span></div>
+    <div class="tiles">
+      <div class="tile"><div class="eyebrow">Sales</div><div class="v">${inr(D.sales)}</div></div>
+      <div class="tile"><div class="eyebrow">Expenses</div><div class="v">${inr(D.exp)}</div></div>
+      <div class="tile"><div class="eyebrow">Fixed costs${num(S.be.ownerPay) ? ' & pay' : ''}</div><div class="v">${inr(D.fixed)}</div></div>
+      <div class="tile ${D.profit >= 0 ? 'hl' : ''}"><div class="eyebrow">Profit</div><div class="v ${D.profit >= 0 ? 'pos' : 'neg'}">${inr(D.profit)}</div><div class="hint">${D.sales ? pct(D.profit / D.sales * 100) + ' of sales' : ''}</div></div>
+      <div class="tile"><div class="eyebrow">Months broke even</div><div class="v">${okM} of ${D.months.length}</div></div>
+    </div></section>
+  <div class="grid2 even">
+    <div class="stack">
+      <section class="card"><h3 style="margin-bottom:10px">Month by month</h3>${tbl(['Month','Sales','Costs','Profit','Broke even'], D.months.map(b => [monthLabel(b.ym), inr(b.sales), inr(b.costs), inr(b.profit), b.ok ? `<span class="pill good">Yes${b.date ? ', ' + fmtDate(b.date) : ''}</span>` : '<span class="pill bad">No</span>']), 'No months in this period.')}</section>
+      <section class="card"><h3 style="margin-bottom:10px">Best-selling products</h3>${tbl(['Product','Sold','Sales','Profit'], D.products.map(p => [esc(p.name), p.qty, inr(p.rev), inr(p.rev - p.cost)]), 'No delivered orders in this period. Sales from orders show here once you mark them delivered.')}</section>
+      <section class="card"><h3 style="margin-bottom:10px">Sales by customer type</h3>${tbl(['Type','Amount','Share'], D.saleCats.map(([k, v]) => [esc(k), inr(v), pct(v / (D.sales || 1) * 100)]), 'No sales logged in this period.')}</section>
+    </div>
+    <div class="stack">
+      <section class="card"><h3 style="margin-bottom:10px">Expenses by category</h3>${tbl(['Category','Amount','Share'], D.expCats.map(([k, v]) => [esc(k), inr(v), pct(v / (D.exp || 1) * 100)]), 'No expenses logged in this period.')}</section>
+      <section class="card"><h3 style="margin-bottom:10px">Stock today</h3>
+        <dl class="kv"><dt>Ingredients</dt><dd>${inr(D.stockIng)}</dd><dt>Packaging</dt><dd>${inr(D.stockPkg)}</dd><dt>Ready products (at cost)</dt><dd>${inr(D.stockReady)}</dd><dt class="total">Total stock value</dt><dd class="total">${inr(D.stockIng + D.stockPkg + D.stockReady)}</dd>
+        <dt>Open orders still to collect</dt><dd>${inr(D.openValue)} (${D.openCount})</dd></dl>
+        <h4 style="margin:14px 0 6px">Expired or expiring in 14 days</h4>${tbl(['Item','Qty','Expiry'], D.expiring.map(x => [esc(x.name), x.qty, `<span class="pill ${daysUntil(x.exp) < 0 ? 'bad' : 'warn'}">${fmtDate(x.exp)}</span>`]), 'Nothing expiring soon.')}</section>
+      <section class="card"><h3 style="margin-bottom:10px">Ingredient price changes</h3>${tbl(['Ingredient','Date','Was','Now'], D.prices.map(x => [esc(x.name), fmtDate(x.date), inr(x.from), `${inr(x.to)} <span class="pill ${x.to > x.from ? 'bad' : 'good'}">${x.to > x.from ? '+' : ''}${trimN((x.to - x.from) / (x.from || 1) * 100, 1)}%</span>`]), 'No price changes in this period.')}</section>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   PDF bills and reports
+   ========================================================= */
+function loadScript(src){
+  return new Promise((res, rej) => {
+    const old = document.querySelector(`script[data-src="${src}"]`);
+    if (old){ if (old.dataset.ok) return res(); old.addEventListener('load', () => res()); old.addEventListener('error', () => rej(new Error('load'))); return; }
+    const s = document.createElement('script'); s.src = src; s.dataset.src = src;
+    s.onload = () => { s.dataset.ok = '1'; res(); }; s.onerror = () => { s.remove(); rej(new Error('load')); };
+    document.head.appendChild(s);
+  });
+}
+async function pdfLibs(){ await loadScript('vendor/jspdf.umd.min.js'); await loadScript('vendor/jspdf.plugin.autotable.min.js'); await loadScript('vendor/pdf-font.js'); }
+function newDoc(){
+  const d = new window.jspdf.jsPDF({unit:'mm', format:'a4'});
+  d.addFileToVFS('NotoSans-Regular.ttf', window.BP_FONTS.regular); d.addFont('NotoSans-Regular.ttf', 'Noto', 'normal');
+  d.addFileToVFS('NotoSans-Bold.ttf', window.BP_FONTS.bold); d.addFont('NotoSans-Bold.ttf', 'Noto', 'bold');
+  d.setFont('Noto', 'normal'); return d;
+}
+const accentHex = () => /^#[0-9a-f]{6}$/i.test(S.settings.accent || '') ? S.settings.accent : (PALETTES.find(x => x[0] === S.settings.palette) || PALETTES[0])[2][1];
+const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const inrP = n => inr(n, Math.abs(n % 1) > 0.004 ? 2 : 0);
+const fmtLong = s => s ? dParse(s).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '';
+function pdfHeader(d, title, right){
+  const P = S.profile, W = 210, M = 16, ac = hexRgb(accentHex());
+  d.setFillColor(...ac); d.rect(0, 0, W, 5, 'F');
+  let y = 19;
+  d.setFont('Noto', 'bold'); d.setFontSize(17); d.setTextColor(30, 30, 30); d.text(P.business || 'Your business', M, y);
+  d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(95, 95, 95); y += 6;
+  [P.address, [P.phone, P.email].filter(Boolean).join('   ·   '), P.fssaiNo ? 'FSSAI Reg. No. ' + P.fssaiNo : '', P.gstin ? 'GSTIN ' + P.gstin : ''].filter(Boolean)
+    .forEach(t => d.splitTextToSize(t, 105).forEach(line => { d.text(line, M, y); y += 4.4; }));
+  d.setFont('Noto', 'bold'); d.setFontSize(19); d.setTextColor(...ac); d.text(title, W - M, 19, {align:'right'});
+  d.setFontSize(9.5); let ry = 26;
+  right.forEach(([k, v]) => { d.setFont('Noto', 'normal'); d.setTextColor(110, 110, 110); d.text(k, W - M - 34, ry, {align:'right'}); d.setFont('Noto', 'bold'); d.setTextColor(40, 40, 40); d.text(String(v), W - M, ry, {align:'right'}); ry += 5; });
+  y = Math.max(y, ry) + 3; d.setDrawColor(225, 222, 218); d.setLineWidth(0.3); d.line(M, y, W - M, y);
+  return y + 7;
+}
+function pdfFooter(d, note){
+  const n = d.getNumberOfPages();
+  for (let i = 1; i <= n; i++){ d.setPage(i); d.setFont('Noto', 'normal'); d.setFontSize(8.5); d.setTextColor(130, 130, 130);
+    if (note) d.text(note, 105, 287, {align:'center'}); if (n > 1) d.text(`Page ${i} of ${n}`, 194, 287, {align:'right'}); }
+}
+function orderBillData(o){
+  const c = orderCalc(o);
+  return {no:o.invoiceNo, date:o.status === 'delivered' ? (o.deliveredOn || today()) : today(), due:o.status === 'delivered' ? '' : o.due, customer:o.customer, phone:o.phone,
+    lines:c.lines.map(l => ({name:l.r.name, qty:l.qty, unit:l.unit, amount:l.line, cat:l.r.cat, rid:l.r.id})), sub:c.sub, discount:num(o.discount), extras:num(o.extras), delivery:num(o.delivery),
+    gst:c.gst, total:c.total, paid:c.paid, balance:c.balance, notes:o.notes};
+}
+function quoteBillData(){
+  const q = quoteCalc(), Q = S.quote;
+  return {no:'Q-' + today().replace(/-/g, '').slice(2) + '-' + String(Date.now()).slice(-3), date:today(), due:dAdd(today(), num(Q.validDays) || 7), customer:Q.customer, phone:'',
+    lines:q.rows.map(x => ({name:x.r.name, qty:x.qty, unit:x.unit, amount:x.line, cat:x.cat, rid:x.r.id})), sub:q.sub, discount:0, extras:q.custom + q.rush, delivery:q.delivery,
+    gst:q.gst, total:q.total, paid:0, balance:q.total, advanceDue:q.advance, notes:''};
+}
+function billPDF(kind, data, storage){
+  const P = S.profile, d = newDoc(), M = 16, W = 210, ac = hexRgb(accentHex());
+  let y = pdfHeader(d, kind === 'quote' ? 'QUOTATION' : 'INVOICE',
+    [[kind === 'quote' ? 'Quote no.' : 'Bill no.', data.no], ['Date', fmtLong(data.date)], ...(data.due ? [[kind === 'quote' ? 'Valid until' : 'Delivery', fmtLong(data.due)]] : [])]);
+  d.setFont('Noto', 'normal'); d.setFontSize(8); d.setTextColor(130, 130, 130); d.text(kind === 'quote' ? 'QUOTE FOR' : 'BILL TO', M, y); y += 5;
+  d.setFont('Noto', 'bold'); d.setFontSize(11.5); d.setTextColor(30, 30, 30); d.text(data.customer || 'Customer', M, y);
+  if (data.phone){ y += 5; d.setFont('Noto', 'normal'); d.setFontSize(9.5); d.setTextColor(90, 90, 90); d.text(data.phone, M, y); }
+  y += 5;
+  d.autoTable({startY:y, margin:{left:M, right:M}, theme:'striped',
+    head:[['#', 'Item', 'Qty', 'Rate', 'Amount']],
+    body:data.lines.map((l, i) => [i + 1, l.name, l.qty, inrP(l.unit), inrP(l.amount)]),
+    styles:{font:'Noto', fontSize:9.5, cellPadding:2.8, textColor:[40, 40, 40]},
+    headStyles:{fillColor:ac, textColor:255, fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[247, 245, 242]},
+    columnStyles:{0:{cellWidth:10}, 2:{halign:'right', cellWidth:18}, 3:{halign:'right', cellWidth:28}, 4:{halign:'right', cellWidth:32}},
+    didParseCell:h => { if (h.section === 'head' && h.column.index >= 2) h.cell.styles.halign = 'right'; }});
+  y = d.lastAutoTable.finalY + 6;
+  const rows = [['Subtotal', inrP(data.sub)]];
+  if (data.discount) rows.push(['Discount', '−' + inrP(data.discount)]);
+  if (data.extras) rows.push(['Packaging & extras', inrP(data.extras)]);
+  if (data.gst) rows.push([`GST (${P.gstRate}%)`, inrP(data.gst)]);
+  if (data.delivery) rows.push(['Delivery', inrP(data.delivery)]);
+  if (y + rows.length * 6 + 40 > 280){ d.addPage(); y = 20; }
+  const x1 = W - M - 70, x2 = W - M;
+  d.setFontSize(9.5);
+  rows.forEach(([k, v]) => { d.setFont('Noto', 'normal'); d.setTextColor(90, 90, 90); d.text(k, x1, y); d.setTextColor(40, 40, 40); d.text(v, x2, y, {align:'right'}); y += 5.6; });
+  d.setDrawColor(...ac); d.setLineWidth(0.5); d.line(x1, y - 2, x2, y - 2); y += 4;
+  d.setFont('Noto', 'bold'); d.setFontSize(12); d.setTextColor(30, 30, 30); d.text('Total', x1, y); d.text(inrP(data.total), x2, y, {align:'right'}); y += 7;
+  d.setFontSize(9.5);
+  const after = kind === 'quote' ? [['Advance to confirm', inrP(data.advanceDue)]] : [['Paid', inrP(data.paid)], ['Balance due', inrP(data.balance)]];
+  after.forEach(([k, v], i) => { d.setFont('Noto', i === after.length - 1 ? 'bold' : 'normal'); d.setTextColor(...(i === after.length - 1 && kind !== 'quote' && data.balance > 0 ? ac : [60, 60, 60])); d.text(k, x1, y); d.text(v, x2, y, {align:'right'}); y += 5.6; });
+  if (kind !== 'quote' && data.balance <= 0){ d.setFont('Noto', 'bold'); d.setFontSize(11); d.setTextColor(46, 125, 70); d.text('PAID IN FULL', x2, y + 3, {align:'right'}); y += 8; }
+  // left column: payment and notes
+  let ly = d.lastAutoTable.finalY + 6; const lw = x1 - M - 8;
+  const block = (title, text) => { if (!text) return; d.setFont('Noto', 'bold'); d.setFontSize(8.5); d.setTextColor(130, 130, 130); d.text(title.toUpperCase(), M, ly); ly += 4.6;
+    d.setFont('Noto', 'normal'); d.setFontSize(9.5); d.setTextColor(50, 50, 50); d.splitTextToSize(text, lw).forEach(t => { d.text(t, M, ly); ly += 4.6; }); ly += 3; };
+  block('Pay by UPI', P.upi);
+  if (kind === 'quote') block('Terms', `Ready ${P.leadDays} day${P.leadDays == 1 ? '' : 's'} after the advance is received. Prices hold until ${fmtLong(data.due)}.`);
+  block('Notes', data.notes);
+  y = Math.max(y, ly) + 2;
+  if (storage){
+    const cats = [...new Set(data.lines.map(l => l.cat))];
+    const lines = cats.map(cid => { const c = catById(cid), names = data.lines.filter(l => l.cat === cid).map(l => l.name), r = recById(data.lines.find(l => l.cat === cid).rid);
+      return `${names.join(', ')}: ${c.store}${r ? ` Best before ${dur(productLifeDays(r))} from the date of making.` : ''}`; });
+    if (y + lines.length * 10 > 278){ d.addPage(); y = 20; }
+    d.setFont('Noto', 'bold'); d.setFontSize(8.5); d.setTextColor(130, 130, 130); d.text('STORAGE', M, y); y += 4.6;
+    d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(60, 60, 60);
+    lines.forEach(t => d.splitTextToSize(t, W - 2 * M).forEach(line => { d.text(line, M, y); y += 4.4; }));
+  }
+  pdfFooter(d, P.billNote);
+  return d;
+}
+function billText(kind, data){
+  const P = S.profile, L = [`*${kind === 'quote' ? 'Quotation' : 'Bill'} ${data.no}*${P.business ? ' – ' + P.business : ''}`, `Date: ${fmtLong(data.date)}`, `For: ${data.customer || 'Customer'}`, ''];
+  data.lines.forEach(l => L.push(`• ${l.name} × ${l.qty} @ ${inrP(l.unit)} = ${inrP(l.amount)}`));
+  L.push('', `Subtotal: ${inrP(data.sub)}`);
+  if (data.discount) L.push(`Discount: −${inrP(data.discount)}`);
+  if (data.extras) L.push(`Packaging & extras: ${inrP(data.extras)}`);
+  if (data.gst) L.push(`GST (${P.gstRate}%): ${inrP(data.gst)}`);
+  if (data.delivery) L.push(`Delivery: ${inrP(data.delivery)}`);
+  L.push(`*Total: ${inrP(data.total)}*`);
+  if (kind === 'quote') L.push(`Advance to confirm: ${inrP(data.advanceDue)}`); else L.push(`Paid: ${inrP(data.paid)}`, `*Balance due: ${inrP(data.balance)}*`);
+  if (P.upi) L.push('', `Pay by UPI: ${P.upi}`);
+  if (P.billNote) L.push('', P.billNote);
+  return L.join('\n');
+}
+const pdfName = (kind, data) => `${kind === 'quote' ? 'Quote' : 'Bill'} ${data.no} ${String(data.customer || '').replace(/[^\w\s-]/g, '').trim()}`.trim().replace(/\s+/g, '-') + '.pdf';
+async function reportPDF(){
+  await pdfLibs();
+  const D = reportData(), d = newDoc(), M = 16, ac = hexRgb(accentHex());
+  let y = pdfHeader(d, 'REPORT', [['Period', D.label], ['Created', fmtLong(today())]]);
+  const T = (title, head, body, opts = {}) => {
+    if (y > 250){ d.addPage(); y = 18; }
+    d.setFont('Noto', 'bold'); d.setFontSize(11); d.setTextColor(30, 30, 30); d.text(title, M, y); y += 2.5;
+    if (!body.length){ d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(120, 120, 120); d.text('Nothing in this period.', M, y + 5); y += 13; return; }
+    d.autoTable({startY:y, margin:{left:M, right:M}, theme:'striped', head:[head], body, styles:{font:'Noto', fontSize:9, cellPadding:2.2, textColor:[40, 40, 40]},
+      headStyles:{fillColor:ac, textColor:255, fontStyle:'bold'}, alternateRowStyles:{fillColor:[247, 245, 242]},
+      didParseCell:h => { if (h.column.index > 0) h.cell.styles.halign = 'right'; }, ...opts});
+    y = d.lastAutoTable.finalY + 9;
+  };
+  T('Summary', ['', 'Amount'], [['Sales', inrP(D.sales)], ['Expenses logged', inrP(D.exp)], [`Fixed costs${num(S.be.ownerPay) ? ' and your pay' : ''}`, inrP(D.fixed)], ['Profit', inrP(D.profit)],
+    ['Months that broke even', `${D.months.filter(b => b.ok).length} of ${D.months.length}`], ['Stock value today', inrP(D.stockIng + D.stockPkg + D.stockReady)], ['Open orders still to collect', inrP(D.openValue)]]);
+  T('Month by month', ['Month', 'Sales', 'Costs', 'Profit', 'Broke even'], D.months.map(b => [monthLabel(b.ym), inrP(b.sales), inrP(b.costs), inrP(b.profit), b.ok ? 'Yes' + (b.date ? ', ' + fmtDate(b.date) : '') : 'No']));
+  T('Best-selling products (delivered orders)', ['Product', 'Sold', 'Sales', 'Profit'], D.products.map(p => [p.name, p.qty, inrP(p.rev), inrP(p.rev - p.cost)]));
+  T('Sales by customer type', ['Type', 'Amount', 'Share'], D.saleCats.map(([k, v]) => [k, inrP(v), pct(v / (D.sales || 1) * 100)]));
+  T('Expenses by category', ['Category', 'Amount', 'Share'], D.expCats.map(([k, v]) => [k, inrP(v), pct(v / (D.exp || 1) * 100)]));
+  T('Expired or expiring in 14 days', ['Item', 'Quantity', 'Expiry'], D.expiring.map(x => [x.name, x.qty, fmtLong(x.exp)]));
+  T('Ingredient price changes', ['Ingredient', 'Date', 'Was', 'Now'], D.prices.map(x => [x.name, fmtLong(x.date), inrP(x.from), inrP(x.to)]));
+  T('All entries', ['Date', 'Type', 'Category', 'Note', 'Amount'], [...D.es].sort((a, b) => a.date.localeCompare(b.date)).map(e => [fmtLong(e.date), e.kind === 'sale' ? 'Sale' : 'Expense', e.cat, e.desc || '', (e.kind === 'sale' ? '' : '−') + inrP(num(e.amount))]),
+    {didParseCell:h => { if (h.column.index === 4) h.cell.styles.halign = 'right'; }, columnStyles:{3:{cellWidth:60}}});
+  pdfFooter(d, S.profile.business ? `${S.profile.business} · ${D.label}` : D.label);
+  return {doc:d, name:`Report ${D.label}`.replace(/[^\w\s–-]/g, '').replace(/[\s–]+/g, '-') + '.pdf'};
+}
+const csvOf = rows => '﻿' + rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+
+/* =========================================================
+   backup: Google Drive, Gmail, files
+   ========================================================= */
+const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Batch & Price backup';
+let GTOK = null;
+const gClientId = () => ((S.backup && S.backup.clientId) || '').trim() || ((window.BP_CONFIG || {}).googleClientId || '').trim();
+async function gToken(){
+  if (GTOK && GTOK.exp > Date.now() + 60000) return GTOK.token;
+  const cid = gClientId(); if (!cid) throw new Error('Add the Google sign-in key first (Setup → Your data).');
+  try { await loadScript('https://accounts.google.com/gsi/client'); } catch(e){ throw new Error('Google sign-in could not load here. Open the app from its own link (your Vercel address) and try again.'); }
+  return new Promise((res, rej) => {
+    const tc = google.accounts.oauth2.initTokenClient({client_id:cid, scope:GSCOPE, login_hint:S.backup.email || undefined,
+      callback:r => { if (r.error) return rej(new Error('Google sign-in was not completed.')); GTOK = {token:r.access_token, exp:Date.now() + (num(r.expires_in) || 3600) * 1000}; res(r.access_token); },
+      error_callback:e => rej(new Error(e && e.type === 'popup_closed' ? 'The Google sign-in window was closed.' : 'Google sign-in was blocked. Allow pop-ups for this site and try again.'))});
+    tc.requestAccessToken();
+  });
+}
+async function gFetch(url, opts = {}){
+  const t = await gToken();
+  const r = await fetch(url, Object.assign({}, opts, {headers:Object.assign({Authorization:'Bearer ' + t}, opts.headers || {})}));
+  if (r.status === 401){ GTOK = null; throw new Error('Google sign-in expired. Try again.'); }
+  if (!r.ok) throw new Error('Google Drive said no (' + r.status + '). Check the sign-in key and that the Drive API is enabled.');
+  return r;
+}
+async function driveFiles(){
+  const q = encodeURIComponent(`name contains '${BK_NAME}' and trashed = false`);
+  const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime desc&pageSize=30&fields=files(id,name,modifiedTime,size)`);
+  return (await r.json()).files || [];
+}
+async function driveBackup(){
+  const now = new Date(), name = `${BK_NAME} ${today()} ${pad2(now.getHours())}-${pad2(now.getMinutes())}.json`, b = 'bp' + uid();
+  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name, mimeType:'application/json', description:'Batch & Price data backup'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(S)}\r\n--${b}--`;
+  await gFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method:'POST', headers:{'Content-Type':'multipart/related; boundary=' + b}, body});
+  const files = await driveFiles();
+  for (const f of files.slice(10)) { try { await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {method:'DELETE'}); } catch(e){} }
+  S.backup.last = new Date().toISOString(); save();
+}
+function restoreFromText(text){
+  try { const d = migrate(JSON.parse(text)); if (!d) throw 0; const st = S.settings; localStorage.setItem(KEY, JSON.stringify(d)); load(); if (!S.settings) S.settings = st; toast('Backup restored'); return true; }
+  catch(e){ toast('That file is not a Batch & Price backup'); return false; }
+}
+async function shareBackup(){
+  const name = `batch-and-price-backup-${today()}.json`, blob = new Blob([JSON.stringify(S)], {type:'application/json'});
+  const text = `Batch & Price backup from ${fmtLong(today())}. Keep this email. To restore: open Batch & Price, go to Setup → Your data → Restore, and choose this file.`;
+  const res = await shareOrSave(name, blob, 'Batch & Price backup', text);
+  if (res === 'shared'){ S.backup.last = new Date().toISOString(); save(); render(); toast('Backup shared'); return; }
+  if (res === 'saved'){
+    S.backup.last = new Date().toISOString(); save(); render();
+    if (S.backup.email && window.top === window){ location.href = `mailto:${encodeURIComponent(S.backup.email)}?subject=${encodeURIComponent('Batch & Price backup ' + today())}&body=${encodeURIComponent(text + '\n\n(Attach the file ' + name + ' from your Downloads folder.)')}`; }
+    toast('Backup file downloaded. Attach it to an email to yourself.');
+  }
+}
+
+/* =========================================================
    router, shell & look
    ========================================================= */
 const VIEWS = {
@@ -1826,6 +2243,7 @@ const VIEWS = {
   recipes:{title:'Recipes & cost', icon:'recipes', grp:'Make', v:vRecipes, o:oRecipes, sub:() => 'Cost of every batch and piece'},
   stock:{title:'Stock', icon:'stock', grp:'Make', v:vStock, o:oStock, sub:() => 'Ingredients, packaging, ready products, expiry'},
   money:{title:'Money', icon:'money', grp:'Money', v:vMoney, sub:() => 'Break-even, sales and expenses'},
+  reports:{title:'Reports', icon:'reports', grp:'Money', v:vReports, sub:() => 'Summaries to download as PDF or CSV'},
   'shelf-life':{title:'Shelf life', icon:'shelf', grp:'Know-how', v:vShelf, sub:() => 'Best-before dates and labels'},
   packaging:{title:'Packaging', icon:'packaging', grp:'Know-how', v:vPackaging, sub:() => 'What to pack in and what it costs'},
   guide:{title:'Guide', icon:'guide', grp:'Know-how', v:vGuide, sub:() => 'Rules, questions and good habits'},
@@ -1835,14 +2253,14 @@ const BOTTOM = ['home', 'orders', 'stock', 'money'];
 const cur = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'home'; };
 function applyLook(){
   const st = S.settings, root = document.documentElement;
-  root.dataset.palette = st.palette || 'cocoa';
+  root.dataset.palette = st.palette || 'fudge';
   if (st.mode === 'light' || st.mode === 'dark') root.dataset.mode = st.mode; else delete root.dataset.mode;
   root.dataset.density = st.density || 'comfortable';
   root.style.fontSize = (num(st.textSize) || 100) + '%';
   if (st.accent){ root.style.setProperty('--ac-l', st.accent); root.style.setProperty('--ac-d', `color-mix(in srgb, ${st.accent} 62%, white)`); }
   else { root.style.removeProperty('--ac-l'); root.style.removeProperty('--ac-d'); }
   $$('.side-foot button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (st.mode || 'system'))));
-  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(root).getPropertyValue('--chrome').trim() || '#3F271C';
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(root).getPropertyValue('--chrome').trim() || '#2E1A12';
 }
 function renderNav(){
   const t = cur(), al = alerts(), nBad = al.filter(a => a[0] === 'bad').length, nOpen = openOrders().length;
@@ -1891,7 +2309,7 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'scanFile' && t.files && t.files[0]){ scanImage(t.files[0]); return; }
-  if (t.id === 'restoreFile' && t.files && t.files[0]){ const r = new FileReader(); r.onload = () => { $('#restoreBox').value = r.result; toast('Backup file loaded. Press Restore.'); }; r.readAsText(t.files[0]); return; }
+  if (t.id === 'restoreFile' && t.files && t.files[0]){ const r = new FileReader(); r.onload = () => { if (restoreFromText(r.result)) render(); }; r.readAsText(t.files[0]); return; }
   if (t.dataset.actInput === 'accent'){ render(); return; }
   if (t.dataset.mcheck && MODAL){ MODAL.sel[t.dataset.mcheck] = t.checked; modalOut(); return; }
   if (t.dataset.m != null && MODAL){
@@ -1911,7 +2329,7 @@ document.addEventListener('change', e => {
   if (/\.(name|unitName)$/.test(path)){ if (dlg.contains(t)) { renderModal(); render(); } else render(); }
 });
 const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, lines:[], pack:[]});
-const blankOrder = () => { const r = S.recipes[0], q = num(S.profile.minOrder) || 6; return {id:'', customer:'', phone:'', due:dAdd(today(), num(S.profile.leadDays) || 2), type:'individual', items:r ? [{id:uid(), recipeId:r.id, qty:q, unit:autoUnit(r, q)}] : [], delivery:0, discount:0, advance:0, notes:''}; };
+const blankOrder = () => { const r = S.recipes[0], q = num(S.profile.minOrder) || 6; return {id:'', customer:'', phone:'', due:dAdd(today(), num(S.profile.leadDays) || 2), type:'individual', items:r ? [{id:uid(), recipeId:r.id, qty:q, unit:autoUnit(r, q)}] : [], delivery:0, extras:0, discount:0, advance:0, notes:''}; };
 function makeOrder(o){
   let warn = [];
   o.items.forEach(it => { const r = recById(it.recipeId); if (!r) return; let pcs = num(it.qty); pcs -= takeReady(r.id, pcs); if (pcs > 0) warn = warn.concat(produce(r, pcs)); });
@@ -1925,11 +2343,17 @@ function deliver(o){
   S.entries.push({id:uid(), date:today(), kind:'sale', cat:TYPE_TO_SALE[o.type] || 'Individual', desc:'Order: ' + o.customer, amount:c.total - c.gst, orderId:o.id});
   return warn;
 }
-async function saveFile(name, text, type){
-  try { if (window.claude && window.claude.use){ const d = await window.claude.use('downloads'); if (d){ await d.save({filename:name, data:text}); return; } } }
-  catch(e){ if (e && e.code === 'declined') return; }
-  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
-  catch(e){ toast('Download is blocked here. Use “Copy backup text” instead.'); }
+async function saveFile(name, data, type){
+  const blob = data instanceof Blob ? data : new Blob([data], {type:type || 'application/octet-stream'});
+  try { if (window.claude && window.claude.use){ const d = await window.claude.use('downloads'); if (d){ await d.save({filename:name, data:blob}); return true; } } }
+  catch(e){ if (e && e.code === 'declined') return false; }
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); return true; }
+  catch(e){ toast('Downloads are blocked here.'); return false; }
+}
+async function shareOrSave(name, blob, title, text){
+  try { const file = new File([blob], name, {type:blob.type}); if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title, text}); return 'shared'; } }
+  catch(e){ if (e && e.name === 'AbortError') return 'cancelled'; }
+  return (await saveFile(name, blob)) ? 'saved' : 'failed';
 }
 const ACT = {
   setUi: el => { const p = el.dataset.path, full = p.startsWith('settings') ? p : 'ui.' + p; setPath(full, p === 'settings.textSize' ? num(el.dataset.v) : el.dataset.v); if (MODAL && MODAL.type === 'more'){ applyLook(); renderModal(); } },
@@ -1986,8 +2410,7 @@ const ACT = {
     if (!q.rows.length){ toast('The quote is empty'); return false; }
     const extras = q.custom + q.rush;
     S.orders.push({id:uid(), customer:Q.customer || 'Order', phone:'', type:Q.type, due:dAdd(today(), num(S.profile.leadDays) || 2), created:today(), status:'open',
-      items:q.rows.map(x => ({id:uid(), recipeId:x.r.id, qty:x.qty, unit:x.unit})), delivery:q.delivery + extras, discount:0, advance:0,
-      notes:'From quote.' + (extras ? ` Delivery charge includes ${inr(extras)} for custom packaging and rush work.` : '')});
+      items:q.rows.map(x => ({id:uid(), recipeId:x.r.id, qty:x.qty, unit:x.unit})), delivery:q.delivery, extras, discount:0, advance:0, notes:''});
     S.ui.ofilter = 'open'; save(); toast('Order created'); location.hash = 'orders'; return false;
   },
   /* stock */
@@ -2061,17 +2484,49 @@ const ACT = {
   csv: () => { const rows = [['Date','Type','Category','Note','Amount (INR)']].concat([...S.entries].sort((a, b) => a.date.localeCompare(b.date)).map(e => [e.date, e.kind, e.cat, e.desc, e.amount]));
     saveFile('batch-and-price-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
   copyMsg: () => { copyText($('#out-msg').textContent); return false; },
+  /* navigation helpers */
+  go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL) closeModal(); save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
+  toPlan: () => { const e = $('#out-plan'); if (e) e.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
+  starterIng: () => { const have = new Set(S.ingredients.map(g => g.name.toLowerCase())); let n = 0;
+    STARTER_ING.forEach(([name, q, u]) => { if (!have.has(name.toLowerCase())){ S.ingredients.push({id:uid(), name, packQty:q, packUnit:u, packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[]}); n++; } });
+    S.ui.stab = 'ing'; toast(`${n} ingredients added. Fill in what you pay for one pack of each.`); if (cur() !== 'stock'){ save(); location.hash = 'stock'; return false; } },
+  starterPkg: () => { STARTER_PKG.forEach(name => { if (!S.packaging.some(k => k.name === name)) S.packaging.push({id:uid(), name, price:0, note:'', stock:0, low:0, barcode:''}); }); toast('Packaging list added. Fill in the price of each.'); },
+  addFixedNamed: el => { S.profile.fixed.push({id:uid(), name:el.dataset.v, amt:0}); },
+  installApp: () => { if (!INSTALL){ toast('Use your browser menu to install: Add to Home screen.'); return false; } INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; render(); }); return false; },
+  /* bills */
+  bill: el => {
+    const o = S.orders.find(x => x.id === el.dataset.id); if (!o) return false;
+    if (!o.invoiceNo){ o.invoiceNo = (S.profile.invPrefix || '') + String(num(S.profile.invNext) || 1).padStart(4, '0'); S.profile.invNext = (num(S.profile.invNext) || 1) + 1; save(); }
+    pdfLibs().catch(() => {});
+    openModal({type:'bill', kind:'invoice', id:o.id, data:orderBillData(o), storage:true}); return false;
+  },
+  quotePdf: () => { if (!quoteCalc().rows.length){ toast('Add a product to the quote first'); return false; } pdfLibs().catch(() => {}); openModal({type:'bill', kind:'quote', data:quoteBillData(), storage:true}); return false; },
+  billText: () => { copyText(billText(MODAL.kind, MODAL.data)); return false; },
+  pdfDownload: () => { (async () => { try { await pdfLibs(); const m = MODAL; const doc = billPDF(m.kind, m.data, m.storage); await saveFile(pdfName(m.kind, m.data), doc.output('blob')); toast('PDF ready'); } catch(e){ toast('The PDF could not be made here. Try again from the app link.'); } })(); return false; },
+  pdfShare: () => { (async () => { try { await pdfLibs(); const m = MODAL; const doc = billPDF(m.kind, m.data, m.storage); const r = await shareOrSave(pdfName(m.kind, m.data), doc.output('blob'), m.kind === 'quote' ? 'Quotation' : 'Bill', billText(m.kind, m.data)); if (r === 'saved') toast('Sharing is not available here, so the PDF was downloaded.'); } catch(e){ toast('The PDF could not be made here. Try again from the app link.'); } })(); return false; },
+  /* reports */
+  reportPdf: () => { (async () => { try { const r = await reportPDF(); await saveFile(r.name, r.doc.output('blob')); toast('Report ready'); } catch(e){ toast('The report could not be made here.'); } })(); return false; },
+  reportShare: () => { (async () => { try { const r = await reportPDF(); const x = await shareOrSave(r.name, r.doc.output('blob'), 'Report'); if (x === 'saved') toast('Sharing is not available here, so the PDF was downloaded.'); } catch(e){ toast('The report could not be made here.'); } })(); return false; },
+  reportCsv: () => { const D = reportData(); saveFile(`entries-${D.from}-to-${D.to}.csv`, csvOf([['Date', 'Type', 'Category', 'Note', 'Amount (INR)']].concat([...D.es].sort((a, b) => a.date.localeCompare(b.date)).map(e => [e.date, e.kind, e.cat, e.desc, e.kind === 'sale' ? num(e.amount) : -num(e.amount)]))), 'text/csv'); return false; },
+  stockCsv: () => { saveFile(`stock-${today()}.csv`, csvOf([['Item', 'Type', 'In stock', 'Unit', 'Pack size', 'Pack price (INR)', 'Value (INR)', 'Next expiry', 'Status']]
+      .concat(S.ingredients.map(g => [g.name, 'Ingredient', +stockOf(g).toFixed(2), baseUnit(g), `${g.packQty} ${g.packUnit}`, num(g.packPrice), Math.round(stockOf(g) * perBase(g)), nextExpiry(g) || '', ingStatus(g)[1]]))
+      .concat(S.packaging.map(k => [k.name, 'Packaging', num(k.stock), 'pcs', '1', num(k.price), Math.round(num(k.stock) * num(k.price)), '', pkgStatus(k)[1]]))
+      .concat(S.finished.filter(f => num(f.left) > 0).map(f => { const r = recById(f.recipeId); return [r ? r.name : '?', 'Ready product', f.left, 'pcs', '', r ? recPrice(r) : '', r ? Math.round(f.left * recipeCost(r).perPiece) : '', f.exp, daysUntil(f.exp) < 0 ? 'Past best-before' : 'Ready']; }))), 'text/csv'); return false; },
+  /* backup */
+  driveBackup: () => { toast('Opening Google sign-in…'); driveBackup().then(() => { render(); toast('Backed up to Google Drive'); }).catch(e => toast(e.message)); return false; },
+  driveList: () => { openModal({type:'drive', loading:true}); driveFiles().then(files => { if (MODAL && MODAL.type === 'drive'){ MODAL.loading = false; MODAL.files = files; renderModal(); } })
+      .catch(e => { if (MODAL && MODAL.type === 'drive'){ MODAL.loading = false; MODAL.err = e.message; renderModal(); } }); return false; },
+  driveRestore: el => { gFetch(`https://www.googleapis.com/drive/v3/files/${el.dataset.id}?alt=media`).then(r => r.text()).then(t => { if (restoreFromText(t)){ closeModal(); render(); } }).catch(e => toast(e.message)); return false; },
+  shareBackup: () => { shareBackup(); return false; },
+
   /* data */
   askConfirm: el => { S.ui.confirm = el.dataset.key; if (dlg.open){ renderModal(); return false; } },
   cancelConfirm: () => { S.ui.confirm = ''; if (dlg.open){ renderModal(); return false; } },
   backup: () => { copyText(JSON.stringify(S)); return false; },
   backupFile: () => { saveFile(`batch-and-price-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
-  restore: () => {
-    try { const d = migrate(JSON.parse($('#restoreBox').value)); if (!d) throw 0; localStorage.setItem(KEY, JSON.stringify(d)); S = d; load(); toast('Backup restored'); }
-    catch(e){ toast('That is not a Batch & Price backup'); return false; }
-  },
-  reset: () => { const st = S.settings; S = sample(); S.settings = st; toast('Sample data loaded'); },
-  wipe: () => { const st = S.settings; S = sample(); Object.assign(S, {sample:false, ingredients:[], packaging:[], recipes:[], entries:[], orders:[], finished:[], settings:st}); S.be.investment = 0; S.be.invNote = ''; S.be.start = thisMonth(); S.quote.rows = []; S.ui.recipe = ''; save(); toast('Started empty. Begin with Setup.'); location.hash = 'setup'; }
+  restore: () => { if (!restoreFromText($('#restoreBox').value)) return false; },
+  reset: () => { const st = S.settings, bk = S.backup; S = sample(); S.settings = st; S.backup = bk; toast('Sample data loaded. Clear it from the Dashboard when you are done exploring.'); location.hash = 'home'; },
+  wipe: () => { const st = S.settings, bk = S.backup; S = blankState(); S.settings = st; S.backup = bk; save(); toast('Everything cleared. Start with Get started.'); location.hash = 'home'; }
 };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
@@ -2086,6 +2541,9 @@ document.addEventListener('click', e => {
 
 load();
 render();
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && window.top === window){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>
