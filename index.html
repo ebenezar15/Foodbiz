@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Swe-tr Desserts</title>
+<title>Swe-tr</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#3B2420">
 <meta name="description" content="Cost, price, orders, stock and break-even for home bakers and sweet makers, in rupees.">
@@ -937,10 +937,10 @@ function backupNudge(){
 const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 let INSTALL = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL = e; if (['home', 'setup'].includes(cur())) render(); });
-window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Batch & Price from your home screen.'); });
+window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Swe-tr from your home screen.'); });
 function installNudge(){
   if (!INSTALL || isStandalone()) return '';
-  return `<div class="banner" style="background:var(--accent-soft)"><span>Install Batch & Price on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
+  return `<div class="banner" style="background:var(--accent-soft)"><span>Install Swe-tr on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
 }
 function beBar(be){
   if (!be.sales && !be.costs) return `<p class="muted">Nothing to show yet. Record sales (mark orders delivered) and expenses (add stock or log them on the Money page), and add your fixed costs in Setup.</p>`;
@@ -1731,7 +1731,7 @@ function setupData(){
         <div class="row" style="margin-top:10px">${F('Google OAuth client ID', 'backup.clientId', B.clientId, '', 'txt', 'placeholder="…apps.googleusercontent.com"')}</div></details>
       <h4 style="margin:18px 0 6px">Email the backup</h4>
       <p class="hint" style="margin-bottom:10px">On a phone, choose Gmail in the share menu and send it to yourself. On a computer, the file downloads and an email opens for you to attach it.</p>
-      <div class="actions"><button class="btn" data-act="shareBackup">Email the backup</button>${B.email ? `<a class="btn ghost" href="mailto:${esc(B.email)}?subject=${encodeURIComponent('Batch & Price backup ' + today())}">Open an email to ${esc(B.email)}</a>` : ''}</div>
+      <div class="actions"><button class="btn" data-act="shareBackup">Email the backup</button>${B.email ? `<a class="btn ghost" href="mailto:${esc(B.email)}?subject=${encodeURIComponent('Swe-tr backup ' + today())}">Open an email to ${esc(B.email)}</a>` : ''}</div>
     </section>
     <div class="stack">
       <section class="card"><h3 style="margin-bottom:8px">Restore</h3><p class="hint" style="margin-bottom:10px">Open the backup file from your Gmail or Drive, save it, then choose it here. Restoring replaces what is on this device.</p>
@@ -2241,7 +2241,7 @@ const csvOf = rows => '﻿' + rows.map(r => r.map(v => `"${String(v ?? '').repla
 /* =========================================================
    backup: Google Drive, Gmail, files
    ========================================================= */
-const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Batch & Price backup';
+const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Swe-tr backup', OLD_BK_NAME = 'Batch & Price backup';
 let GTOK = null;
 const gClientId = () => ((S.backup && S.backup.clientId) || '').trim() || ((window.BP_CONFIG || {}).googleClientId || '').trim();
 async function gToken(){
@@ -2263,13 +2263,13 @@ async function gFetch(url, opts = {}){
   return r;
 }
 async function driveFiles(){
-  const q = encodeURIComponent(`name contains '${BK_NAME}' and trashed = false`);
+  const q = encodeURIComponent(`(name contains '${BK_NAME}' or name contains '${OLD_BK_NAME}') and trashed = false`);
   const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime desc&pageSize=30&fields=files(id,name,modifiedTime,size)`);
   return (await r.json()).files || [];
 }
 async function driveBackup(){
   const now = new Date(), name = `${BK_NAME} ${today()} ${pad2(now.getHours())}-${pad2(now.getMinutes())}.json`, b = 'bp' + uid();
-  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name, mimeType:'application/json', description:'Batch & Price data backup'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(S)}\r\n--${b}--`;
+  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name, mimeType:'application/json', description:'Swe-tr data backup'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(S)}\r\n--${b}--`;
   await gFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method:'POST', headers:{'Content-Type':'multipart/related; boundary=' + b}, body});
   const files = await driveFiles();
   for (const f of files.slice(10)) { try { await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {method:'DELETE'}); } catch(e){} }
@@ -2277,16 +2277,16 @@ async function driveBackup(){
 }
 function restoreFromText(text){
   try { const d = migrate(JSON.parse(text)); if (!d) throw 0; const st = S.settings; localStorage.setItem(KEY, JSON.stringify(d)); load(); if (!S.settings) S.settings = st; toast('Backup restored'); return true; }
-  catch(e){ toast('That file is not a Batch & Price backup'); return false; }
+  catch(e){ toast('That file is not a Swe-tr backup'); return false; }
 }
 async function shareBackup(){
-  const name = `batch-and-price-backup-${today()}.json`, blob = new Blob([JSON.stringify(S)], {type:'application/json'});
-  const text = `Batch & Price backup from ${fmtLong(today())}. Keep this email. To restore: open Batch & Price, go to Setup → Your data → Restore, and choose this file.`;
-  const res = await shareOrSave(name, blob, 'Batch & Price backup', text);
+  const name = `swe-tr-backup-${today()}.json`, blob = new Blob([JSON.stringify(S)], {type:'application/json'});
+  const text = `Swe-tr backup from ${fmtLong(today())}. Keep this email. To restore: open Swe-tr, go to Setup → Your data → Restore, and choose this file.`;
+  const res = await shareOrSave(name, blob, 'Swe-tr backup', text);
   if (res === 'shared'){ S.backup.last = new Date().toISOString(); save(); render(); toast('Backup shared'); return; }
   if (res === 'saved'){
     S.backup.last = new Date().toISOString(); save(); render();
-    if (S.backup.email && window.top === window){ location.href = `mailto:${encodeURIComponent(S.backup.email)}?subject=${encodeURIComponent('Batch & Price backup ' + today())}&body=${encodeURIComponent(text + '\n\n(Attach the file ' + name + ' from your Downloads folder.)')}`; }
+    if (S.backup.email && window.top === window){ location.href = `mailto:${encodeURIComponent(S.backup.email)}?subject=${encodeURIComponent('Swe-tr backup ' + today())}&body=${encodeURIComponent(text + '\n\n(Attach the file ' + name + ' from your Downloads folder.)')}`; }
     toast('Backup file downloaded. Attach it to an email to yourself.');
   }
 }
@@ -2541,7 +2541,7 @@ const ACT = {
   delEntry: el => { S.entries = S.entries.filter(e => e.id !== el.dataset.id); },
   clearEx: () => { S.entries = S.entries.filter(e => !e.ex); },
   csv: () => { const rows = [['Date','Type','Category','Note','Amount (INR)']].concat([...S.entries].sort((a, b) => a.date.localeCompare(b.date)).map(e => [e.date, e.kind, e.cat, e.desc, e.amount]));
-    saveFile('batch-and-price-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
+    saveFile('swe-tr-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
   copyMsg: () => { copyText($('#out-msg').textContent); return false; },
   /* navigation helpers */
   go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL){ if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); } save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
@@ -2582,7 +2582,7 @@ const ACT = {
   askConfirm: el => { S.ui.confirm = el.dataset.key; if (dlg.open){ renderModal(); return false; } },
   cancelConfirm: () => { S.ui.confirm = ''; if (dlg.open){ renderModal(); return false; } },
   backup: () => { copyText(JSON.stringify(S)); return false; },
-  backupFile: () => { saveFile(`batch-and-price-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
+  backupFile: () => { saveFile(`swe-tr-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
   restore: () => { if (!restoreFromText($('#restoreBox').value)) return false; },
   reset: () => { const st = S.settings, bk = S.backup; S = sample(); S.settings = st; S.backup = bk; toast('Sample data loaded. Clear it from the Dashboard when you are done exploring.'); location.hash = 'home'; },
   wipe: () => { const st = S.settings, bk = S.backup; S = blankState(); S.settings = st; S.backup = bk; save(); toast('Everything cleared. Start with Get started.'); location.hash = 'home'; }
