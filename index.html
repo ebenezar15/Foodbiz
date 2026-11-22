@@ -84,7 +84,8 @@ svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .brand{display:grid;justify-items:start;gap:2px;padding:2px 10px 10px;min-width:0}
 .brandlogo{width:150px;height:auto;display:block;margin-left:-6px}
 .brand small{padding-left:2px}
-img.mlogo{width:36px;height:36px;flex:none;border-radius:50%}
+img.mlogo{height:30px;width:auto;flex:none}
+@media (max-width:360px){img.mlogo{height:24px}}
 .brand b{font-family:var(--font-display);font-size:1.12rem;display:block;line-height:1.1}
 .brand small{display:block;font-size:.74rem;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
@@ -299,6 +300,32 @@ details.more{margin-top:12px}
 details.more summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
 details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size:.86rem}
 .billsum{display:grid;gap:4px;padding:12px;border-radius:10px;background:var(--surface-2)}
+[hidden]{display:none !important}
+/* ---------- sign-in gate ---------- */
+#gate{position:fixed;inset:0;z-index:40;background:var(--chrome);color:var(--chrome-ink);overflow-y:auto;display:grid;place-items:center;
+  padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body.gated .shell,body.gated .bottom{visibility:hidden}
+.gate-in{width:min(420px,100%);display:grid;grid-template-columns:minmax(0,1fr);gap:22px;justify-items:center;min-width:0}
+.gate-in > *{min-width:0;max-width:100%}
+#gate{grid-template-columns:minmax(0,1fr)}
+.gate-logo{width:min(230px,64vw);height:auto}
+.gate-card{width:100%;background:var(--surface);color:var(--ink);border-radius:20px;padding:24px 20px;display:grid;gap:14px;box-shadow:0 20px 60px rgb(0 0 0 / .3)}
+.gate-card h2{font-size:1.4rem}
+.gate-form{display:grid;gap:12px}
+.big-btn{width:100%;min-height:50px;font-size:1rem;border-radius:12px;white-space:normal;text-align:center}
+.gate-card,.gate-form{grid-template-columns:minmax(0,1fr)}
+.big-btn svg.i{width:22px;height:22px}
+.pin{font-size:1.4rem !important;letter-spacing:.5em;text-align:center}
+.gate-msg{padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:.88rem}
+.gate-msg.bad{background:var(--bad-soft);color:var(--bad)} .gate-msg.good{background:var(--good-soft);color:var(--good)}
+.gate-who{display:flex;align-items:center;gap:12px;min-width:0}
+.gate-who img,.gate-who span{width:42px;height:42px;border-radius:50%;flex:none;object-fit:cover;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:1.1rem}
+.gate-who b{display:block} .gate-who small{display:block;color:var(--muted);font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gate-who div{min-width:0}
+.gate-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}
+.gate-or::before,.gate-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.gbtn{min-height:44px;display:grid;justify-items:center}
+.gate-danger{border:1px solid color-mix(in srgb, var(--bad) 35%, var(--line));border-radius:12px;padding:12px;display:grid;gap:8px}
 /* ---------- touch & small-screen polish ---------- */
 html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 button,a,.chip,.btn,label.check,select{touch-action:manipulation}
@@ -348,10 +375,11 @@ dialog{overscroll-behavior:contain}
     <div class="side-foot" role="group" aria-label="Colour mode">
       <button data-act="setMode" data-v="light">Light</button><button data-act="setMode" data-v="dark">Dark</button><button data-act="setMode" data-v="system">Auto</button>
     </div>
+    <button class="btn small" data-act="lockNow" id="sideLock" style="margin:10px 10px 0;background:transparent;color:var(--chrome-ink);border-color:color-mix(in srgb, var(--chrome-ink) 30%, transparent)">Lock Swe-tr</button>
   </aside>
   <div class="content">
     <header class="bar"><div class="wrap in">
-      <img class="mlogo" src="brand/icon-s-cream.svg" alt="Swe-tr" width="36" height="36">
+      <img class="mlogo" src="brand/wordmark-cream.svg" alt="Swe-tr" height="30">
       <div class="ttl"><h1 id="pgTitle">Dashboard</h1><p id="pgSub"></p></div>
       <button class="btn" data-act="scan" title="Scan a barcode"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span class="lbl">Scan</span></button>
       <button class="btn primary" data-act="newOrder" title="New order"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">New order</span></button>
@@ -361,6 +389,7 @@ dialog{overscroll-behavior:contain}
 </div>
 <nav class="bottom" id="bottomNav" aria-label="Quick menu"></nav>
 <dialog id="dlg" aria-labelledby="dlgTitle"><div id="dlgBody"></div></dialog>
+<div id="gate" hidden><div class="gate-in"><img class="gate-logo" src="brand/logo-cream.svg" alt="Swe-tr Desserts"><div class="gate-card" id="gateCard"></div></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -614,12 +643,14 @@ function migrate(d){
   }
   if (d.v === 2){
     if (d.settings) d.settings.palette = OLD_PALETTE[d.settings.palette] || d.settings.palette;
-    if (d.sample){ const b = blankState(); b.settings = d.settings || b.settings; return b; }   // untouched sample data: start clean
+    if (d.sample){ const b = blankState(); b.settings = d.settings || b.settings; b.backup = d.backup || b.backup; return b; }   // sample data: start clean
     d.entries = (d.entries || []).filter(e => !e.ex);                                         // drop example entries
     d.backup = d.backup || {email:'', last:'', clientId:''};
     d.v = 3;
   }
   if (d.settings && !PALETTES.some(x => x[0] === d.settings.palette)) d.settings.palette = 'swetr';
+  if (d.v === 3 && d.sample){ const b = blankState(); b.settings = d.settings || b.settings; b.backup = d.backup || b.backup; return b; }   // never keep sample data
+  if (d.v === 3 && d.entries) d.entries = d.entries.filter(e => !e.ex);
   if (d.v === 3 && !d.brand){ if (d.settings && (!d.settings.palette || d.settings.palette === 'fudge') && !d.settings.accent) d.settings.palette = 'swetr'; if (d.profile && !d.profile.business) d.profile.business = BRAND_NAME; d.brand = 1; }
   return d.v === 3 ? d : null;
 }
@@ -1659,8 +1690,8 @@ function suggestions(){
 }
 function vSetup(){
   const t = S.ui.setTab;
-  return `${seg('setTab', t, [['business','Your business'],['look','Appearance'],['data','Your data']])}
-  ${t === 'look' ? setupLook() : t === 'data' ? setupData() : setupBusiness()}`;
+  return `${seg('setTab', t, [['business','Your business'],['security','Account & lock'],['look','Appearance'],['data','Your data']])}
+  ${t === 'look' ? setupLook() : t === 'data' ? setupData() : t === 'security' ? setupSecurity() : setupBusiness()}`;
 }
 function setupBusiness(){
   const P = S.profile;
@@ -1741,8 +1772,8 @@ function setupData(){
       <section class="card"><h3 style="margin-bottom:8px">Download a copy</h3>
         <div class="actions"><button class="btn" data-act="backupFile">Backup file</button><button class="btn" data-act="backup">Copy as text</button><a class="btn" href="#reports">Reports &amp; exports</a></div></section>
       <section class="card"><h3 style="margin-bottom:8px">Use it like an app</h3>${inst}</section>
-      <section class="card"><h3 style="margin-bottom:8px">Start over</h3><p class="hint" style="margin-bottom:12px">Both replace everything on this device. Back up first.</p>
-        <div class="actions">${confirmBtn('reset', 'Explore with sample data', 'reset')}${confirmBtn('wipe', 'Start empty', 'wipe')}</div></section>
+      <section class="card"><h3 style="margin-bottom:8px">Start over</h3><p class="hint" style="margin-bottom:12px">Removes every product, order, stock item and entry on this phone. Your Gmail link and lock stay. Back up first.</p>
+        <div class="actions">${confirmBtn('wipe', 'Erase all data on this phone', 'wipe')}</div></section>
     </div>
   </div>`;
 }
@@ -1910,7 +1941,8 @@ const MODALS = {
   },
   more(){
     return dlgShell('All pages', `<div class="morelist">${Object.entries(VIEWS).map(([k, v]) => `<a href="#${k}" ${k === cur() ? 'aria-current="page"' : ''} data-act="closeModalNav">${icon(v.icon)}${v.title}</a>`).join('')}</div>
-      <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', S.settings.mode, [['system','Auto'],['light','Light'],['dark','Dark']], 'margin:0')}</div>`);
+      <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', S.settings.mode, [['system','Auto'],['light','Light'],['dark','Dark']], 'margin:0')}</div>
+      ${hasLock() ? `<button class="btn big-btn" data-act="lockNow">Lock Swe-tr now</button>` : ''}`);
   }
 };
 const MODAL_OUT = {
@@ -2292,6 +2324,190 @@ async function shareBackup(){
 }
 
 /* =========================================================
+   sign-in: Gmail link + fingerprint / screen lock / PIN
+   ========================================================= */
+const AUTH_KEY = 'swetr.auth';
+let AUTH = {}, LOCKED = true, GATE = {step:'', msg:'', kind:'', busy:false, fails:0, until:0};
+try { AUTH = JSON.parse(localStorage.getItem(AUTH_KEY)) || {}; } catch(e){ AUTH = {}; }
+const saveAuth = () => { try { localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); } catch(e){} };
+const b64u = buf => { let s = ''; new Uint8Array(buf).forEach(c => s += String.fromCharCode(c)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+const inFrame = () => { try { return window.top !== window; } catch(e){ return true; } };
+async function passkeySupported(){
+  try { return !inFrame() && window.isSecureContext && !!window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch(e){ return false; }
+}
+async function passkeyCreate(){
+  const cred = await navigator.credentials.create({publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Swe-tr'},
+    user:{id:crypto.getRandomValues(new Uint8Array(16)), name:AUTH.email, displayName:AUTH.name || AUTH.email},
+    pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, timeout:60000, attestation:'none'}});
+  const r = cred.response; let pk = '', alg = null;
+  try { if (r.getPublicKey) pk = b64u(r.getPublicKey()); if (r.getPublicKeyAlgorithm) alg = r.getPublicKeyAlgorithm(); } catch(e){}
+  return {credId:b64u(cred.rawId), pk, alg};
+}
+function derToRaw(der){
+  let i = 2; if (der[1] & 0x80) i = 2 + (der[1] & 0x7f);
+  const part = () => { i++; const len = der[i++]; let v = der.slice(i, i + len); i += len; while (v.length > 32 && v[0] === 0) v = v.slice(1); const o = new Uint8Array(32); o.set(v, 32 - v.length); return o; };
+  const r = part(), s = part(), raw = new Uint8Array(64); raw.set(r, 0); raw.set(s, 32); return raw;
+}
+async function passkeyCheck(){
+  const challenge = crypto.getRandomValues(new Uint8Array(32));
+  const a = await navigator.credentials.get({publicKey:{challenge, allowCredentials:[{type:'public-key', id:unb64u(AUTH.credId)}], userVerification:'required', timeout:60000}});
+  const r = a.response, cd = JSON.parse(new TextDecoder().decode(r.clientDataJSON)), ad = new Uint8Array(r.authenticatorData);
+  if (cd.type !== 'webauthn.get' || cd.challenge !== b64u(challenge) || !(ad[32] & 0x04)) return false;
+  if (!AUTH.pk) return b64u(a.rawId) === AUTH.credId;
+  const data = new Uint8Array(ad.length + 32); data.set(ad, 0); data.set(new Uint8Array(await crypto.subtle.digest('SHA-256', r.clientDataJSON)), ad.length);
+  if (AUTH.alg === -7){ const k = await crypto.subtle.importKey('spki', unb64u(AUTH.pk), {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']); return crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, derToRaw(new Uint8Array(r.signature)), data); }
+  if (AUTH.alg === -257){ const k = await crypto.subtle.importKey('spki', unb64u(AUTH.pk), {name:'RSASSA-PKCS1-v1_5', hash:'SHA-256'}, false, ['verify']); return crypto.subtle.verify('RSASSA-PKCS1-v1_5', k, new Uint8Array(r.signature), data); }
+  return b64u(a.rawId) === AUTH.credId;
+}
+async function pinHash(pin, salt){
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  return b64u(await crypto.subtle.deriveBits({name:'PBKDF2', salt:unb64u(salt), iterations:150000, hash:'SHA-256'}, k, 256));
+}
+async function setPin(pin){ const salt = b64u(crypto.getRandomValues(new Uint8Array(16))); AUTH.pinSalt = salt; AUTH.pinHash = await pinHash(pin, salt); saveAuth(); }
+const hasLock = () => !!(AUTH.credId || AUTH.pinHash);
+const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+function linkEmail(email, name, picture, verified){
+  AUTH.email = email.trim().toLowerCase(); AUTH.name = name || ''; AUTH.picture = picture || ''; AUTH.verified = !!verified; AUTH.linked = new Date().toISOString(); saveAuth();
+  if (S){ S.backup.email = AUTH.email; if (!S.profile.email) S.profile.email = AUTH.email; save(); }
+}
+/* Google sign-in button (needs the Google client ID from Setup → Your data or config.js) */
+async function googleButton(elId, onEmail){
+  const cid = gClientId(), el = document.getElementById(elId); if (!cid || !el) return;
+  try { await loadScript('https://accounts.google.com/gsi/client'); } catch(e){ el.innerHTML = '<p class="hint">Google sign-in could not load. Use your Gmail address below.</p>'; return; }
+  google.accounts.id.initialize({client_id:cid, auto_select:false, cancel_on_tap_outside:true, callback:resp => {
+    try { const p = JSON.parse(new TextDecoder().decode(unb64u(resp.credential.split('.')[1]))); onEmail(p.email, p.name, p.picture, p.email_verified); }
+    catch(e){ gateMsg('Google sign-in did not return an email address. Type your Gmail address instead.', 'bad'); }
+  }});
+  google.accounts.id.renderButton(el, {theme:'filled_black', size:'large', shape:'pill', text:'continue_with', width:Math.min(320, el.clientWidth || 300)});
+}
+
+/* ---------- gate screens ---------- */
+const gate = $('#gate'), gateCard = $('#gateCard');
+function gateMsg(msg, kind){ GATE.msg = msg; GATE.kind = kind || ''; renderGate(); }
+function showGate(step, fromApp){ LOCKED = true; GATE.fromApp = !!fromApp; GATE.step = step; GATE.msg = ''; if (dlg.open){ MODAL_HIST = false; closeModal(true); } $('#app').innerHTML = ''; gate.hidden = false; document.body.classList.add('gated'); renderGate(); }
+function openApp(){ LOCKED = false; gate.hidden = true; document.body.classList.remove('gated'); gateCard.innerHTML = ''; render(); }
+function renderGate(){
+  const msg = GATE.msg ? `<p class="gate-msg ${GATE.kind}" role="alert">${esc(GATE.msg)}</p>` : '';
+  const who = AUTH.email ? `<div class="gate-who">${AUTH.picture ? `<img src="${esc(AUTH.picture)}" alt="" referrerpolicy="no-referrer">` : `<span>${esc((AUTH.name || AUTH.email)[0].toUpperCase())}</span>`}<div><b>${esc(AUTH.name || AUTH.email.split('@')[0])}</b><small>${esc(AUTH.email)}</small></div></div>` : '';
+  let h = '';
+  if (GATE.step === 'link'){
+    h = `<h2>Welcome to Swe-tr</h2><p class="muted">Link your Gmail to start. It names this phone's account and is where your backups go.</p>
+      ${gClientId() ? `<div id="gBtn" class="gbtn"></div><div class="gate-or"><span>or type it</span></div>` : ''}
+      <form id="linkForm" class="gate-form" novalidate>
+        <div class="field"><label for="gEmail">Gmail address</label><input id="gEmail" type="email" inputmode="email" autocomplete="email" placeholder="yourname@gmail.com" value="${esc(AUTH.email || (S && S.backup.email) || '')}" required></div>
+        ${msg}<button class="btn primary big-btn" type="submit">Continue</button></form>
+      <p class="hint">Your data stays on this phone. Nothing is sent anywhere until you back up.</p>`;
+  } else if (GATE.step === 'setlock'){
+    h = `${who}<h2>Lock Swe-tr</h2><p class="muted">Choose how you will open the app from now on.</p>
+      <div id="lockOpts" class="gate-form"><p class="hint">Checking what this phone supports…</p></div>${msg}`;
+  } else if (GATE.step === 'pin'){
+    h = `${who}<h2>Set an app PIN</h2><p class="muted">4 to 6 digits. You will use it to open Swe-tr${AUTH.credId ? ' if fingerprint does not work' : ''}.</p>
+      <form id="pinForm" class="gate-form" novalidate>
+        <div class="field"><label for="pin1">New PIN</label><input id="pin1" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" required></div>
+        <div class="field"><label for="pin2">Type it again</label><input id="pin2" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" required></div>
+        ${msg}<button class="btn primary big-btn" type="submit">Save PIN</button>
+        ${GATE.back && !GATE.fromApp ? `<button class="btn ghost" type="button" data-gate="back">Back</button>` : ''}</form>`;
+  } else if (GATE.step === 'unlock'){
+    h = `${who}<h2>Unlock Swe-tr</h2>
+      ${AUTH.credId ? `<button class="btn primary big-btn" data-gate="bio" ${GATE.busy ? 'disabled' : ''}><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3M8.5 8.5a5 5 0 0 1 8.5 3.5v2a10 10 0 0 1-1 4M7 12v2a8 8 0 0 0 1.5 4.7M12 3a9 9 0 0 1 9 9v1M3 13v-1a9 9 0 0 1 3-6.7M12 7a5 5 0 0 0-5 5M16 15.5a6 6 0 0 1-2 4.5"/></svg>Use fingerprint or screen lock</button>` : ''}
+      ${AUTH.pinHash ? `<form id="unlockPin" class="gate-form" novalidate><div class="field"><label for="pinU">${AUTH.credId ? 'Or enter your app PIN' : 'App PIN'}</label><input id="pinU" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" ${AUTH.credId ? '' : 'autofocus'}></div><button class="btn ${AUTH.credId ? '' : 'primary'} big-btn" type="submit">Unlock</button></form>` : ''}
+      ${msg}<button class="btn ghost small" data-gate="help">Can't unlock?</button>`;
+  } else if (GATE.step === 'help'){
+    h = `${who}<h2>Can't unlock?</h2>
+      ${gClientId() ? `<p class="muted">Sign in with the same Google account to open the app and set a new lock.</p><div id="gBtn" class="gbtn"></div>` : `<p class="muted">Fingerprint, face and screen lock come from your phone. Try again after unlocking the phone, or use your app PIN if you set one.</p>`}
+      <div class="gate-danger"><b>Last resort: erase this phone's copy</b><p class="hint">This removes Swe-tr data and the lock from this phone. You can then link your Gmail again and restore your latest backup from Gmail or Google Drive.</p>
+        ${GATE.confirmErase ? `<button class="btn danger" data-gate="erase">Yes, erase this phone's copy</button><button class="btn ghost" data-gate="noErase">Keep it</button>` : `<button class="btn danger small" data-gate="askErase">Erase and start again</button>`}</div>
+      ${msg}<button class="btn ghost" data-gate="back">Back</button>`;
+  }
+  if (GATE.fromApp && ['link', 'setlock', 'pin'].includes(GATE.step)) h += `<button class="btn ghost" data-gate="cancel">Cancel</button>`;
+  gateCard.innerHTML = h;
+  if (GATE.step === 'link'){ googleButton('gBtn', (e, n, p, v) => { linkEmail(e, n, p, v); if (GATE.fromApp && hasLock()){ toast('Gmail linked'); return openApp(); } GATE.step = hasLock() ? 'unlock' : 'setlock'; GATE.msg = ''; renderGate(); }); const f = $('#gEmail'); if (f && !coarse) f.focus(); }
+  if (GATE.step === 'help') googleButton('gBtn', (e, n, p, v) => { if (e.toLowerCase() === AUTH.email){ AUTH.credId = ''; AUTH.pk = ''; AUTH.pinHash = ''; saveAuth(); GATE.step = 'setlock'; gateMsg('Signed in. Set a new lock for this phone.', 'good'); } else gateMsg(`That is a different Google account. Use ${AUTH.email}.`, 'bad'); });
+  if (GATE.step === 'setlock') lockOptions();
+  if (GATE.step === 'pin'){ const f = $('#pin1'); if (f) f.focus(); }
+}
+async function lockOptions(){
+  const ok = await passkeySupported(), el = $('#lockOpts'); if (!el) return;
+  el.innerHTML = (ok ? `<button class="btn primary big-btn" data-gate="mkbio">Use fingerprint, face or screen lock</button><p class="hint">Uses your phone's own lock (fingerprint, face, PIN or pattern). Nothing about it leaves your phone.</p>
+      <button class="btn big-btn" data-gate="mkpin">Use an app PIN instead</button>`
+    : `<p class="hint">${inFrame() ? 'Fingerprint lock works when Swe-tr is opened from its own link or installed on your phone.' : 'This browser cannot use fingerprint or screen lock, so set an app PIN.'}</p><button class="btn primary big-btn" data-gate="mkpin">Set an app PIN</button>`);
+}
+gate.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (e.target.id === 'linkForm'){
+    const v = $('#gEmail').value.trim();
+    if (!validEmail(v)) return gateMsg('Enter a full email address, for example yourname@gmail.com.', 'bad');
+    linkEmail(v); if (GATE.fromApp && hasLock()){ toast('Gmail linked'); return openApp(); } GATE.step = hasLock() ? 'unlock' : 'setlock'; GATE.msg = ''; renderGate();
+  }
+  if (e.target.id === 'pinForm'){
+    const a = $('#pin1').value, b = $('#pin2').value;
+    if (!/^\d{4,6}$/.test(a)) return gateMsg('Use 4 to 6 digits.', 'bad');
+    if (a !== b) return gateMsg('The two PINs do not match. Type them again.', 'bad');
+    await setPin(a); toast('PIN saved'); openApp();
+  }
+  if (e.target.id === 'unlockPin'){
+    if (Date.now() < GATE.until) return gateMsg(`Too many tries. Wait ${Math.ceil((GATE.until - Date.now()) / 1000)} seconds.`, 'bad');
+    const v = $('#pinU').value;
+    if (AUTH.pinHash && await pinHash(v, AUTH.pinSalt) === AUTH.pinHash){ GATE.fails = 0; openApp(); }
+    else { GATE.fails++; if (GATE.fails >= 5){ GATE.until = Date.now() + 30000; GATE.fails = 0; } gateMsg(GATE.until > Date.now() ? 'Too many wrong tries. Wait 30 seconds.' : 'Wrong PIN. Try again.', 'bad'); const f = $('#pinU'); if (f){ f.value = ''; f.focus(); } }
+  }
+});
+gate.addEventListener('click', async e => {
+  const b = e.target.closest('[data-gate]'); if (!b) return; const a = b.dataset.gate;
+  if (a === 'mkbio'){
+    try { const r = await passkeyCreate(); Object.assign(AUTH, r, {method:'passkey'}); saveAuth(); toast('Fingerprint lock is on'); openApp(); }
+    catch(err){ gateMsg(err && err.name === 'NotAllowedError' ? 'Fingerprint set-up was cancelled. Try again or use an app PIN.' : 'This phone could not set up fingerprint lock. Use an app PIN instead.', 'bad'); }
+  }
+  if (a === 'cancel'){ openApp(); return; }
+  if (a === 'mkpin'){ GATE.back = 'setlock'; GATE.step = 'pin'; GATE.msg = ''; renderGate(); }
+  if (a === 'bio') unlockBio();
+  if (a === 'help'){ GATE.step = 'help'; GATE.msg = ''; GATE.confirmErase = false; renderGate(); }
+  if (a === 'back'){ GATE.step = GATE.step === 'pin' ? (GATE.back || 'setlock') : 'unlock'; GATE.msg = ''; renderGate(); }
+  if (a === 'askErase'){ GATE.confirmErase = true; renderGate(); }
+  if (a === 'noErase'){ GATE.confirmErase = false; renderGate(); }
+  if (a === 'erase'){ try { localStorage.removeItem(KEY); localStorage.removeItem(AUTH_KEY); } catch(x){} AUTH = {}; load(); GATE.confirmErase = false; showGate('link'); toast('Erased. Link your Gmail, then restore your backup in Setup → Your data.'); }
+});
+async function unlockBio(){
+  if (GATE.busy) return; GATE.busy = true; renderGate();
+  try { const ok = await passkeyCheck(); GATE.busy = false; if (ok) openApp(); else gateMsg('That did not match. Try again.', 'bad'); }
+  catch(err){ GATE.busy = false; gateMsg(err && err.name === 'NotAllowedError' ? 'Not unlocked. Tap the button to try again.' : 'Fingerprint is not available right now. Use your app PIN, or tap “Can\'t unlock?”.', 'bad'); }
+}
+function startGate(){
+  if (!AUTH.email){ showGate('link'); return; }
+  if (!hasLock()){ showGate('setlock'); return; }
+  showGate('unlock');
+  if (AUTH.credId && coarse) setTimeout(unlockBio, 250);   // phones: ask for the fingerprint straight away
+}
+/* lock again after the app has been in the background */
+let HIDDEN_AT = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ HIDDEN_AT = Date.now(); return; }
+  const mins = AUTH.lockAfter == null ? 1 : num(AUTH.lockAfter);
+  if (!LOCKED && hasLock() && HIDDEN_AT && Date.now() - HIDDEN_AT >= mins * 60000) startGate();
+});
+
+/* ---------- Setup → Account & lock ---------- */
+function setupSecurity(){
+  const la = String(AUTH.lockAfter == null ? 1 : AUTH.lockAfter);
+  return `<p class="lead">Who this phone's Swe-tr belongs to, and how it is locked.</p>
+  <div class="grid2 even">
+    <section class="card result"><h3 style="margin-bottom:12px">Linked Gmail</h3>
+      <div class="gate-who" style="color:var(--ink)">${AUTH.picture ? `<img src="${esc(AUTH.picture)}" alt="" referrerpolicy="no-referrer">` : `<span>${esc(((AUTH.name || AUTH.email || '?')[0] || '?').toUpperCase())}</span>`}<div><b>${esc(AUTH.name || (AUTH.email || '').split('@')[0])}</b><small>${esc(AUTH.email || 'Not linked')}</small></div></div>
+      <p class="hint" style="margin-top:10px">${AUTH.verified ? 'Confirmed with Google sign-in.' : 'Typed in on this phone.'} Backups are sent to this address.</p>
+      <div class="actions" style="margin-top:12px"><button class="btn" data-act="relink">Change Gmail</button></div></section>
+    <section class="card"><h3 style="margin-bottom:12px">Lock</h3>
+      <dl class="kv"><dt>Fingerprint, face or screen lock</dt><dd>${AUTH.credId ? '<span class="pill good">On</span>' : '<span class="pill">Off</span>'}</dd><dt>App PIN</dt><dd>${AUTH.pinHash ? '<span class="pill good">Set</span>' : '<span class="pill">Not set</span>'}</dd></dl>
+      <div class="actions" style="margin-top:12px"><button class="btn" data-act="secBio">${AUTH.credId ? 'Set up fingerprint again' : 'Turn on fingerprint lock'}</button><button class="btn" data-act="secPin">${AUTH.pinHash ? 'Change app PIN' : 'Set an app PIN'}</button></div>
+      <div class="field" style="margin-top:16px"><span class="lbl">Lock again after leaving the app for</span>${seg('lockAfter', la, [['0','Right away'],['1','1 min'],['5','5 min'],['15','15 min']], 'margin:0')}</div>
+      <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="lockNow">Lock now</button></div>
+      <p class="hint" style="margin-top:12px">The lock stops other people opening Swe-tr on this phone. Your data is kept in this phone's browser, so keep the phone's own screen lock on too, and back up regularly.</p></section>
+  </div>`;
+}
+
+/* =========================================================
    router, shell & look
    ========================================================= */
 const VIEWS = {
@@ -2329,9 +2545,11 @@ function renderNav(){
   $('#sideNav').innerHTML = html;
   $('#bottomNav').innerHTML = BOTTOM.map(k => `<a href="#${k}" ${k === t ? 'aria-current="page"' : ''}>${icon(VIEWS[k].icon)}<span>${VIEWS[k].title.split(' ')[0]}</span>${badge(k)}</a>`).join('')
     + `<button data-act="more" ${BOTTOM.includes(t) ? '' : 'aria-current="page"'}>${icon('more')}<span>More</span></button>`;
+  $('#sideLock').hidden = !hasLock();
   $('#bizSide').textContent = S.profile.business && S.profile.business !== BRAND_NAME ? S.profile.business : 'Costing, orders & stock';
 }
 function render(){
+  if (LOCKED) return;
   const t = cur();
   applyLook(); renderNav();
   $('#pgTitle').textContent = VIEWS[t].title;
@@ -2415,7 +2633,7 @@ async function shareOrSave(name, blob, title, text){
   return (await saveFile(name, blob)) ? 'saved' : 'failed';
 }
 const ACT = {
-  setUi: el => { const p = el.dataset.path, full = p.startsWith('settings') ? p : 'ui.' + p; setPath(full, p === 'settings.textSize' ? num(el.dataset.v) : el.dataset.v); if (MODAL && MODAL.type === 'more'){ applyLook(); renderModal(); } },
+  setUi: el => { if (el.dataset.path === 'lockAfter'){ AUTH.lockAfter = num(el.dataset.v); saveAuth(); return; } const p = el.dataset.path, full = p.startsWith('settings') ? p : 'ui.' + p; setPath(full, p === 'settings.textSize' ? num(el.dataset.v) : el.dataset.v); if (MODAL && MODAL.type === 'more'){ applyLook(); renderModal(); } },
   setMode: el => { S.settings.mode = el.dataset.v; },
   setPalette: el => { S.settings.palette = el.dataset.v; S.settings.accent = ''; },
   clearAccent: () => { S.settings.accent = ''; },
@@ -2578,6 +2796,11 @@ const ACT = {
   driveRestore: el => { gFetch(`https://www.googleapis.com/drive/v3/files/${el.dataset.id}?alt=media`).then(r => r.text()).then(t => { if (restoreFromText(t)){ closeModal(); render(); } }).catch(e => toast(e.message)); return false; },
   shareBackup: () => { shareBackup(); return false; },
 
+  /* account & lock */
+  relink: () => { showGate('link', true); return false; },
+  secBio: () => { showGate('setlock', true); return false; },
+  secPin: () => { GATE.back = ''; showGate('pin', true); return false; },
+  lockNow: () => { startGate(); return false; },
   /* data */
   askConfirm: el => { S.ui.confirm = el.dataset.key; if (dlg.open){ renderModal(); return false; } },
   cancelConfirm: () => { S.ui.confirm = ''; if (dlg.open){ renderModal(); return false; } },
@@ -2599,7 +2822,7 @@ document.addEventListener('click', e => {
 });
 
 load();
-render();
+startGate();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && window.top === window){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }

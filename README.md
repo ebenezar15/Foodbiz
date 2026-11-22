@@ -15,6 +15,14 @@ It is a static web app (no server, no build step). Host it on Vercel, open the l
    - **Android (Chrome):** ⋮ menu → **Install app** (or **Add to Home screen**).
    - **iPhone (Safari):** Share button → **Add to Home Screen**.
 
+## Signing in
+
+- **First time:** link your Gmail (type it, or tap *Continue with Google* once the Google client ID is set up). Backups go to this address.
+- **Then choose a lock:** fingerprint, face or the phone's own screen lock (PIN/pattern), using the phone's passkey support; or a 4–6 digit app PIN. You can set both.
+- **Every time you open Swe-tr** it asks for the fingerprint or PIN. It locks again after you leave the app for a set time (Setup → Account & lock: right away, 1, 5 or 15 minutes).
+- **Can't unlock?** Sign in again with the same Google account (when the client ID is set up), or erase this phone's copy and restore your latest backup.
+- The lock keeps other people out of the app on your phone. Data is stored in the phone's browser, so keep the phone's own screen lock on and back up regularly.
+
 ## Back up to your Gmail / Google account
 
 Data lives on the device. Two ways to keep a copy in your Google account:
