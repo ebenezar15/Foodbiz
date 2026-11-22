@@ -2,18 +2,45 @@
 
 A costing, pricing, order, stock and billing app for home food businesses: brownies, cookies, cakes, Indian sweets, snacks, pickles and home meals. All amounts are in rupees.
 
-**Live app: https://swe-tr.vercel.app/** (also reachable at https://foodbiz-ashy.vercel.app/)
+**Live app: https://swe-tr.vercel.app/** (also at https://foodbiz-ashy.vercel.app/)
 
 It is a static web app (no server, no build step). Host it on Vercel, open the link on your phone and install it to the home screen. It then opens like an app and works offline.
 
 ## Put it online with Vercel
 
-1. Go to [vercel.com/new](https://vercel.com/new) and sign in with GitHub.
-2. Import the **ebenezar15/foodbiz** repository. Leave the framework preset as **Other**, with no build command and no output directory.
-3. Click **Deploy**. Every push to the repository's default branch now deploys automatically.
-4. Open the `….vercel.app` address on your phone and install it:
-   - **Android (Chrome):** ⋮ menu → **Install app** (or **Add to Home screen**).
-   - **iPhone (Safari):** Share button → **Add to Home Screen**.
+The project deploys from GitHub automatically on every push.
+
+**Use the address swe-tr.vercel.app** (one-time, in your Vercel account):
+1. Open [vercel.com](https://vercel.com), sign in, and click the **foodbiz** project.
+2. Go to **Settings → Domains**.
+3. Type `swe-tr.vercel.app` and click **Add**. Vercel connects it within a minute.
+4. Optional: **Settings → General → Project Name**, rename it to `swe-tr`.
+
+The old address `foodbiz-ashy.vercel.app` keeps working as well.
+
+## Install on your phone (step by step)
+
+The app also has this guide built in: **More → Install app**.
+
+### Android (Chrome)
+1. Open **Chrome** and go to **swe-tr.vercel.app**.
+2. Link your Gmail and set your fingerprint or PIN when Swe-tr asks.
+3. Tap **Install** on the banner at the top of the Dashboard. No banner? Tap the **⋮** menu (top right), then **Install app** or **Add to Home screen**.
+4. Tap **Install** again to confirm.
+5. Open **Swe-tr** from your home screen or app drawer. It opens full screen and works offline.
+
+*Samsung Internet:* tap **☰** (bottom right) → **Add page to** → **Home screen**.
+
+### iPhone or iPad (Safari)
+1. Open **Safari** and go to **swe-tr.vercel.app**.
+2. Tap the **Share** button (square with an up arrow) at the bottom of the screen (top on iPad).
+3. Scroll down and tap **Add to Home Screen**.
+4. Keep the name **Swe-tr** and tap **Add**.
+5. Open **Swe-tr** from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.
+
+On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swe-tr in Safari, email yourself a backup first (Setup → Your data → Email the backup) and restore it inside the installed app.
+
+**To remove the app:** press and hold the Swe-tr icon, then **Uninstall** (Android) or **Remove App** (iPhone). Back up first.
 
 ## Signing in
 

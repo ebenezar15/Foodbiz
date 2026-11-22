@@ -301,6 +301,7 @@ details.more summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(-
 details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size:.86rem}
 .billsum{display:grid;gap:4px;padding:12px;border-radius:10px;background:var(--surface-2)}
 [hidden]{display:none !important}
+.nowrap{white-space:nowrap}
 /* ---------- sign-in gate ---------- */
 #gate{position:fixed;inset:0;z-index:40;background:var(--chrome);color:var(--chrome-ink);overflow-y:auto;display:grid;place-items:center;
   padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -442,7 +443,8 @@ const I = {
   guide:'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z',
   setup:'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
   more:'M5 12h.01M12 12h.01M19 12h.01',
-  reports:'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5'
+  reports:'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5',
+  install:'M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 7v7M9 11l3 3 3-3M11 18h2'
 };
 const icon = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"${k === 'more' ? ' style="stroke-width:3.2"' : ''}><path d="${I[k]}"/></svg>`;
 
@@ -969,10 +971,44 @@ const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: stan
 let INSTALL = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL = e; if (['home', 'setup'].includes(cur())) render(); });
 window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Swe-tr from your home screen.'); });
-function installNudge(){
-  if (!INSTALL || isStandalone()) return '';
-  return `<div class="banner" style="background:var(--accent-soft)"><span>Install Swe-tr on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
+const APP_URL = 'https://swe-tr.vercel.app';
+const PLATFORM = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : /android/i.test(navigator.userAgent) ? 'android' : 'other';
+function installGuide(){
+  const host = APP_URL.replace('https://', '');
+  const android = `<section class="card ${PLATFORM === 'android' ? 'result' : ''}"><div class="card-h"><h3>Android phone</h3>${PLATFORM === 'android' ? '<span class="pill acc">This phone</span>' : ''}<p class="hint">Chrome is best. Samsung Internet also works.</p></div>
+    <ol class="steps">
+      <li><span class="n">1</span><span>Open <b>Chrome</b> and go to <b class="nowrap">${host}</b>.</span><span></span></li>
+      <li><span class="n">2</span><span>Link your Gmail and set your fingerprint or PIN when Swe-tr asks.</span><span></span></li>
+      <li><span class="n">3</span><span>Tap <b>Install</b> on the banner at the top of the Dashboard. No banner? Tap the <b>⋮</b> menu (top right), then <b>Install app</b> or <b>Add to Home screen</b>.</span><span></span></li>
+      <li><span class="n">4</span><span>Tap <b>Install</b> again to confirm.</span><span></span></li>
+      <li><span class="n">5</span><span>Open <b>Swe-tr</b> from your home screen or app drawer. It opens full screen and works offline.</span><span></span></li>
+    </ol>
+    <p class="hint" style="margin-top:10px"><b>Samsung Internet:</b> tap <b>☰</b> (bottom right), then <b>Add page to</b> → <b>Home screen</b>.</p>
+    ${INSTALL && PLATFORM !== 'ios' ? '<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="installApp">Install now</button></div>' : ''}</section>`;
+  const ios = `<section class="card ${PLATFORM === 'ios' ? 'result' : ''}"><div class="card-h"><h3>iPhone or iPad</h3>${PLATFORM === 'ios' ? '<span class="pill acc">This phone</span>' : ''}<p class="hint">Use Safari for the most reliable install.</p></div>
+    <ol class="steps">
+      <li><span class="n">1</span><span>Open <b>Safari</b> and go to <b class="nowrap">${host}</b>.</span><span></span></li>
+      <li><span class="n">2</span><span>Tap the <b>Share</b> button (square with an up arrow) at the bottom of the screen. On iPad it is at the top.</span><span></span></li>
+      <li><span class="n">3</span><span>Scroll down the list and tap <b>Add to Home Screen</b>.</span><span></span></li>
+      <li><span class="n">4</span><span>Keep the name <b>Swe-tr</b> and tap <b>Add</b> (top right).</span><span></span></li>
+      <li><span class="n">5</span><span>Open <b>Swe-tr</b> from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.</span><span></span></li>
+    </ol>
+    <p class="hint" style="margin-top:10px">On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swe-tr in Safari, email yourself a backup first (Setup → Your data) and restore it inside the installed app.</p></section>`;
+  return `${isStandalone() ? '<p style="margin-bottom:var(--gap)"><span class="pill good">Installed</span> You are using the installed Swe-tr app.</p>' : ''}
+    <div class="grid2 even">${PLATFORM === 'ios' ? ios + android : android + ios}</div>
+    <section class="card guide" style="margin-top:var(--gap)"><h3>Good to know</h3><ul>
+      <li>App address: <b class="nowrap">${host}</b>. Bookmark it or share it with anyone who helps you.</li>
+      <li>Updates arrive by themselves the next time you open Swe-tr with internet.</li>
+      <li>Your data stays on the phone you install it on. Back up to Gmail regularly, and before changing phones.</li>
+      <li>To remove it: press and hold the Swe-tr icon, then choose <b>Uninstall</b> (Android) or <b>Remove App</b> (iPhone). Back up first.</li></ul></section>`;
 }
+function installNudge(){
+  if (isStandalone()) return '';
+  if (INSTALL) return `<div class="banner" style="background:var(--accent-soft)"><span>Install Swe-tr on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
+  if (PLATFORM === 'ios' || (PLATFORM === 'android' && coarse)) return `<div class="banner" style="background:var(--accent-soft)"><span>Add Swe-tr to your home screen to open it like an app.</span><button class="btn small primary" data-act="go" data-hash="install">Show me how</button></div>`;
+  return '';
+}
+function vInstall(){ return `<p class="lead">Put Swe-tr on your phone's home screen so it opens like an app, full screen and offline. Follow the steps for your phone.</p>${installGuide()}`; }
 function beBar(be){
   if (!be.sales && !be.costs) return `<p class="muted">Nothing to show yet. Record sales (mark orders delivered) and expenses (add stock or log them on the Money page), and add your fixed costs in Setup.</p>`;
   const pctv = be.costs > 0 ? Math.min(100, be.sales / be.costs * 100) : (be.sales > 0 ? 100 : 0);
@@ -1626,6 +1662,7 @@ function vGuide(){
         <li>Round to friendly prices (₹49, ₹99, ₹149) and sell in boxes of 4, 6, 9 or 12.</li></ul></section>
     </div>
     <div class="cols">
+      <section class="card"><h3>Install Swe-tr on your phone</h3><p>Android: Chrome → <b class="nowrap">swe-tr.vercel.app</b> → ⋮ → <b>Install app</b>. iPhone: Safari → <b class="nowrap">swe-tr.vercel.app</b> → Share → <b>Add to Home Screen</b>.</p><p><a class="btn small" href="#install">Full step-by-step guide</a></p></section>
       <section class="card"><h3>Stock and expiry habits</h3><ul>
         <li>Enter stock the day you buy it, with the expiry date printed on the pack. Scanning the barcode makes it quick.</li>
         <li>Use the oldest stock first. The app does this when you mark orders as made.</li>
@@ -1743,9 +1780,7 @@ function setupLook(){
 }
 function setupData(){
   const B = S.backup, cid = gClientId(), last = B.last ? new Date(B.last).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
-  const inst = isStandalone() ? '<p><span class="pill good">Installed</span> You are using the installed app.</p>'
-    : INSTALL ? '<div class="actions"><button class="btn primary" data-act="installApp">Install on this device</button></div>'
-    : `<ol class="guide" style="margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.88rem"><li><b>Android (Chrome):</b> open the app link, tap ⋮, then <b>Install app</b> or <b>Add to Home screen</b>.</li><li><b>iPhone (Safari):</b> open the app link, tap the Share button, then <b>Add to Home Screen</b>.</li><li><b>Computer (Chrome or Edge):</b> click the install icon at the right of the address bar.</li></ol>`;
+  const inst = isStandalone() ? '<p><span class="pill good">Installed</span> You are using the installed app.</p>' : `<p class="hint" style="margin-bottom:10px">Add Swe-tr to your home screen. Step-by-step help for Android and iPhone:</p><div class="actions">${INSTALL ? '<button class="btn primary" data-act="installApp">Install now</button>' : ''}<a class="btn" href="#install">Installation guide</a></div>`;
   return `<p class="lead">Your data is saved on this device. Back it up to your Google account so you can restore it on a new phone or after clearing the browser.</p>
   <div class="grid2 even">
     <section class="card result"><div class="card-h"><h3>Google account backup</h3>${last ? `<span class="pill good">Last backup ${esc(last)}</span>` : '<span class="pill warn">Not backed up yet</span>'}</div>
@@ -1757,7 +1792,7 @@ function setupData(){
       <details class="more"><summary>${cid ? 'Change the Google sign-in key' : 'Switch on Google Drive backup'}</summary>
         <ol><li>Go to <b>console.cloud.google.com</b>, create a project, and enable the <b>Google Drive API</b>.</li>
           <li>Under <b>APIs &amp; Services → OAuth consent screen</b>, choose External and add your Gmail as a test user.</li>
-          <li>Under <b>Credentials</b>, create an <b>OAuth client ID</b> of type <b>Web application</b>. Add your app's web address (your Vercel link) under Authorised JavaScript origins.</li>
+          <li>Under <b>Credentials</b>, create an <b>OAuth client ID</b> of type <b>Web application</b>. Add <b>https://swe-tr.vercel.app</b> under Authorised JavaScript origins.</li>
           <li>Copy the client ID and paste it here, or put it in <code>config.js</code> so every device gets it.</li></ol>
         <div class="row" style="margin-top:10px">${F('Google OAuth client ID', 'backup.clientId', B.clientId, '', 'txt', 'placeholder="…apps.googleusercontent.com"')}</div></details>
       <h4 style="margin:18px 0 6px">Email the backup</h4>
@@ -2522,6 +2557,7 @@ const VIEWS = {
   'shelf-life':{title:'Shelf life', icon:'shelf', grp:'Know-how', v:vShelf, sub:() => 'Best-before dates and labels'},
   packaging:{title:'Packaging', icon:'packaging', grp:'Know-how', v:vPackaging, sub:() => 'What to pack in and what it costs'},
   guide:{title:'Guide', icon:'guide', grp:'Know-how', v:vGuide, sub:() => 'Rules, questions and good habits'},
+  install:{title:'Install app', icon:'install', grp:'Settings', v:vInstall, sub:() => 'Step-by-step for Android and iPhone'},
   setup:{title:'Setup', icon:'setup', grp:'Settings', v:vSetup, o:oSetup, sub:() => 'Your business, appearance and data'}
 };
 const BOTTOM = ['home', 'orders', 'stock', 'money'];
