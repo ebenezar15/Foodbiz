@@ -1,6 +1,6 @@
 /* Batch & Price service worker: lets the installed app open and work offline. */
-const CACHE = 'batch-and-price-v3';
-const CORE = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
+const CACHE = 'swetr-v4';
+const CORE = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/icon.svg', 'brand/logo-cream.svg', 'brand/icon-s-cream.svg', 'brand/logo-red.jpg',
   'vendor/jspdf.umd.min.js', 'vendor/jspdf.plugin.autotable.min.js', 'vendor/pdf-font.js', 'vendor/zxing.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache: 'reload'})))).then(() => self.skipWaiting()));

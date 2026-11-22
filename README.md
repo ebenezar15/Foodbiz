@@ -1,4 +1,4 @@
-# Batch & Price
+# Swe-tr Desserts · Batch & Price
 
 A costing, pricing, order, stock and billing app for home food businesses: brownies, cookies, cakes, Indian sweets, snacks, pickles and home meals. All amounts are in rupees.
 
@@ -63,5 +63,6 @@ Shelf-life figures and the tax and licence notes are starting points. Confirm sh
 | `index.html` | The whole app (markup, styles and code). |
 | `config.js` | Hosting settings (Google client ID for Drive backup). |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Install to home screen and offline use. |
+| `brand/` | Swe-tr logo files used in the app, on the home-screen icon and on PDF bills (`icons/` is made from the round S icon). |
 | `vendor/` | PDF, barcode and font files, kept locally so the app works offline. See `vendor/LICENSES.md`. |
 | `vercel.json` | Caching headers for Vercel. |

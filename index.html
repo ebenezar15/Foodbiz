@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Batch &amp; Price</title>
+<title>Swe-tr Desserts</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#2E1A12">
+<meta name="theme-color" content="#3B2420">
 <meta name="description" content="Cost, price, orders, stock and break-even for home bakers and sweet makers, in rupees.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Batch & Price">
+<meta name="apple-mobile-web-app-title" content="Swe-tr">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,8 +23,8 @@
 /* Layout: app shell. Desktop = dark sidebar + sticky page bar + content; phone/tablet = coloured top bar + bottom tab bar + "More" sheet.
    Colour: every palette defines light (-l) and dark (-d) raw values; the mode blocks map them onto the working tokens. */
 :root{
-  --bg-l:#F7F2EC; --sf-l:#FFFFFF; --s2-l:#EFE5DA; --ln-l:#DFD1C2; --ac-l:#8A4B22; --ch-l:#2E1A12;
-  --bg-d:#15100C; --sf-d:#201813; --s2-d:#2B211A; --ln-d:#3D2F25; --ac-d:#E2A66B; --ch-d:#1A0F0A;
+  --bg-l:#FFF8EF; --sf-l:#FFFFFF; --s2-l:#F8ECE0; --ln-l:#EBD8CC; --ac-l:#C2315F; --ch-l:#3B2420;
+  --bg-d:#160F0E; --sf-d:#211816; --s2-d:#2C201D; --ln-d:#40302B; --ac-d:#F28DB0; --ch-d:#1E1311;
   --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --r:14px; --pad:18px; --gap:16px;
@@ -35,7 +36,8 @@
   --good-soft:#DCEFE1; --warn-soft:#FAEACD; --bad-soft:#FBE2DE;
   --shadow:0 1px 2px rgb(30 20 10 / .06), 0 4px 16px rgb(30 20 10 / .05);
 }
-/* Dessert colour schemes */
+/* Dessert colour schemes (Swe-tr brand is the default above) */
+:root[data-palette="fudge"]{--bg-l:#F7F2EC;--s2-l:#EFE5DA;--ln-l:#DFD1C2;--ac-l:#8A4B22;--ch-l:#2E1A12;--bg-d:#15100C;--sf-d:#201813;--s2-d:#2B211A;--ln-d:#3D2F25;--ac-d:#E2A66B;--ch-d:#1A0F0A}
 :root[data-palette="strawberry"]{--bg-l:#FBF4F5;--s2-l:#F6E6EA;--ln-l:#EBD3DA;--ac-l:#C2185B;--ch-l:#4A1530;--bg-d:#160E11;--sf-d:#21151A;--s2-d:#2D1D24;--ln-d:#422934;--ac-d:#F58FB5;--ch-d:#1E0B14}
 :root[data-palette="pistachio"]{--bg-l:#F5F7EF;--s2-l:#E9EEDC;--ln-l:#D6DDC4;--ac-l:#557A26;--ch-l:#2F3B1E;--bg-d:#11140D;--sf-d:#1A1F14;--s2-d:#242B1C;--ln-d:#343E28;--ac-d:#B5D98A;--ch-d:#141A0D}
 :root[data-palette="blueberry"]{--bg-l:#F5F4FA;--s2-l:#E9E7F4;--ln-l:#D6D3E8;--ac-l:#5146A8;--ch-l:#231E46;--bg-d:#100F17;--sf-d:#181622;--s2-d:#221F30;--ln-d:#332F45;--ac-d:#ACA3F2;--ch-d:#110F24}
@@ -79,7 +81,10 @@ svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-widt
 /* ---------- shell ---------- */
 .shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100dvh}
 .side{position:sticky;top:0;height:100dvh;overflow-y:auto;background:var(--chrome);color:var(--chrome-ink);padding:18px 12px 18px max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:2px}
-.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 12px;min-width:0}
+.brand{display:grid;justify-items:start;gap:2px;padding:2px 10px 10px;min-width:0}
+.brandlogo{width:150px;height:auto;display:block;margin-left:-6px}
+.brand small{padding-left:2px}
+img.mlogo{width:36px;height:36px;flex:none;border-radius:50%}
 .brand b{font-family:var(--font-display);font-size:1.12rem;display:block;line-height:1.1}
 .brand small{display:block;font-size:.74rem;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
@@ -97,7 +102,7 @@ svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .bar .in{display:flex;align-items:center;gap:10px;padding-block:12px}
 .bar .ttl{min-width:0;flex:1}
 .bar .ttl p{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar .mlogo{display:none}
+.bar .mlogo{display:none !important}
 .wrap{width:100%;max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 main{padding-block:20px 48px}
 .bottom{display:none}
@@ -107,7 +112,7 @@ main{padding-block:20px 48px}
   body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--chrome)}
   .bar{top:env(safe-area-inset-top,0px);background:var(--chrome);color:var(--chrome-ink);border:0;backdrop-filter:none;-webkit-backdrop-filter:none}
   .bar .ttl p{color:var(--chrome-ink);opacity:.7}
-  .bar .mlogo{display:grid}
+  .bar .mlogo{display:block !important}
   .bar .btn{background:color-mix(in srgb, var(--chrome-ink) 12%, transparent);color:var(--chrome-ink);border-color:transparent}
   .bar .btn.primary{background:var(--accent);color:var(--accent-ink)}
   .bar .btn .lbl{display:none}
@@ -300,7 +305,7 @@ details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size
 <body>
 <div class="shell">
   <aside class="side" aria-label="Main menu">
-    <div class="brand"><span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 12.5h18M9 6v13M15 6v13"/></svg></span><span style="min-width:0"><b>Batch &amp; Price</b><small id="bizSide"></small></span></div>
+    <div class="brand"><img class="brandlogo" src="brand/logo-cream.svg" alt="Swe-tr Desserts"><small id="bizSide"></small></div>
     <nav class="nav" id="sideNav"></nav>
     <div class="side-foot" role="group" aria-label="Colour mode">
       <button data-act="setMode" data-v="light">Light</button><button data-act="setMode" data-v="dark">Dark</button><button data-act="setMode" data-v="system">Auto</button>
@@ -308,7 +313,7 @@ details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size
   </aside>
   <div class="content">
     <header class="bar"><div class="wrap in">
-      <span class="logo mlogo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 12.5h18M9 6v13M15 6v13"/></svg></span>
+      <img class="mlogo" src="brand/icon-s-cream.svg" alt="Swe-tr" width="36" height="36">
       <div class="ttl"><h1 id="pgTitle">Dashboard</h1><p id="pgSub"></p></div>
       <button class="btn" data-act="scan" title="Scan a barcode"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span class="lbl">Scan</span></button>
       <button class="btn primary" data-act="newOrder" title="New order"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">New order</span></button>
@@ -418,6 +423,7 @@ const SALE_CATS = ['Individual','Bulk','Corporate / event','Delivery app','Café
 const ORDER_TYPES = [['individual','Individual'],['bulk','Bulk'],['corporate','Corporate / event'],['reseller','Café / reseller']];
 const TYPE_TO_SALE = {individual:'Individual', bulk:'Bulk', corporate:'Corporate / event', reseller:'Café / reseller'};
 const PALETTES = [
+  ['swetr','Swe-tr (brand)',['#3B2420','#C2315F','#FFF6E9']],
   ['fudge','Chocolate fudge',['#2E1A12','#8A4B22','#F7F2EC']],
   ['strawberry','Strawberry shortcake',['#4A1530','#C2185B','#FBF4F5']],
   ['pistachio','Pistachio kulfi',['#2F3B1E','#557A26','#F5F7EF']],
@@ -425,6 +431,7 @@ const PALETTES = [
   ['kesar','Kesar mango',['#3D2408','#B25400','#FBF6EC']],
   ['redvelvet','Red velvet',['#3A0D14','#A3192E','#FAF4F2']]
 ];
+const BRAND_NAME = 'Swe-tr Desserts';
 const OLD_PALETTE = {cocoa:'fudge', berry:'strawberry', ocean:'blueberry', saffron:'kesar', slate:'blueberry'};
 const STARTER_ING = [['Maida (all-purpose flour)',1,'kg'],['Sugar',1,'kg'],['Powdered sugar',500,'g'],['Brown sugar',500,'g'],['Butter',500,'g'],['Eggs',30,'pcs'],['Milk',1,'L'],
   ['Cocoa powder',250,'g'],['Dark chocolate or compound',500,'g'],['Baking powder',100,'g'],['Baking soda',100,'g'],['Vanilla essence',50,'ml'],['Salt',1,'kg'],['Refined oil',1,'L'],
@@ -525,7 +532,7 @@ function sample(){
   const st = {
     v:3, sample:true, backup:{email:'', last:'', clientId:''}, profile, ingredients, packaging, recipes, entries, orders, finished,
     be:{investment:25000, invNote:'OTG oven, moulds, hand mixer, scale', start:entries[0].date.slice(0, 7), autoFixed:true, ownerPay:0},
-    settings:{palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100},
+    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100},
     quote:{customer:'Office festive order', type:'bulk', rows:[{id:uid(), recipeId:rB.id, qty:60},{id:uid(), recipeId:rC.id, qty:30}], delivery:80, customPack:5, rush:0, advance:50, validDays:7},
     shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'high', pack:'airtight'},
     packAdv:{cat:'moist', purpose:'gift', distance:'city', eco:false},
@@ -543,14 +550,14 @@ function UI_DEFAULT(){ return {recipe:'', month:thisMonth(), confirm:'', ofilter
 function blankState(){
   const F = (name, amt) => ({id:uid(), name, amt});
   return {
-    v:3, sample:false, backup:{email:'', last:'', clientId:''},
-    profile:{business:'', address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!',
+    v:3, brand:1, sample:false, backup:{email:'', last:'', clientId:''},
+    profile:{business:BRAND_NAME, address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!',
       products:[], channels:[], buyers:'both', monthlyPieces:200, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150, climate:'hot',
       margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2, fixed:[],
       tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]},
     ingredients:[], packaging:[], recipes:[], entries:[], orders:[], finished:[],
     be:{investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0},
-    settings:{palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100},
+    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100},
     quote:{customer:'', type:'individual', rows:[], delivery:0, customPack:0, rush:0, advance:50, validDays:7},
     shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'normal', pack:'airtight'},
     packAdv:{cat:'moist', purpose:'everyday', distance:'local', eco:false},
@@ -564,7 +571,7 @@ function migrate(d){
     d.packaging.forEach(k => { k.stock = 0; k.low = 0; k.barcode = ''; });
     d.orders = []; d.finished = []; d.sample = false;
     d.be = {investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0};
-    d.settings = {palette:'fudge', mode:'system', accent:'', density:'comfortable', textSize:100};
+    d.settings = {palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100};
     d.v = 2;
   }
   if (d.v === 2){
@@ -574,7 +581,8 @@ function migrate(d){
     d.backup = d.backup || {email:'', last:'', clientId:''};
     d.v = 3;
   }
-  if (d.settings && !PALETTES.some(x => x[0] === d.settings.palette)) d.settings.palette = 'fudge';
+  if (d.settings && !PALETTES.some(x => x[0] === d.settings.palette)) d.settings.palette = 'swetr';
+  if (d.v === 3 && !d.brand){ if (d.settings && (!d.settings.palette || d.settings.palette === 'fudge') && !d.settings.accent) d.settings.palette = 'swetr'; if (d.profile && !d.profile.business) d.profile.business = BRAND_NAME; d.brand = 1; }
   return d.v === 3 ? d : null;
 }
 function load(){
@@ -870,7 +878,7 @@ function vHome(){
 function getStarted(){
   const P = S.profile, priced = S.ingredients.length > 0 && S.ingredients.every(g => num(g.packPrice) > 0);
   const steps = [
-    [!!P.business, 'Tell the app about your business', 'Answer the setup questions', 'data-act="go" data-hash="setup" data-tab="business"'],
+    [!!(P.phone && P.upi), 'Add your phone and UPI ID for bills, and answer the setup questions', 'Open setup', 'data-act="go" data-hash="setup" data-tab="business"'],
     [priced, S.ingredients.length ? 'Fill in what you pay for each ingredient' : 'Add your ingredients and what you pay', S.ingredients.length ? 'Add prices' : 'Add ingredients', 'data-act="go" data-hash="stock" data-stab="ing"'],
     [S.recipes.length > 0, 'Add a recipe to get its cost and selling price', 'Add a recipe', 'data-act="addRecipe"'],
     [S.orders.length > 0, 'Add your first order', 'Add an order', 'data-act="newOrder"'],
@@ -2042,7 +2050,9 @@ function loadScript(src){
     document.head.appendChild(s);
   });
 }
-async function pdfLibs(){ await loadScript('vendor/jspdf.umd.min.js'); await loadScript('vendor/jspdf.plugin.autotable.min.js'); await loadScript('vendor/pdf-font.js'); }
+let LOGO_DATA = null;
+async function brandLogo(){ if (LOGO_DATA !== null) return LOGO_DATA; try { const b = await (await fetch('brand/logo-red.jpg')).blob(); LOGO_DATA = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => r(''); fr.readAsDataURL(b); }); } catch(e){ LOGO_DATA = ''; } return LOGO_DATA; }
+async function pdfLibs(){ await brandLogo(); await loadScript('vendor/jspdf.umd.min.js'); await loadScript('vendor/jspdf.plugin.autotable.min.js'); await loadScript('vendor/pdf-font.js'); }
 function newDoc(){
   const d = new window.jspdf.jsPDF({unit:'mm', format:'a4'});
   d.addFileToVFS('NotoSans-Regular.ttf', window.BP_FONTS.regular); d.addFont('NotoSans-Regular.ttf', 'Noto', 'normal');
@@ -2057,8 +2067,10 @@ function pdfHeader(d, title, right){
   const P = S.profile, W = 210, M = 16, ac = hexRgb(accentHex());
   d.setFillColor(...ac); d.rect(0, 0, W, 5, 'F');
   let y = 19;
-  d.setFont('Noto', 'bold'); d.setFontSize(17); d.setTextColor(30, 30, 30); d.text(P.business || 'Your business', M, y);
-  d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(95, 95, 95); y += 6;
+  const isBrand = /swe-?tr/i.test(P.business || '');
+  if (LOGO_DATA){ try { d.addImage(LOGO_DATA, 'JPEG', M, 9, 44, 44 * 259 / 640); y = 9 + 44 * 259 / 640 + 2; } catch(e){} }
+  if (!LOGO_DATA || !isBrand){ y += LOGO_DATA ? 4 : 0; d.setFont('Noto', 'bold'); d.setFontSize(LOGO_DATA ? 12 : 17); d.setTextColor(30, 30, 30); d.text(P.business || 'Your business', M, y); y += 6; } else y += 3;
+  d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(95, 95, 95);
   [P.address, [P.phone, P.email].filter(Boolean).join('   ·   '), P.fssaiNo ? 'FSSAI Reg. No. ' + P.fssaiNo : '', P.gstin ? 'GSTIN ' + P.gstin : ''].filter(Boolean)
     .forEach(t => d.splitTextToSize(t, 105).forEach(line => { d.text(line, M, y); y += 4.4; }));
   d.setFont('Noto', 'bold'); d.setFontSize(19); d.setTextColor(...ac); d.text(title, W - M, 19, {align:'right'});
@@ -2253,14 +2265,14 @@ const BOTTOM = ['home', 'orders', 'stock', 'money'];
 const cur = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'home'; };
 function applyLook(){
   const st = S.settings, root = document.documentElement;
-  root.dataset.palette = st.palette || 'fudge';
+  root.dataset.palette = st.palette || 'swetr';
   if (st.mode === 'light' || st.mode === 'dark') root.dataset.mode = st.mode; else delete root.dataset.mode;
   root.dataset.density = st.density || 'comfortable';
   root.style.fontSize = (num(st.textSize) || 100) + '%';
   if (st.accent){ root.style.setProperty('--ac-l', st.accent); root.style.setProperty('--ac-d', `color-mix(in srgb, ${st.accent} 62%, white)`); }
   else { root.style.removeProperty('--ac-l'); root.style.removeProperty('--ac-d'); }
   $$('.side-foot button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (st.mode || 'system'))));
-  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(root).getPropertyValue('--chrome').trim() || '#2E1A12';
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(root).getPropertyValue('--chrome').trim() || '#3B2420';
 }
 function renderNav(){
   const t = cur(), al = alerts(), nBad = al.filter(a => a[0] === 'bad').length, nOpen = openOrders().length;
@@ -2270,7 +2282,7 @@ function renderNav(){
   $('#sideNav').innerHTML = html;
   $('#bottomNav').innerHTML = BOTTOM.map(k => `<a href="#${k}" ${k === t ? 'aria-current="page"' : ''}>${icon(VIEWS[k].icon)}<span>${VIEWS[k].title.split(' ')[0]}</span>${badge(k)}</a>`).join('')
     + `<button data-act="more" ${BOTTOM.includes(t) ? '' : 'aria-current="page"'}>${icon('more')}<span>More</span></button>`;
-  $('#bizSide').textContent = S.profile.business || 'Home food business';
+  $('#bizSide').textContent = S.profile.business && S.profile.business !== BRAND_NAME ? S.profile.business : 'Costing, orders & stock';
 }
 function render(){
   const t = cur();
