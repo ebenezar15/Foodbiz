@@ -2,7 +2,9 @@
 
 A costing, pricing, order, stock and billing app for home food businesses: brownies, cookies, cakes, Indian sweets, snacks, pickles and home meals. All amounts are in rupees.
 
-**Live app: https://swt-er.vercel.app/** (also at https://foodbiz-ashy.vercel.app/)
+**Live app: https://swt-er.vercel.app/**
+
+Share this link with anyone who should install Swt-er. They open it on their phone and follow the steps below (or More → Install app inside Swt-er).
 
 It is a static web app (no server, no build step). Host it on Vercel, open the link on your phone and install it to the home screen. It then opens like an app and works offline.
 
@@ -16,7 +18,7 @@ The project deploys from GitHub automatically on every push.
 3. Type `swt-er.vercel.app` and click **Add**. Vercel connects it within a minute.
 4. Optional: **Settings → General → Project Name**, rename it to `swt-er`.
 
-The old address `foodbiz-ashy.vercel.app` keeps working as well.
+The live address is **swt-er.vercel.app**. Older addresses (`foodbiz-ashy.vercel.app`, `swe-tr.vercel.app`) are no longer in use.
 
 ## Install on your phone (step by step)
 
@@ -58,7 +60,7 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 - **Google Drive backup** (one-time setup): saves the backup file to your Google Drive and restores it with one tap. It needs a Google OAuth client ID:
   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable the **Google Drive API**.
   2. **APIs & Services → OAuth consent screen**: choose *External*, fill in the app name, and add your Gmail address as a test user.
-  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add `https://swt-er.vercel.app` (and `https://foodbiz-ashy.vercel.app` if you still use it).
+  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add `https://swt-er.vercel.app`.
   4. Put the client ID in `config.js` (`googleClientId: '…apps.googleusercontent.com'`) and push, or paste it in the app under Setup → Your data → *Switch on Google Drive backup*.
 
   The app asks only for the `drive.file` permission, so it can see only the backup files it created. The last 10 backups are kept.

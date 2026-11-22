@@ -1009,7 +1009,14 @@ function installNudge(){
   if (PLATFORM === 'ios' || (PLATFORM === 'android' && coarse)) return `<div class="banner" style="background:var(--accent-soft)"><span>Add Swt-er to your home screen to open it like an app.</span><button class="btn small primary" data-act="go" data-hash="install">Show me how</button></div>`;
   return '';
 }
-function vInstall(){ return `<p class="lead">Put Swt-er on your phone's home screen so it opens like an app, full screen and offline. Follow the steps for your phone.</p>${installGuide()}`; }
+const SHARE_TEXT = () => `Swt-er, The Dessert Experience. Open ${APP_URL} on your phone.\nAndroid (Chrome): tap ⋮ → Install app.\niPhone (Safari): tap Share → Add to Home Screen.`;
+async function shareApp(){
+  try { if (navigator.share){ await navigator.share({title:'Swt-er', text:SHARE_TEXT(), url:APP_URL}); return; } } catch(e){ if (e && e.name === 'AbortError') return; }
+  copyText(SHARE_TEXT());
+}
+function vInstall(){ return `<p class="lead">Put Swt-er on your phone's home screen so it opens like an app, full screen and offline. Follow the steps for your phone.</p>
+  <section class="card result" style="margin-bottom:var(--gap)"><div class="card-h"><h3>App link</h3><span class="pill acc nowrap">${APP_URL.replace('https://', '')}</span><p class="hint">Send this to anyone who should install Swt-er. The message includes the install steps.</p></div>
+    <div class="actions"><button class="btn primary" data-act="shareApp">Share Swt-er</button><button class="btn" data-act="copyAppLink">Copy link</button></div></section>${installGuide()}`; }
 function beBar(be){
   if (!be.sales && !be.costs) return `<p class="muted">Nothing to show yet. Record sales (mark orders delivered) and expenses (add stock or log them on the Money page), and add your fixed costs in Setup.</p>`;
   const pctv = be.costs > 0 ? Math.min(100, be.sales / be.costs * 100) : (be.sales > 0 ? 100 : 0);
@@ -2833,6 +2840,8 @@ const ACT = {
   driveRestore: el => { gFetch(`https://www.googleapis.com/drive/v3/files/${el.dataset.id}?alt=media`).then(r => r.text()).then(t => { if (restoreFromText(t)){ closeModal(); render(); } }).catch(e => toast(e.message)); return false; },
   shareBackup: () => { shareBackup(); return false; },
 
+  shareApp: () => { shareApp(); return false; },
+  copyAppLink: () => { copyText(APP_URL); return false; },
   /* account & lock */
   relink: () => { showGate('link', true); return false; },
   secBio: () => { showGate('setlock', true); return false; },
