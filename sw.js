@@ -1,5 +1,5 @@
-/* Swe-tr service worker: lets the installed app open and work offline. */
-const CACHE = 'swetr-v8';
+/* Swt-er service worker: lets the installed app open and work offline. */
+const CACHE = 'swter-v9';
 const CORE = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/icon.svg', 'brand/logo-cream.svg', 'brand/icon-s-cream.svg', 'brand/wordmark-cream.svg', 'brand/logo-red.jpg',
   'vendor/jspdf.umd.min.js', 'vendor/jspdf.plugin.autotable.min.js', 'vendor/pdf-font.js', 'vendor/zxing.min.js'];
 self.addEventListener('install', e => {

@@ -1,8 +1,8 @@
-# Swe-tr
+# Swt-er
 
 A costing, pricing, order, stock and billing app for home food businesses: brownies, cookies, cakes, Indian sweets, snacks, pickles and home meals. All amounts are in rupees.
 
-**Live app: https://swe-tr.vercel.app/** (also at https://foodbiz-ashy.vercel.app/)
+**Live app: https://swt-er.vercel.app/** (also at https://foodbiz-ashy.vercel.app/)
 
 It is a static web app (no server, no build step). Host it on Vercel, open the link on your phone and install it to the home screen. It then opens like an app and works offline.
 
@@ -10,11 +10,11 @@ It is a static web app (no server, no build step). Host it on Vercel, open the l
 
 The project deploys from GitHub automatically on every push.
 
-**Use the address swe-tr.vercel.app** (one-time, in your Vercel account):
+**Use the address swt-er.vercel.app** (one-time, in your Vercel account):
 1. Open [vercel.com](https://vercel.com), sign in, and click the **foodbiz** project.
 2. Go to **Settings → Domains**.
-3. Type `swe-tr.vercel.app` and click **Add**. Vercel connects it within a minute.
-4. Optional: **Settings → General → Project Name**, rename it to `swe-tr`.
+3. Type `swt-er.vercel.app` and click **Add**. Vercel connects it within a minute.
+4. Optional: **Settings → General → Project Name**, rename it to `swt-er`.
 
 The old address `foodbiz-ashy.vercel.app` keeps working as well.
 
@@ -23,30 +23,30 @@ The old address `foodbiz-ashy.vercel.app` keeps working as well.
 The app also has this guide built in: **More → Install app**.
 
 ### Android (Chrome)
-1. Open **Chrome** and go to **swe-tr.vercel.app**.
-2. Link your Gmail and set your fingerprint or PIN when Swe-tr asks.
+1. Open **Chrome** and go to **swt-er.vercel.app**.
+2. Link your Gmail and set your fingerprint or PIN when Swt-er asks.
 3. Tap **Install** on the banner at the top of the Dashboard. No banner? Tap the **⋮** menu (top right), then **Install app** or **Add to Home screen**.
 4. Tap **Install** again to confirm.
-5. Open **Swe-tr** from your home screen or app drawer. It opens full screen and works offline.
+5. Open **Swt-er** from your home screen or app drawer. It opens full screen and works offline.
 
 *Samsung Internet:* tap **☰** (bottom right) → **Add page to** → **Home screen**.
 
 ### iPhone or iPad (Safari)
-1. Open **Safari** and go to **swe-tr.vercel.app**.
+1. Open **Safari** and go to **swt-er.vercel.app**.
 2. Tap the **Share** button (square with an up arrow) at the bottom of the screen (top on iPad).
 3. Scroll down and tap **Add to Home Screen**.
-4. Keep the name **Swe-tr** and tap **Add**.
-5. Open **Swe-tr** from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.
+4. Keep the name **Swt-er** and tap **Add**.
+5. Open **Swt-er** from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.
 
-On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swe-tr in Safari, email yourself a backup first (Setup → Your data → Email the backup) and restore it inside the installed app.
+On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swt-er in Safari, email yourself a backup first (Setup → Your data → Email the backup) and restore it inside the installed app.
 
-**To remove the app:** press and hold the Swe-tr icon, then **Uninstall** (Android) or **Remove App** (iPhone). Back up first.
+**To remove the app:** press and hold the Swt-er icon, then **Uninstall** (Android) or **Remove App** (iPhone). Back up first.
 
 ## Signing in
 
 - **First time:** link your Gmail (type it, or tap *Continue with Google* once the Google client ID is set up). Backups go to this address.
 - **Then choose a lock:** fingerprint, face or the phone's own screen lock (PIN/pattern), using the phone's passkey support; or a 4–6 digit app PIN. You can set both.
-- **Every time you open Swe-tr** it asks for the fingerprint or PIN. It locks again after you leave the app for a set time (Setup → Account & lock: right away, 1, 5 or 15 minutes).
+- **Every time you open Swt-er** it asks for the fingerprint or PIN. It locks again after you leave the app for a set time (Setup → Account & lock: right away, 1, 5 or 15 minutes).
 - **Can't unlock?** Sign in again with the same Google account (when the client ID is set up), or erase this phone's copy and restore your latest backup.
 - The lock keeps other people out of the app on your phone. Data is stored in the phone's browser, so keep the phone's own screen lock on and back up regularly.
 
@@ -58,7 +58,7 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 - **Google Drive backup** (one-time setup): saves the backup file to your Google Drive and restores it with one tap. It needs a Google OAuth client ID:
   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable the **Google Drive API**.
   2. **APIs & Services → OAuth consent screen**: choose *External*, fill in the app name, and add your Gmail address as a test user.
-  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add `https://swe-tr.vercel.app` (and `https://foodbiz-ashy.vercel.app` if you still use it).
+  3. **Credentials → Create credentials → OAuth client ID**, type **Web application**. Under *Authorised JavaScript origins* add `https://swt-er.vercel.app` (and `https://foodbiz-ashy.vercel.app` if you still use it).
   4. Put the client ID in `config.js` (`googleClientId: '…apps.googleusercontent.com'`) and push, or paste it in the app under Setup → Your data → *Switch on Google Drive backup*.
 
   The app asks only for the `drive.file` permission, so it can see only the backup files it created. The last 10 backups are kept.
@@ -98,6 +98,6 @@ Shelf-life figures and the tax and licence notes are starting points. Confirm sh
 | `index.html` | The whole app (markup, styles and code). |
 | `config.js` | Hosting settings (Google client ID for Drive backup). |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Install to home screen and offline use. |
-| `brand/` | Swe-tr logo files used in the app, on the home-screen icon and on PDF bills (`icons/` is made from the round S icon). |
+| `brand/` | Swt-er logo files used in the app, on the home-screen icon and on PDF bills (`icons/` is made from the round S icon). |
 | `vendor/` | PDF, barcode and font files, kept locally so the app works offline. See `vendor/LICENSES.md`. |
 | `vercel.json` | Caching headers for Vercel. |

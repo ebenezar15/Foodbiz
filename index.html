@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Swe-tr</title>
+<title>Swt-er</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#3B2420">
 <meta name="description" content="Cost, price, orders, stock and break-even for home bakers and sweet makers, in rupees.">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Swe-tr">
+<meta name="apple-mobile-web-app-title" content="Swt-er">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
   --good-soft:#DCEFE1; --warn-soft:#FAEACD; --bad-soft:#FBE2DE;
   --shadow:0 1px 2px rgb(30 20 10 / .06), 0 4px 16px rgb(30 20 10 / .05);
 }
-/* Dessert colour schemes (Swe-tr brand is the default above) */
+/* Dessert colour schemes (Swt-er brand is the default above) */
 :root[data-palette="fudge"]{--bg-l:#F7F2EC;--s2-l:#EFE5DA;--ln-l:#DFD1C2;--ac-l:#8A4B22;--ch-l:#2E1A12;--bg-d:#15100C;--sf-d:#201813;--s2-d:#2B211A;--ln-d:#3D2F25;--ac-d:#E2A66B;--ch-d:#1A0F0A}
 :root[data-palette="strawberry"]{--bg-l:#FBF4F5;--s2-l:#F6E6EA;--ln-l:#EBD3DA;--ac-l:#C2185B;--ch-l:#4A1530;--bg-d:#160E11;--sf-d:#21151A;--s2-d:#2D1D24;--ln-d:#422934;--ac-d:#F58FB5;--ch-d:#1E0B14}
 :root[data-palette="pistachio"]{--bg-l:#F5F7EF;--s2-l:#E9EEDC;--ln-l:#D6DDC4;--ac-l:#557A26;--ch-l:#2F3B1E;--bg-d:#11140D;--sf-d:#1A1F14;--s2-d:#242B1C;--ln-d:#343E28;--ac-d:#B5D98A;--ch-d:#141A0D}
@@ -371,16 +371,16 @@ dialog{overscroll-behavior:contain}
 <body>
 <div class="shell">
   <aside class="side" aria-label="Main menu">
-    <div class="brand"><img class="brandlogo" src="brand/logo-cream.svg" alt="Swe-tr Desserts"><small id="bizSide"></small></div>
+    <div class="brand"><img class="brandlogo" src="brand/logo-cream.svg" alt="Swt-er, The Dessert Experience"><small id="bizSide"></small></div>
     <nav class="nav" id="sideNav"></nav>
     <div class="side-foot" role="group" aria-label="Colour mode">
       <button data-act="setMode" data-v="light">Light</button><button data-act="setMode" data-v="dark">Dark</button><button data-act="setMode" data-v="system">Auto</button>
     </div>
-    <button class="btn small" data-act="lockNow" id="sideLock" style="margin:10px 10px 0;background:transparent;color:var(--chrome-ink);border-color:color-mix(in srgb, var(--chrome-ink) 30%, transparent)">Lock Swe-tr</button>
+    <button class="btn small" data-act="lockNow" id="sideLock" style="margin:10px 10px 0;background:transparent;color:var(--chrome-ink);border-color:color-mix(in srgb, var(--chrome-ink) 30%, transparent)">Lock Swt-er</button>
   </aside>
   <div class="content">
     <header class="bar"><div class="wrap in">
-      <img class="mlogo" src="brand/wordmark-cream.svg" alt="Swe-tr" height="30">
+      <img class="mlogo" src="brand/wordmark-cream.svg" alt="Swt-er" height="30">
       <div class="ttl"><h1 id="pgTitle">Dashboard</h1><p id="pgSub"></p></div>
       <button class="btn" data-act="scan" title="Scan a barcode"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span class="lbl">Scan</span></button>
       <button class="btn primary" data-act="newOrder" title="New order"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">New order</span></button>
@@ -390,7 +390,7 @@ dialog{overscroll-behavior:contain}
 </div>
 <nav class="bottom" id="bottomNav" aria-label="Quick menu"></nav>
 <dialog id="dlg" aria-labelledby="dlgTitle"><div id="dlgBody"></div></dialog>
-<div id="gate" hidden><div class="gate-in"><img class="gate-logo" src="brand/logo-cream.svg" alt="Swe-tr Desserts"><div class="gate-card" id="gateCard"></div></div></div>
+<div id="gate" hidden><div class="gate-in"><img class="gate-logo" src="brand/logo-cream.svg" alt="Swt-er, The Dessert Experience"><div class="gate-card" id="gateCard"></div></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -492,7 +492,7 @@ const SALE_CATS = ['Individual','Bulk','Corporate / event','Delivery app','Café
 const ORDER_TYPES = [['individual','Individual'],['bulk','Bulk'],['corporate','Corporate / event'],['reseller','Café / reseller']];
 const TYPE_TO_SALE = {individual:'Individual', bulk:'Bulk', corporate:'Corporate / event', reseller:'Café / reseller'};
 const PALETTES = [
-  ['swetr','Swe-tr (brand)',['#3B2420','#C2315F','#FFF6E9']],
+  ['swetr','Swt-er (brand)',['#3B2420','#C2315F','#FFF6E9']],
   ['fudge','Chocolate fudge',['#2E1A12','#8A4B22','#F7F2EC']],
   ['strawberry','Strawberry shortcake',['#4A1530','#C2185B','#FBF4F5']],
   ['pistachio','Pistachio kulfi',['#2F3B1E','#557A26','#F5F7EF']],
@@ -500,7 +500,7 @@ const PALETTES = [
   ['kesar','Kesar mango',['#3D2408','#B25400','#FBF6EC']],
   ['redvelvet','Red velvet',['#3A0D14','#A3192E','#FAF4F2']]
 ];
-const BRAND_NAME = 'Swe-tr Desserts';
+const BRAND_NAME = 'Swt-er';
 const OLD_PALETTE = {cocoa:'fudge', berry:'strawberry', ocean:'blueberry', saffron:'kesar', slate:'blueberry'};
 const STARTER_ING = [['Maida (all-purpose flour)',1,'kg'],['Sugar',1,'kg'],['Powdered sugar',500,'g'],['Brown sugar',500,'g'],['Butter',500,'g'],['Eggs',30,'pcs'],['Milk',1,'L'],
   ['Cocoa powder',250,'g'],['Dark chocolate or compound',500,'g'],['Baking powder',100,'g'],['Baking soda',100,'g'],['Vanilla essence',50,'ml'],['Salt',1,'kg'],['Refined oil',1,'L'],
@@ -651,6 +651,7 @@ function migrate(d){
     d.v = 3;
   }
   if (d.settings && !PALETTES.some(x => x[0] === d.settings.palette)) d.settings.palette = 'swetr';
+  if (d.profile && /^swe-?tr( desserts)?$/i.test((d.profile.business || '').trim())) d.profile.business = BRAND_NAME;   // renamed brand
   if (d.v === 3 && d.sample){ const b = blankState(); b.settings = d.settings || b.settings; b.backup = d.backup || b.backup; return b; }   // never keep sample data
   if (d.v === 3 && d.entries) d.entries = d.entries.filter(e => !e.ex);
   if (d.v === 3 && !d.brand){ if (d.settings && (!d.settings.palette || d.settings.palette === 'fudge') && !d.settings.accent) d.settings.palette = 'swetr'; if (d.profile && !d.profile.business) d.profile.business = BRAND_NAME; d.brand = 1; }
@@ -970,18 +971,18 @@ function backupNudge(){
 const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 let INSTALL = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL = e; if (['home', 'setup'].includes(cur())) render(); });
-window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Swe-tr from your home screen.'); });
-const APP_URL = 'https://swe-tr.vercel.app';
+window.addEventListener('appinstalled', () => { INSTALL = null; toast('Installed. Open Swt-er from your home screen.'); });
+const APP_URL = 'https://swt-er.vercel.app';
 const PLATFORM = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : /android/i.test(navigator.userAgent) ? 'android' : 'other';
 function installGuide(){
   const host = APP_URL.replace('https://', '');
   const android = `<section class="card ${PLATFORM === 'android' ? 'result' : ''}"><div class="card-h"><h3>Android phone</h3>${PLATFORM === 'android' ? '<span class="pill acc">This phone</span>' : ''}<p class="hint">Chrome is best. Samsung Internet also works.</p></div>
     <ol class="steps">
       <li><span class="n">1</span><span>Open <b>Chrome</b> and go to <b class="nowrap">${host}</b>.</span><span></span></li>
-      <li><span class="n">2</span><span>Link your Gmail and set your fingerprint or PIN when Swe-tr asks.</span><span></span></li>
+      <li><span class="n">2</span><span>Link your Gmail and set your fingerprint or PIN when Swt-er asks.</span><span></span></li>
       <li><span class="n">3</span><span>Tap <b>Install</b> on the banner at the top of the Dashboard. No banner? Tap the <b>⋮</b> menu (top right), then <b>Install app</b> or <b>Add to Home screen</b>.</span><span></span></li>
       <li><span class="n">4</span><span>Tap <b>Install</b> again to confirm.</span><span></span></li>
-      <li><span class="n">5</span><span>Open <b>Swe-tr</b> from your home screen or app drawer. It opens full screen and works offline.</span><span></span></li>
+      <li><span class="n">5</span><span>Open <b>Swt-er</b> from your home screen or app drawer. It opens full screen and works offline.</span><span></span></li>
     </ol>
     <p class="hint" style="margin-top:10px"><b>Samsung Internet:</b> tap <b>☰</b> (bottom right), then <b>Add page to</b> → <b>Home screen</b>.</p>
     ${INSTALL && PLATFORM !== 'ios' ? '<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="installApp">Install now</button></div>' : ''}</section>`;
@@ -990,25 +991,25 @@ function installGuide(){
       <li><span class="n">1</span><span>Open <b>Safari</b> and go to <b class="nowrap">${host}</b>.</span><span></span></li>
       <li><span class="n">2</span><span>Tap the <b>Share</b> button (square with an up arrow) at the bottom of the screen. On iPad it is at the top.</span><span></span></li>
       <li><span class="n">3</span><span>Scroll down the list and tap <b>Add to Home Screen</b>.</span><span></span></li>
-      <li><span class="n">4</span><span>Keep the name <b>Swe-tr</b> and tap <b>Add</b> (top right).</span><span></span></li>
-      <li><span class="n">5</span><span>Open <b>Swe-tr</b> from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.</span><span></span></li>
+      <li><span class="n">4</span><span>Keep the name <b>Swt-er</b> and tap <b>Add</b> (top right).</span><span></span></li>
+      <li><span class="n">5</span><span>Open <b>Swt-er</b> from your home screen, then link your Gmail and turn on Face ID or Touch ID lock.</span><span></span></li>
     </ol>
-    <p class="hint" style="margin-top:10px">On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swe-tr in Safari, email yourself a backup first (Setup → Your data) and restore it inside the installed app.</p></section>`;
-  return `${isStandalone() ? '<p style="margin-bottom:var(--gap)"><span class="pill good">Installed</span> You are using the installed Swe-tr app.</p>' : ''}
+    <p class="hint" style="margin-top:10px">On iPhone the home-screen app keeps its own data, separate from Safari. If you already used Swt-er in Safari, email yourself a backup first (Setup → Your data) and restore it inside the installed app.</p></section>`;
+  return `${isStandalone() ? '<p style="margin-bottom:var(--gap)"><span class="pill good">Installed</span> You are using the installed Swt-er app.</p>' : ''}
     <div class="grid2 even">${PLATFORM === 'ios' ? ios + android : android + ios}</div>
     <section class="card guide" style="margin-top:var(--gap)"><h3>Good to know</h3><ul>
       <li>App address: <b class="nowrap">${host}</b>. Bookmark it or share it with anyone who helps you.</li>
-      <li>Updates arrive by themselves the next time you open Swe-tr with internet.</li>
+      <li>Updates arrive by themselves the next time you open Swt-er with internet.</li>
       <li>Your data stays on the phone you install it on. Back up to Gmail regularly, and before changing phones.</li>
-      <li>To remove it: press and hold the Swe-tr icon, then choose <b>Uninstall</b> (Android) or <b>Remove App</b> (iPhone). Back up first.</li></ul></section>`;
+      <li>To remove it: press and hold the Swt-er icon, then choose <b>Uninstall</b> (Android) or <b>Remove App</b> (iPhone). Back up first.</li></ul></section>`;
 }
 function installNudge(){
   if (isStandalone()) return '';
-  if (INSTALL) return `<div class="banner" style="background:var(--accent-soft)"><span>Install Swe-tr on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
-  if (PLATFORM === 'ios' || (PLATFORM === 'android' && coarse)) return `<div class="banner" style="background:var(--accent-soft)"><span>Add Swe-tr to your home screen to open it like an app.</span><button class="btn small primary" data-act="go" data-hash="install">Show me how</button></div>`;
+  if (INSTALL) return `<div class="banner" style="background:var(--accent-soft)"><span>Install Swt-er on this device to open it like an app, even offline.</span><button class="btn small primary" data-act="installApp">Install</button></div>`;
+  if (PLATFORM === 'ios' || (PLATFORM === 'android' && coarse)) return `<div class="banner" style="background:var(--accent-soft)"><span>Add Swt-er to your home screen to open it like an app.</span><button class="btn small primary" data-act="go" data-hash="install">Show me how</button></div>`;
   return '';
 }
-function vInstall(){ return `<p class="lead">Put Swe-tr on your phone's home screen so it opens like an app, full screen and offline. Follow the steps for your phone.</p>${installGuide()}`; }
+function vInstall(){ return `<p class="lead">Put Swt-er on your phone's home screen so it opens like an app, full screen and offline. Follow the steps for your phone.</p>${installGuide()}`; }
 function beBar(be){
   if (!be.sales && !be.costs) return `<p class="muted">Nothing to show yet. Record sales (mark orders delivered) and expenses (add stock or log them on the Money page), and add your fixed costs in Setup.</p>`;
   const pctv = be.costs > 0 ? Math.min(100, be.sales / be.costs * 100) : (be.sales > 0 ? 100 : 0);
@@ -1662,7 +1663,7 @@ function vGuide(){
         <li>Round to friendly prices (₹49, ₹99, ₹149) and sell in boxes of 4, 6, 9 or 12.</li></ul></section>
     </div>
     <div class="cols">
-      <section class="card"><h3>Install Swe-tr on your phone</h3><p>Android: Chrome → <b class="nowrap">swe-tr.vercel.app</b> → ⋮ → <b>Install app</b>. iPhone: Safari → <b class="nowrap">swe-tr.vercel.app</b> → Share → <b>Add to Home Screen</b>.</p><p><a class="btn small" href="#install">Full step-by-step guide</a></p></section>
+      <section class="card"><h3>Install Swt-er on your phone</h3><p>Android: Chrome → <b class="nowrap">swt-er.vercel.app</b> → ⋮ → <b>Install app</b>. iPhone: Safari → <b class="nowrap">swt-er.vercel.app</b> → Share → <b>Add to Home Screen</b>.</p><p><a class="btn small" href="#install">Full step-by-step guide</a></p></section>
       <section class="card"><h3>Stock and expiry habits</h3><ul>
         <li>Enter stock the day you buy it, with the expiry date printed on the pack. Scanning the barcode makes it quick.</li>
         <li>Use the oldest stock first. The app does this when you mark orders as made.</li>
@@ -1780,7 +1781,7 @@ function setupLook(){
 }
 function setupData(){
   const B = S.backup, cid = gClientId(), last = B.last ? new Date(B.last).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
-  const inst = isStandalone() ? '<p><span class="pill good">Installed</span> You are using the installed app.</p>' : `<p class="hint" style="margin-bottom:10px">Add Swe-tr to your home screen. Step-by-step help for Android and iPhone:</p><div class="actions">${INSTALL ? '<button class="btn primary" data-act="installApp">Install now</button>' : ''}<a class="btn" href="#install">Installation guide</a></div>`;
+  const inst = isStandalone() ? '<p><span class="pill good">Installed</span> You are using the installed app.</p>' : `<p class="hint" style="margin-bottom:10px">Add Swt-er to your home screen. Step-by-step help for Android and iPhone:</p><div class="actions">${INSTALL ? '<button class="btn primary" data-act="installApp">Install now</button>' : ''}<a class="btn" href="#install">Installation guide</a></div>`;
   return `<p class="lead">Your data is saved on this device. Back it up to your Google account so you can restore it on a new phone or after clearing the browser.</p>
   <div class="grid2 even">
     <section class="card result"><div class="card-h"><h3>Google account backup</h3>${last ? `<span class="pill good">Last backup ${esc(last)}</span>` : '<span class="pill warn">Not backed up yet</span>'}</div>
@@ -1792,12 +1793,12 @@ function setupData(){
       <details class="more"><summary>${cid ? 'Change the Google sign-in key' : 'Switch on Google Drive backup'}</summary>
         <ol><li>Go to <b>console.cloud.google.com</b>, create a project, and enable the <b>Google Drive API</b>.</li>
           <li>Under <b>APIs &amp; Services → OAuth consent screen</b>, choose External and add your Gmail as a test user.</li>
-          <li>Under <b>Credentials</b>, create an <b>OAuth client ID</b> of type <b>Web application</b>. Add <b>https://swe-tr.vercel.app</b> under Authorised JavaScript origins.</li>
+          <li>Under <b>Credentials</b>, create an <b>OAuth client ID</b> of type <b>Web application</b>. Add <b>https://swt-er.vercel.app</b> under Authorised JavaScript origins.</li>
           <li>Copy the client ID and paste it here, or put it in <code>config.js</code> so every device gets it.</li></ol>
         <div class="row" style="margin-top:10px">${F('Google OAuth client ID', 'backup.clientId', B.clientId, '', 'txt', 'placeholder="…apps.googleusercontent.com"')}</div></details>
       <h4 style="margin:18px 0 6px">Email the backup</h4>
       <p class="hint" style="margin-bottom:10px">On a phone, choose Gmail in the share menu and send it to yourself. On a computer, the file downloads and an email opens for you to attach it.</p>
-      <div class="actions"><button class="btn" data-act="shareBackup">Email the backup</button>${B.email ? `<a class="btn ghost" href="mailto:${esc(B.email)}?subject=${encodeURIComponent('Swe-tr backup ' + today())}">Open an email to ${esc(B.email)}</a>` : ''}</div>
+      <div class="actions"><button class="btn" data-act="shareBackup">Email the backup</button>${B.email ? `<a class="btn ghost" href="mailto:${esc(B.email)}?subject=${encodeURIComponent('Swt-er backup ' + today())}">Open an email to ${esc(B.email)}</a>` : ''}</div>
     </section>
     <div class="stack">
       <section class="card"><h3 style="margin-bottom:8px">Restore</h3><p class="hint" style="margin-bottom:10px">Open the backup file from your Gmail or Drive, save it, then choose it here. Restoring replaces what is on this device.</p>
@@ -1977,7 +1978,7 @@ const MODALS = {
   more(){
     return dlgShell('All pages', `<div class="morelist">${Object.entries(VIEWS).map(([k, v]) => `<a href="#${k}" ${k === cur() ? 'aria-current="page"' : ''} data-act="closeModalNav">${icon(v.icon)}${v.title}</a>`).join('')}</div>
       <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', S.settings.mode, [['system','Auto'],['light','Light'],['dark','Dark']], 'margin:0')}</div>
-      ${hasLock() ? `<button class="btn big-btn" data-act="lockNow">Lock Swe-tr now</button>` : ''}`);
+      ${hasLock() ? `<button class="btn big-btn" data-act="lockNow">Lock Swt-er now</button>` : ''}`);
   }
 };
 const MODAL_OUT = {
@@ -2181,8 +2182,8 @@ function pdfHeader(d, title, right){
   const P = S.profile, W = 210, M = 16, ac = hexRgb(accentHex());
   d.setFillColor(...ac); d.rect(0, 0, W, 5, 'F');
   let y = 19;
-  const isBrand = /swe-?tr/i.test(P.business || '');
-  if (LOGO_DATA){ try { d.addImage(LOGO_DATA, 'JPEG', M, 9, 44, 44 * 259 / 640); y = 9 + 44 * 259 / 640 + 2; } catch(e){} }
+  const isBrand = /sw(e-?tr|t-?er)/i.test(P.business || '');
+  if (LOGO_DATA){ try { d.addImage(LOGO_DATA, 'JPEG', M, 9, 44, 44 * 255 / 640); y = 9 + 44 * 255 / 640 + 2; } catch(e){} }
   if (!LOGO_DATA || !isBrand){ y += LOGO_DATA ? 4 : 0; d.setFont('Noto', 'bold'); d.setFontSize(LOGO_DATA ? 12 : 17); d.setTextColor(30, 30, 30); d.text(P.business || 'Your business', M, y); y += 6; } else y += 3;
   d.setFont('Noto', 'normal'); d.setFontSize(9); d.setTextColor(95, 95, 95);
   [P.address, [P.phone, P.email].filter(Boolean).join('   ·   '), P.fssaiNo ? 'FSSAI Reg. No. ' + P.fssaiNo : '', P.gstin ? 'GSTIN ' + P.gstin : ''].filter(Boolean)
@@ -2308,7 +2309,7 @@ const csvOf = rows => '﻿' + rows.map(r => r.map(v => `"${String(v ?? '').repla
 /* =========================================================
    backup: Google Drive, Gmail, files
    ========================================================= */
-const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Swe-tr backup', OLD_BK_NAME = 'Batch & Price backup';
+const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Swt-er backup', OLD_BK_NAMES = ['Swt-er backup', 'Batch & Price backup'];
 let GTOK = null;
 const gClientId = () => ((S.backup && S.backup.clientId) || '').trim() || ((window.BP_CONFIG || {}).googleClientId || '').trim();
 async function gToken(){
@@ -2330,13 +2331,13 @@ async function gFetch(url, opts = {}){
   return r;
 }
 async function driveFiles(){
-  const q = encodeURIComponent(`(name contains '${BK_NAME}' or name contains '${OLD_BK_NAME}') and trashed = false`);
+  const q = encodeURIComponent(`(${[BK_NAME, ...OLD_BK_NAMES].map(n => `name contains '${n}'`).join(' or ')}) and trashed = false`);
   const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime desc&pageSize=30&fields=files(id,name,modifiedTime,size)`);
   return (await r.json()).files || [];
 }
 async function driveBackup(){
   const now = new Date(), name = `${BK_NAME} ${today()} ${pad2(now.getHours())}-${pad2(now.getMinutes())}.json`, b = 'bp' + uid();
-  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name, mimeType:'application/json', description:'Swe-tr data backup'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(S)}\r\n--${b}--`;
+  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name, mimeType:'application/json', description:'Swt-er data backup'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(S)}\r\n--${b}--`;
   await gFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method:'POST', headers:{'Content-Type':'multipart/related; boundary=' + b}, body});
   const files = await driveFiles();
   for (const f of files.slice(10)) { try { await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {method:'DELETE'}); } catch(e){} }
@@ -2344,16 +2345,16 @@ async function driveBackup(){
 }
 function restoreFromText(text){
   try { const d = migrate(JSON.parse(text)); if (!d) throw 0; const st = S.settings; localStorage.setItem(KEY, JSON.stringify(d)); load(); if (!S.settings) S.settings = st; toast('Backup restored'); return true; }
-  catch(e){ toast('That file is not a Swe-tr backup'); return false; }
+  catch(e){ toast('That file is not a Swt-er backup'); return false; }
 }
 async function shareBackup(){
-  const name = `swe-tr-backup-${today()}.json`, blob = new Blob([JSON.stringify(S)], {type:'application/json'});
-  const text = `Swe-tr backup from ${fmtLong(today())}. Keep this email. To restore: open Swe-tr, go to Setup → Your data → Restore, and choose this file.`;
-  const res = await shareOrSave(name, blob, 'Swe-tr backup', text);
+  const name = `swt-er-backup-${today()}.json`, blob = new Blob([JSON.stringify(S)], {type:'application/json'});
+  const text = `Swt-er backup from ${fmtLong(today())}. Keep this email. To restore: open Swt-er, go to Setup → Your data → Restore, and choose this file.`;
+  const res = await shareOrSave(name, blob, 'Swt-er backup', text);
   if (res === 'shared'){ S.backup.last = new Date().toISOString(); save(); render(); toast('Backup shared'); return; }
   if (res === 'saved'){
     S.backup.last = new Date().toISOString(); save(); render();
-    if (S.backup.email && window.top === window){ location.href = `mailto:${encodeURIComponent(S.backup.email)}?subject=${encodeURIComponent('Swe-tr backup ' + today())}&body=${encodeURIComponent(text + '\n\n(Attach the file ' + name + ' from your Downloads folder.)')}`; }
+    if (S.backup.email && window.top === window){ location.href = `mailto:${encodeURIComponent(S.backup.email)}?subject=${encodeURIComponent('Swt-er backup ' + today())}&body=${encodeURIComponent(text + '\n\n(Attach the file ' + name + ' from your Downloads folder.)')}`; }
     toast('Backup file downloaded. Attach it to an email to yourself.');
   }
 }
@@ -2373,7 +2374,7 @@ async function passkeySupported(){
 }
 async function passkeyCreate(){
   const cred = await navigator.credentials.create({publicKey:{
-    challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Swe-tr'},
+    challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Swt-er'},
     user:{id:crypto.getRandomValues(new Uint8Array(16)), name:AUTH.email, displayName:AUTH.name || AUTH.email},
     pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
     authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, timeout:60000, attestation:'none'}});
@@ -2429,31 +2430,31 @@ function renderGate(){
   const who = AUTH.email ? `<div class="gate-who">${AUTH.picture ? `<img src="${esc(AUTH.picture)}" alt="" referrerpolicy="no-referrer">` : `<span>${esc((AUTH.name || AUTH.email)[0].toUpperCase())}</span>`}<div><b>${esc(AUTH.name || AUTH.email.split('@')[0])}</b><small>${esc(AUTH.email)}</small></div></div>` : '';
   let h = '';
   if (GATE.step === 'link'){
-    h = `<h2>Welcome to Swe-tr</h2><p class="muted">Link your Gmail to start. It names this phone's account and is where your backups go.</p>
+    h = `<h2>Welcome to Swt-er</h2><p class="muted">Link your Gmail to start. It names this phone's account and is where your backups go.</p>
       ${gClientId() ? `<div id="gBtn" class="gbtn"></div><div class="gate-or"><span>or type it</span></div>` : ''}
       <form id="linkForm" class="gate-form" novalidate>
         <div class="field"><label for="gEmail">Gmail address</label><input id="gEmail" type="email" inputmode="email" autocomplete="email" placeholder="yourname@gmail.com" value="${esc(AUTH.email || (S && S.backup.email) || '')}" required></div>
         ${msg}<button class="btn primary big-btn" type="submit">Continue</button></form>
       <p class="hint">Your data stays on this phone. Nothing is sent anywhere until you back up.</p>`;
   } else if (GATE.step === 'setlock'){
-    h = `${who}<h2>Lock Swe-tr</h2><p class="muted">Choose how you will open the app from now on.</p>
+    h = `${who}<h2>Lock Swt-er</h2><p class="muted">Choose how you will open the app from now on.</p>
       <div id="lockOpts" class="gate-form"><p class="hint">Checking what this phone supports…</p></div>${msg}`;
   } else if (GATE.step === 'pin'){
-    h = `${who}<h2>Set an app PIN</h2><p class="muted">4 to 6 digits. You will use it to open Swe-tr${AUTH.credId ? ' if fingerprint does not work' : ''}.</p>
+    h = `${who}<h2>Set an app PIN</h2><p class="muted">4 to 6 digits. You will use it to open Swt-er${AUTH.credId ? ' if fingerprint does not work' : ''}.</p>
       <form id="pinForm" class="gate-form" novalidate>
         <div class="field"><label for="pin1">New PIN</label><input id="pin1" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" required></div>
         <div class="field"><label for="pin2">Type it again</label><input id="pin2" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" required></div>
         ${msg}<button class="btn primary big-btn" type="submit">Save PIN</button>
         ${GATE.back && !GATE.fromApp ? `<button class="btn ghost" type="button" data-gate="back">Back</button>` : ''}</form>`;
   } else if (GATE.step === 'unlock'){
-    h = `${who}<h2>Unlock Swe-tr</h2>
+    h = `${who}<h2>Unlock Swt-er</h2>
       ${AUTH.credId ? `<button class="btn primary big-btn" data-gate="bio" ${GATE.busy ? 'disabled' : ''}><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3M8.5 8.5a5 5 0 0 1 8.5 3.5v2a10 10 0 0 1-1 4M7 12v2a8 8 0 0 0 1.5 4.7M12 3a9 9 0 0 1 9 9v1M3 13v-1a9 9 0 0 1 3-6.7M12 7a5 5 0 0 0-5 5M16 15.5a6 6 0 0 1-2 4.5"/></svg>Use fingerprint or screen lock</button>` : ''}
       ${AUTH.pinHash ? `<form id="unlockPin" class="gate-form" novalidate><div class="field"><label for="pinU">${AUTH.credId ? 'Or enter your app PIN' : 'App PIN'}</label><input id="pinU" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" ${AUTH.credId ? '' : 'autofocus'}></div><button class="btn ${AUTH.credId ? '' : 'primary'} big-btn" type="submit">Unlock</button></form>` : ''}
       ${msg}<button class="btn ghost small" data-gate="help">Can't unlock?</button>`;
   } else if (GATE.step === 'help'){
     h = `${who}<h2>Can't unlock?</h2>
       ${gClientId() ? `<p class="muted">Sign in with the same Google account to open the app and set a new lock.</p><div id="gBtn" class="gbtn"></div>` : `<p class="muted">Fingerprint, face and screen lock come from your phone. Try again after unlocking the phone, or use your app PIN if you set one.</p>`}
-      <div class="gate-danger"><b>Last resort: erase this phone's copy</b><p class="hint">This removes Swe-tr data and the lock from this phone. You can then link your Gmail again and restore your latest backup from Gmail or Google Drive.</p>
+      <div class="gate-danger"><b>Last resort: erase this phone's copy</b><p class="hint">This removes Swt-er data and the lock from this phone. You can then link your Gmail again and restore your latest backup from Gmail or Google Drive.</p>
         ${GATE.confirmErase ? `<button class="btn danger" data-gate="erase">Yes, erase this phone's copy</button><button class="btn ghost" data-gate="noErase">Keep it</button>` : `<button class="btn danger small" data-gate="askErase">Erase and start again</button>`}</div>
       ${msg}<button class="btn ghost" data-gate="back">Back</button>`;
   }
@@ -2468,7 +2469,7 @@ async function lockOptions(){
   const ok = await passkeySupported(), el = $('#lockOpts'); if (!el) return;
   el.innerHTML = (ok ? `<button class="btn primary big-btn" data-gate="mkbio">Use fingerprint, face or screen lock</button><p class="hint">Uses your phone's own lock (fingerprint, face, PIN or pattern). Nothing about it leaves your phone.</p>
       <button class="btn big-btn" data-gate="mkpin">Use an app PIN instead</button>`
-    : `<p class="hint">${inFrame() ? 'Fingerprint lock works when Swe-tr is opened from its own link or installed on your phone.' : 'This browser cannot use fingerprint or screen lock, so set an app PIN.'}</p><button class="btn primary big-btn" data-gate="mkpin">Set an app PIN</button>`);
+    : `<p class="hint">${inFrame() ? 'Fingerprint lock works when Swt-er is opened from its own link or installed on your phone.' : 'This browser cannot use fingerprint or screen lock, so set an app PIN.'}</p><button class="btn primary big-btn" data-gate="mkpin">Set an app PIN</button>`);
 }
 gate.addEventListener('submit', async e => {
   e.preventDefault();
@@ -2527,7 +2528,7 @@ document.addEventListener('visibilitychange', () => {
 /* ---------- Setup → Account & lock ---------- */
 function setupSecurity(){
   const la = String(AUTH.lockAfter == null ? 1 : AUTH.lockAfter);
-  return `<p class="lead">Who this phone's Swe-tr belongs to, and how it is locked.</p>
+  return `<p class="lead">Who this phone's Swt-er belongs to, and how it is locked.</p>
   <div class="grid2 even">
     <section class="card result"><h3 style="margin-bottom:12px">Linked Gmail</h3>
       <div class="gate-who" style="color:var(--ink)">${AUTH.picture ? `<img src="${esc(AUTH.picture)}" alt="" referrerpolicy="no-referrer">` : `<span>${esc(((AUTH.name || AUTH.email || '?')[0] || '?').toUpperCase())}</span>`}<div><b>${esc(AUTH.name || (AUTH.email || '').split('@')[0])}</b><small>${esc(AUTH.email || 'Not linked')}</small></div></div>
@@ -2538,7 +2539,7 @@ function setupSecurity(){
       <div class="actions" style="margin-top:12px"><button class="btn" data-act="secBio">${AUTH.credId ? 'Set up fingerprint again' : 'Turn on fingerprint lock'}</button><button class="btn" data-act="secPin">${AUTH.pinHash ? 'Change app PIN' : 'Set an app PIN'}</button></div>
       <div class="field" style="margin-top:16px"><span class="lbl">Lock again after leaving the app for</span>${seg('lockAfter', la, [['0','Right away'],['1','1 min'],['5','5 min'],['15','15 min']], 'margin:0')}</div>
       <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="lockNow">Lock now</button></div>
-      <p class="hint" style="margin-top:12px">The lock stops other people opening Swe-tr on this phone. Your data is kept in this phone's browser, so keep the phone's own screen lock on too, and back up regularly.</p></section>
+      <p class="hint" style="margin-top:12px">The lock stops other people opening Swt-er on this phone. Your data is kept in this phone's browser, so keep the phone's own screen lock on too, and back up regularly.</p></section>
   </div>`;
 }
 
@@ -2795,7 +2796,7 @@ const ACT = {
   delEntry: el => { S.entries = S.entries.filter(e => e.id !== el.dataset.id); },
   clearEx: () => { S.entries = S.entries.filter(e => !e.ex); },
   csv: () => { const rows = [['Date','Type','Category','Note','Amount (INR)']].concat([...S.entries].sort((a, b) => a.date.localeCompare(b.date)).map(e => [e.date, e.kind, e.cat, e.desc, e.amount]));
-    saveFile('swe-tr-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
+    saveFile('swt-er-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
   copyMsg: () => { copyText($('#out-msg').textContent); return false; },
   /* navigation helpers */
   go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL){ if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); } save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
@@ -2841,7 +2842,7 @@ const ACT = {
   askConfirm: el => { S.ui.confirm = el.dataset.key; if (dlg.open){ renderModal(); return false; } },
   cancelConfirm: () => { S.ui.confirm = ''; if (dlg.open){ renderModal(); return false; } },
   backup: () => { copyText(JSON.stringify(S)); return false; },
-  backupFile: () => { saveFile(`swe-tr-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
+  backupFile: () => { saveFile(`swt-er-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
   restore: () => { if (!restoreFromText($('#restoreBox').value)) return false; },
   reset: () => { const st = S.settings, bk = S.backup; S = sample(); S.settings = st; S.backup = bk; toast('Sample data loaded. Clear it from the Dashboard when you are done exploring.'); location.hash = 'home'; },
   wipe: () => { const st = S.settings, bk = S.backup; S = blankState(); S.settings = st; S.backup = bk; save(); toast('Everything cleared. Start with Get started.'); location.hash = 'home'; }
