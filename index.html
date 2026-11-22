@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Swe-tr Desserts</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#3B2420">
@@ -216,11 +216,11 @@ tfoot td{font-weight:700;border-top:1.5px solid var(--ink)}
 .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--accent)}
 .bad>.dot{background:var(--bad)} .warn>.dot{background:var(--warn)} .good>.dot{background:var(--good)}
 .tips li a{font-weight:600;font-size:.8rem;white-space:nowrap}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--gap)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:var(--gap)}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);min-width:0}
 .tile .v{font-family:var(--font-display);font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
 .tile .v.pos{color:var(--good)} .tile .v.neg{color:var(--bad)}
-@media (max-width:520px){.tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}}
+@media (max-width:640px){.tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}}
 .tile.hl{border-color:var(--accent-line);background:var(--accent-soft)}
 .picker{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:var(--gap)}
 .empty{text-align:center;padding:26px 16px;color:var(--muted)}
@@ -299,6 +299,44 @@ details.more{margin-top:12px}
 details.more summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
 details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size:.86rem}
 .billsum{display:grid;gap:4px;padding:12px;border-radius:10px;background:var(--surface-2)}
+/* ---------- touch & small-screen polish ---------- */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,.chip,.btn,label.check,select{touch-action:manipulation}
+.btn:active,.chip:active,.seg button:active,.bottom a:active,.bottom button:active{transform:scale(.97)}
+.x{min-width:40px;min-height:40px;display:inline-grid;place-items:center}
+.linkish{min-height:34px;min-width:44px;padding:5px 0;display:inline-flex;align-items:center}
+input[type=range]{min-height:36px}
+dialog{overscroll-behavior:contain}
+.dlg-b{overscroll-behavior:contain}
+.dlg-b > *,.stack > *,.grid2 > *{min-width:0}
+.row{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+.bar h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){
+  .seg{display:flex;flex-wrap:wrap;width:100%}
+  .seg button{flex:1 1 auto;padding:8px 10px}
+  .card-h .seg{width:100%}
+  .lead{font-size:.88rem}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile .v{font-size:1.25rem}
+  .big{font-size:2rem}
+  .dlg-h{padding:14px 14px 8px}.dlg-b{padding:4px 14px 14px}.dlg-f{padding:10px 14px max(14px,env(safe-area-inset-bottom,0px))}
+  .dlg-b .tbl{margin-inline:-14px;padding-inline:14px}
+  .dlg-f .btn{flex:1 1 auto}
+}
+@media (max-width:360px){
+  .wrap{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  .card{padding:14px}
+  .tbl{margin-inline:-14px;padding-inline:14px}
+  h1{font-size:1.1rem}
+  .bar .btn{padding:8px 10px}
+}
+@media (max-height:480px) and (orientation:landscape){
+  .bar .ttl p{display:none}
+  .bar .in{padding-block:6px}
+  .bottom a,.bottom button{padding:9px 0 10px;grid-auto-flow:column;gap:6px;align-items:center;justify-content:center}
+  main{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  .bottom .badge{position:static;margin-left:-2px}
+}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
 </style>
 </head>
@@ -1719,11 +1757,20 @@ function oSetup(){
    ========================================================= */
 let MODAL = null;
 const dlg = $('#dlg');
-function openModal(m){ MODAL = m; renderModal(); if (!dlg.open) dlg.showModal(); const f = dlg.querySelector('[autofocus]'); f && f.focus(); }
-function closeModal(){ stopCamera(); MODAL = null; if (dlg.open) dlg.close(); }
-dlg.addEventListener('close', () => { stopCamera(); MODAL = null; });
+const coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+let MODAL_HIST = false;
+function openModal(m){
+  MODAL = m; renderModal();
+  if (!dlg.open){ dlg.showModal(); try { history.pushState({bpModal:1}, '', location.href); MODAL_HIST = true; } catch(e){ MODAL_HIST = false; } }
+  const f = dlg.querySelector('[autofocus]');
+  if (f && !coarse) f.focus(); else { dlg.querySelector('.dlg') && dlg.querySelector('.dlg').focus({preventScroll:true}); }
+}
+function closeModal(fromBack){ stopCamera(); MODAL = null; if (dlg.open) dlg.close(); if (!fromBack && MODAL_HIST){ MODAL_HIST = false; try { history.back(); } catch(e){} } }
+dlg.addEventListener('close', () => { stopCamera(); MODAL = null; if (MODAL_HIST){ MODAL_HIST = false; try { history.back(); } catch(e){} } });
+window.addEventListener('popstate', () => { if (dlg.open){ MODAL_HIST = false; closeModal(true); } });
+dlg.addEventListener('focusin', e => { if (coarse && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) setTimeout(() => e.target.scrollIntoView({block:'center', behavior:'smooth'}), 350); });
 dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
-const dlgShell = (title, body, foot) => `<div class="dlg"><div class="dlg-h"><h3 id="dlgTitle">${title}</h3><button class="x" data-act="closeModal" aria-label="Close">×</button></div><div class="dlg-b">${body}</div>${foot ? `<div class="dlg-f">${foot}</div>` : ''}</div>`;
+const dlgShell = (title, body, foot) => `<div class="dlg" tabindex="-1" style="outline:none"><div class="dlg-h"><h3 id="dlgTitle">${title}</h3><button class="x" data-act="closeModal" aria-label="Close">×</button></div><div class="dlg-b">${body}</div>${foot ? `<div class="dlg-f">${foot}</div>` : ''}</div>`;
 function renderModal(){ if (!MODAL) return; const fn = MODALS[MODAL.type]; $('#dlgBody').innerHTML = fn ? fn() : ''; modalOut(); }
 function modalOut(){ const o = MODAL && MODAL_OUT[MODAL.type]; if (o) o(); }
 
@@ -1850,7 +1897,7 @@ const MODALS = {
     return dlgShell(m.kind === 'quote' ? 'Quote PDF' : `Bill ${esc(d.no)}`, `
       <div class="billsum"><b>${esc(d.customer || 'Customer')}</b><span class="small muted">${d.lines.map(l => `${l.qty} × ${esc(l.name)}`).join(' · ')}</span>
         <dl class="kv" style="margin-top:6px"><dt>Total</dt><dd><b>${inr(d.total)}</b></dd>${m.kind === 'quote' ? `<dt>Advance to confirm</dt><dd>${inr(d.advanceDue)}</dd>` : `<dt>Paid</dt><dd>${inr(d.paid)}</dd><dt>Balance due</dt><dd><b>${inr(d.balance)}</b></dd>`}</dl></div>
-      ${missing.length ? `<p class="small"><span class="pill warn">Tip</span> Add your ${missing.join(', ')} in <a href="#setup" data-act="go" data-hash="setup" data-tab="business">Setup → Details for your bills</a> so they print on the bill.</p>` : ''}
+      ${missing.length ? `<div class="banner" style="margin:0"><span>Add your ${missing.join(', ')} so they print on the bill.</span><button class="btn small" data-act="go" data-hash="setup" data-tab="business">Add details</button></div>` : ''}
       ${mChk('storage', 'Add storage advice and best-before for each product')}
       <p class="hint">Share sends the PDF straight to WhatsApp, Gmail or any app on your phone.</p>`,
       `<button class="btn" data-act="billText">Copy as text</button><button class="btn" data-act="pdfDownload">Download PDF</button><button class="btn primary" data-act="pdfShare">Share PDF</button>`);
@@ -2293,7 +2340,7 @@ function render(){
   refresh();
 }
 function refresh(){ const o = VIEWS[cur()].o; if (o) o(); }
-window.addEventListener('hashchange', () => { S.ui.confirm = ''; if (MODAL && MODAL.type === 'more') closeModal(); render(); window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { S.ui.confirm = ''; if (dlg.open){ MODAL_HIST = false; closeModal(true); } render(); window.scrollTo(0, 0); });
 if (window.matchMedia){ const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener && mq.addEventListener('change', applyLook); }
 
 /* =========================================================
@@ -2374,7 +2421,7 @@ const ACT = {
   clearAccent: () => { S.settings.accent = ''; },
   more: () => { openModal({type:'more'}); return false; },
   closeModal: () => { closeModal(); return false; },
-  closeModalNav: () => { closeModal(); return 'nav'; },
+  closeModalNav: () => { if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); return 'nav'; },
   keepSample: () => { S.sample = false; },
   goLog: () => { S.ui.mtab = 'log'; S.ui.draft.kind = 'expense'; S.ui.draft.cat = EXP_CATS[0]; location.hash = 'money'; return false; },
   pickRecipe: el => { S.ui.recipe = el.dataset.id; S.ui.scale = 0; },
@@ -2497,7 +2544,7 @@ const ACT = {
     saveFile('batch-and-price-entries.csv', rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n'), 'text/csv'); return false; },
   copyMsg: () => { copyText($('#out-msg').textContent); return false; },
   /* navigation helpers */
-  go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL) closeModal(); save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
+  go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL){ if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); } save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
   toPlan: () => { const e = $('#out-plan'); if (e) e.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
   starterIng: () => { const have = new Set(S.ingredients.map(g => g.name.toLowerCase())); let n = 0;
     STARTER_ING.forEach(([name, q, u]) => { if (!have.has(name.toLowerCase())){ S.ingredients.push({id:uid(), name, packQty:q, packUnit:u, packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[]}); n++; } });
