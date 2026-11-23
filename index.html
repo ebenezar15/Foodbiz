@@ -927,6 +927,7 @@ function alerts(){
    builders
    ========================================================= */
 const fid = p => 'f-' + p.replace(/\./g, '-');
+const field = p => (dlg.open && document.getElementById('d' + fid(p))) || document.getElementById(fid(p));
 const fld = (label, control, hint, forId) => `<div class="field">${forId ? `<label for="${forId}">${label}</label>` : `<span class="lbl">${label}</span>`}${control}${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
 const numIn = (path, val, attrs = '') => `<input type="number" inputmode="decimal" step="any" min="0" id="${fid(path)}" data-path="${path}" data-num value="${esc(val)}" ${attrs}>`;
 const moneyIn = (path, val, attrs = '') => `<span class="money-in">${numIn(path, val, attrs)}</span>`;
@@ -1155,7 +1156,7 @@ function oOrders(){
     const c = orderCalc(o);
     $$('[data-ofl]').forEach(el => { const it = o.items[+el.dataset.ofl]; el.textContent = it ? inr(num(it.unit) * num(it.qty)) : ''; });
     const h = health(marginOf(c.sub - num(o.discount), c.cost));
-    const dc = $('#' + fid('ui.of.delivery')); if (dc && num(o.km) > 0 && !o._manualDel){ const v = delCharge(o.km); o.delivery = v; dc.value = v; if (!num(o.deliveryCost) || o._autoCost !== false){ o.deliveryCost = num(S.profile.delBase) + num(S.profile.delPerKm) * num(o.km); o._autoCost = true; const cc = $('#' + fid('ui.of.deliveryCost')); if (cc) cc.value = Math.round(o.deliveryCost); } }
+    const dc = field('ui.of.delivery'); if (dc && num(o.km) > 0 && !o._manualDel){ const v = delCharge(o.km); o.delivery = v; dc.value = v; if (!num(o.deliveryCost) || o._autoCost !== false){ o.deliveryCost = num(S.profile.delBase) + num(S.profile.delPerKm) * num(o.km); o._autoCost = true; const cc = $('#' + fid('ui.of.deliveryCost')); if (cc) cc.value = Math.round(o.deliveryCost); } }
     $('#out-of') && ($('#out-of').innerHTML = `<b class="tnum">${c.pcs} pcs · Total ${inr(c.total)}</b> · to collect ${inr(c.balance)} · profit ${inr(c.profit)} <span class="pill ${h[0]}">${h[1]}</span>`);
   }
   const p = plan(openOrders()), el = $('#out-plan');
@@ -1268,7 +1269,7 @@ function vRecipes(){
           <td><button class="x" data-act="del" data-list="${p}.lines" data-i="${j}" aria-label="Remove">×</button></td></tr>`; }).join('')}
         </tbody></table></div>
         ${S.ingredients.length ? '' : '<p class="hint" style="margin-top:8px">You have no ingredients yet. <button class="btn small" data-act="starterIng">Add a starter list</button></p>'}
-        <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addLine">+ Add ingredient</button><button class="btn small" data-act="addIng">Create a new ingredient</button></div>
+        <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addLine">+ Add ingredient</button><button class="btn small" data-act="addIng" data-for-recipe="1">Create a new ingredient</button></div>
         <div class="batterbox">
           <div class="row">
             ${fld('This batch makes (batter)', `<div class="unitin">${numIn(`${p}.batterQty`, r.batterQty || '', 'aria-label="Batter weight" placeholder="weigh it"')}${sel(`${p}.batterUnit`, r.batterUnit || 'g', [['g', 'g'], ['kg', 'kg']], 'aria-label="Batter unit" class="unitsel"')}</div>`, '<span id="bw-est"></span>', fid(`${p}.batterQty`))}
@@ -1321,7 +1322,7 @@ function vRecipes(){
           <td class="num" data-packcost="${j}"></td>
           <td><button class="x" data-act="del" data-list="${p}.pack" data-i="${j}" aria-label="Remove">×</button></td></tr>`).join('')}
         </tbody></table></div>
-        <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addPack">+ Add packaging</button></div></section>
+        <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addPack">+ Add packaging</button><button class="btn small ghost" data-act="addPkg" data-for-recipe="1">+ New packaging item</button></div>${S.packaging.length ? '' : '<p class="hint" style="margin-top:6px">No packaging items yet. “+ Add packaging” creates one and opens it so you can name and price it.</p>'}</section>
       <section class="card" id="sec-measure"><div class="card-h"><h3>Measure for any quantity</h3><p class="hint">Type how many ${esc(r.unitName || 'piece')}s you need. You get the amounts to weigh out (with wastage), the cost and whether your stock covers it.</p></div>
         <div class="row" style="max-width:420px">${F('How many do you need?', 'ui.scale', S.ui.scale)}</div>
         <div id="out-scale" style="margin-top:12px"></div></section>
@@ -2002,7 +2003,17 @@ window.addEventListener('popstate', () => { if (dlg.open){ MODAL_HIST = false; c
 dlg.addEventListener('focusin', e => { if (coarse && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) setTimeout(() => e.target.scrollIntoView({block:'center', behavior:'smooth'}), 350); });
 dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
 const dlgShell = (title, body, foot) => `<div class="dlg" tabindex="-1" style="outline:none"><div class="dlg-h"><h3 id="dlgTitle">${title}</h3><button class="x" data-act="closeModal" aria-label="Close">×</button></div><div class="dlg-b">${body}</div>${foot ? `<div class="dlg-f">${foot}</div>` : ''}</div>`;
-function renderModal(){ if (!MODAL) return; const fn = MODALS[MODAL.type]; $('#dlgBody').innerHTML = fn ? fn() : ''; modalOut(); }
+let DLG_TAP = null;
+document.addEventListener('pointerdown', e => { const f = e.target.closest && e.target.closest('input,textarea,select'); DLG_TAP = f && dlg.contains(f) && f.id ? {id:f.id, t:Date.now()} : null; }, true);
+function renderModal(){ if (!MODAL) return; const fn = MODALS[MODAL.type], ae = document.activeElement;
+  let keep = DLG_TAP && Date.now() - DLG_TAP.t < 800 ? DLG_TAP.id : (ae && dlg.contains(ae) && ae.id && /INPUT|TEXTAREA|SELECT/.test(ae.tagName) ? ae.id : '');
+  const body = $('#dlgBody'); body.innerHTML = fn ? fn() : '';
+  /* form fields in the dialog get their own ids so they never clash with the same field on the page behind */
+  body.querySelectorAll('[id^="f-"]').forEach(n => n.id = 'd' + n.id);
+  body.querySelectorAll('label[for^="f-"]').forEach(n => n.htmlFor = 'd' + n.htmlFor);
+  body.querySelectorAll('[aria-describedby]').forEach(n => n.setAttribute('aria-describedby', n.getAttribute('aria-describedby').split(' ').map(x => /^f-/.test(x) ? 'd' + x : x).join(' ')));
+  modalOut();
+  if (keep){ const n = document.getElementById(keep); if (n && n.focus){ n.focus({preventScroll:true}); } } }
 function modalOut(){ const o = MODAL && MODAL_OUT[MODAL.type]; if (o) o(); }
 
 const MODALS = {
@@ -3276,7 +3287,7 @@ function afterPathChange(path, val){
   if (/^recipes\.\d+\.tin\.unit$/.test(path)){ const t = getPath(path.split('.').slice(0, 3).join('.')); const k = val === 'cm' ? IN : 1 / IN; ['a', 'b', 'pl', 'pw'].forEach(x => t[x] = +(num(t[x]) * k).toFixed(1)); }
   if (path === 'ui.draft.kind') S.ui.draft.cat = val === 'sale' ? SALE_CATS[0] : EXP_CATS[0];
   const m = path.match(/^(ui\.of\.items\.\d+)\.(qty|recipeId)$/);
-  if (m){ const it = getPath(m[1]); it.unit = autoUnit(recById(it.recipeId), it.qty); const u = $('#' + fid(m[1] + '.unit')); if (u) u.value = it.unit; }
+  if (m){ const it = getPath(m[1]); it.unit = autoUnit(recById(it.recipeId), it.qty); const u = field(m[1] + '.unit'); if (u) u.value = it.unit; }
 }
 document.addEventListener('input', e => {
   const t = e.target;
@@ -3310,7 +3321,7 @@ document.addEventListener('change', e => {
     return;
   }
   if (t.type === 'date' || t.type === 'month'){ if (/^ui\.of\./.test(path)) refresh(); else render(); return; }
-  if (/\.(name|unitName)$/.test(path)){ if (dlg.contains(t)) { renderModal(); render(); } else render(); }
+  if (/\.(name|unitName)$/.test(path)){ if (dlg.contains(t)){ const h = $('#dlgTitle'); if (h && /^(ingredients|packaging)\.\d+\.name$/.test(path)) h.textContent = t.value || 'Untitled'; render(); } else render(); }
 });
 const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, bakeLoss:10, tin:defaultTin(), lines:[], pack:[]});
 const blankOrder = () => { const r = S.recipes[0], q = num(S.profile.minOrder) || 6; return {id:'', customer:'', phone:'', due:dAdd(today(), num(S.profile.leadDays) || 2), type:'individual', items:r ? [{id:uid(), recipeId:r.id, qty:q, unit:autoUnit(r, q)}] : [], delivery:0, km:'', deliveryCost:0, extras:0, discount:0, advance:0, notes:''}; };
@@ -3354,10 +3365,12 @@ const ACT = {
   addRecipe: () => { const r = blankRecipe(); if (S.ingredients[0]) r.lines.push({id:uid(), ingId:S.ingredients[0].id, qty:100}); S.recipes.push(r); S.ui.recipe = r.id; S.ui.scale = 0; if (cur() !== 'recipes'){ save(); location.hash = 'recipes'; return false; } },
   dupRecipe: () => { const r = JSON.parse(JSON.stringify(curRecipe())); r.id = uid(); r.name += ' (copy)'; S.recipes.push(r); S.ui.recipe = r.id; },
   delRecipe: () => { S.recipes = S.recipes.filter(r => r.id !== S.ui.recipe); S.ui.recipe = S.recipes[0] ? S.recipes[0].id : ''; S.quote.rows = S.quote.rows.filter(q => recById(q.recipeId)); },
-  addLine: () => { curRecipe().lines.push({id:uid(), ingId:S.ingredients[0] ? S.ingredients[0].id : '', qty:0}); },
-  addPack: () => { curRecipe().pack.push({id:uid(), pkgId:S.packaging[0] ? S.packaging[0].id : '', perPieces:1}); },
-  addIng: () => { const g = {id:uid(), name:'New ingredient', packQty:1, packUnit:'kg', packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[]}; S.ingredients.push(g); save(); render(); openModal({type:'ingEdit', id:g.id}); const f = $('#' + fid(`ingredients.${S.ingredients.length - 1}.name`)); if (f){ f.focus(); f.select(); } return false; },
-  addPkg: () => { const k = {id:uid(), name:'New item', price:0, note:'', stock:0, low:0, barcode:''}; S.packaging.push(k); save(); render(); openModal({type:'pkgEdit', id:k.id}); return false; },
+  addLine: () => { if (!S.ingredients.length) return ACT.addIng({dataset:{forRecipe:'1'}}); const used = new Set(curRecipe().lines.map(l => l.ingId)), g = S.ingredients.find(x => !used.has(x.id)) || S.ingredients[0]; curRecipe().lines.push({id:uid(), ingId:g.id, qty:0, unit:lineUnits(g)[0][0]}); },
+  addPack: () => { if (!S.packaging.length) return ACT.addPkg({dataset:{forRecipe:'1'}}); const used = new Set(curRecipe().pack.map(k => k.pkgId)), k = S.packaging.find(x => !used.has(x.id)) || S.packaging[0]; curRecipe().pack.push({id:uid(), pkgId:k.id, perPieces:1}); },
+  addIng: el => { const g = {id:uid(), name:'New ingredient', packQty:1, packUnit:'kg', packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[]}; S.ingredients.push(g); if (el && el.dataset && el.dataset.forRecipe && curRecipe()) curRecipe().lines.push({id:uid(), ingId:g.id, qty:0, unit:lineUnits(g)[0][0]}); save(); render(); openModal({type:'ingEdit', id:g.id}); const f = field(`ingredients.${S.ingredients.length - 1}.name`); if (f){ f.focus(); f.select(); } return false; },
+  addPkg: el => { const k = {id:uid(), name:'New item', price:0, note:'', stock:0, low:0, barcode:''}; S.packaging.push(k);
+    if (el && el.dataset.forRecipe){ const r = curRecipe(); if (r) r.pack.push({id:uid(), pkgId:k.id, perPieces:1}); }
+    save(); render(); openModal({type:'pkgEdit', id:k.id}); const f = field(`packaging.${S.packaging.length - 1}.name`); if (f){ f.focus(); f.select(); } return false; },
   ingEdit: el => { openModal({type:'ingEdit', id:el.dataset.id}); return false; },
   pkgEdit: el => { openModal({type:'pkgEdit', id:el.dataset.id}); return false; },
   delIng: el => { S.ingredients = S.ingredients.filter(g => g.id !== el.dataset.id); closeModal(); },
@@ -3372,7 +3385,7 @@ const ACT = {
     if (!S.recipes.length){ toast('Add a product in Recipes first'); return false; }
     S.ui.of = blankOrder(); save();
     if (cur() !== 'orders') location.hash = 'orders'; else { render(); window.scrollTo(0, 0); }
-    const f = $('#' + fid('ui.of.customer')); f && f.focus(); return false;
+    const f = field('ui.of.customer'); f && f.focus(); return false;
   },
   editOrder: el => { const o = S.orders.find(x => x.id === el.dataset.id); S.ui.of = JSON.parse(JSON.stringify(o)); window.scrollTo(0, 0); },
   cancelOrder: () => { S.ui.of = null; },
