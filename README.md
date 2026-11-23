@@ -81,6 +81,8 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 - **Batter yield**: under the ingredients, enter how much batter one batch makes (g or kg), or tap *Use estimate*. Type *I need this much batter* (for example 2 kg) and a **For 2 kg** column shows every ingredient amount. Save it as a new recipe or change this one.
 - **Plan a bake → I want pieces → The tin I am using**: give the number of pieces and your tin size. Swt-er gives the cut grid, the cut lengths, the weight of each piece, the batter to make and the ingredients.
 - **Use buttons** now show a green **✓ Applied** box saying exactly what changed (old → new), highlight the changed field, and offer *Undo*. Suggested tins stay in your own unit (cm or inches).
+- **Batch size & converter** quick sizes come from your own data: your weighed batter, open orders for that product, sizes you used before, and ½×, 2× and 3× of your batch. There are no fixed preset weights.
+- **Price per piece from a tin**: in *Plan a bake*, every tin and cut shows the cost, the selling price per piece and the whole-tin price. The piece-size and suggested-tin tables have a Price column. Tap *Price this recipe by this tin* to make it the recipe's pricing.
 - **Recipe card (PDF)**: ingredients, batch weight, tin and cut, oven temperature, time, method and storage.
 - **Stock → Shopping list**: low, out-of-stock, expired and short-for-orders items with an estimated cost. Copy it or share it on WhatsApp.
 

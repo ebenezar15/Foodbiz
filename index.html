@@ -302,6 +302,7 @@ details.more ol{margin:8px 0 0;padding-left:1.2em;display:grid;gap:5px;font-size
 .billsum{display:grid;gap:4px;padding:12px;border-radius:10px;background:var(--surface-2)}
 [hidden]{display:none !important}
 .nowrap{white-space:nowrap}
+#out-tin .tbl td,#out-tin .tbl th{padding-left:6px;padding-right:6px}
 /* ---------- sign-in gate ---------- */
 #gate{position:fixed;inset:0;z-index:40;background:var(--chrome);color:var(--chrome-ink);overflow-y:auto;display:grid;place-items:center;
   padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -395,6 +396,7 @@ dialog{overscroll-behavior:contain}
 .pickcard input{margin-top:3px}
 .cardprev{display:grid;place-items:center;background:var(--surface-2);border-radius:12px;padding:10px}
 .cardprev canvas{width:min(100%,320px);height:auto;border-radius:10px;box-shadow:0 6px 20px rgb(0 0 0 / .18)}
+.pricebox{margin-top:14px;padding:12px;border-radius:12px;border:1px solid var(--accent-line);background:color-mix(in srgb, var(--accent-soft) 45%, var(--surface))}
 .needcol{display:none}
 #ingTable.show-need .needcol{display:table-cell;background:var(--accent-soft)}
 .batterbox{margin-top:14px;padding:12px;border:1px dashed var(--accent-line);border-radius:12px;background:color-mix(in srgb, var(--accent-soft) 40%, var(--surface))}
@@ -1279,8 +1281,7 @@ function vRecipes(){
       <section class="card" id="sec-batch"><div class="card-h"><h3>Batch size &amp; converter</h3><p class="hint">See how much this batch weighs, and convert it to any size. Every ingredient is recalculated for you.</p></div>
         <div data-applied="sec-batch"></div><div id="out-bw"></div>
         <div class="field" style="margin-top:14px"><span class="lbl">Make a batch of</span>
-          <div class="chips">${[250, 500, 750, 1000, 1500, 2000].map(w => `<button class="chip" data-act="convSet" data-v="${w}" aria-pressed="${num(S.ui.convTarget) === w}">${w >= 1000 ? trimN(w / 1000, 1) + ' kg' : w + ' g'}</button>`).join('')}
-            ${[0.5, 2, 3].map(f => `<button class="chip" data-act="convMul" data-v="${f}">${f === 0.5 ? '½' : f}× this batch</button>`).join('')}</div></div>
+          ${(() => { const ch = convChips(r); return ch.length ? `<div class="chips">${ch.map(x => `<button class="chip" data-act="convSet" data-v="${x.g}" data-b="${x.basis}" aria-pressed="${num(S.ui.convTarget) === x.g && (S.ui.convBasis || 'baked') === x.basis}">${esc(x.label)}</button>`).join('')}</div><span class="hint">From your recipe, weighed batter, open orders and sizes you used before.</span>` : '<span class="hint">Add ingredients (or the batter weight) above. Quick sizes then appear here from your own data.</span>'; })()}</div>
         <div class="row" style="margin-top:12px;max-width:520px">${F('Or type a weight (g)', 'ui.convTarget', S.ui.convTarget || '', '', 'num', 'placeholder="e.g. 1200"')}${fld('Weight means', sel('ui.convBasis', S.ui.convBasis || 'baked', [['baked', 'Finished weight (after baking)'], ['raw', 'Raw batter / dough weight']]), '', fid('ui.convBasis'))}</div>
         <div id="out-conv" style="margin-top:12px"></div>
       </section>
@@ -1359,11 +1360,11 @@ function recipeExtras(r, c){
         <dl class="kv"><dt>Tin</dt><dd>${tinLabel(r.tin)}</dd><dt>Pieces</dt><dd><b>${cp.pieces}</b></dd><dt>Each piece</dt><dd>${cp.pieceG ? fmtQty(Math.round(cp.pieceG), 'g') : '—'}</dd>
           <dt>Batter depth</dt><dd>${cp.depth ? trimN(cp.depth, 1) + ' cm' : '—'} ${cp.depth ? `<span class="pill ${fit[0]}">${fit[1]}</span>` : ''}</dd></dl>
         <p class="hint">${cp.depth ? (fit[1] === 'Ideal' ? `Good depth for ${id[2]} (${id[0]}–${id[1]} cm of batter).` : fit[1] === 'Thin' ? `Shallow for ${id[2]}: it may bake dry. Use a smaller tin or a bigger batch.` : `Deep for ${id[2]}: the middle may stay raw. Use a bigger tin, two tins or a smaller batch.`) : 'Add ingredients to see the depth.'}${cp.used < 0.95 && cp.pieces ? ` About ${pct((1 - cp.used) * 100)} is left as an offcut with this piece size.` : ''}</p>
-        ${cp.pieces && cp.pieces !== num(r.yield) ? `<div class="actions"><button class="btn small" data-act="useCut">Use ${cp.pieces} pieces${cp.pieceG ? ' of ' + fmtQty(Math.round(cp.pieceG), 'g') : ''} for this recipe</button></div>` : ''}
       </div></div>
+      ${cp.pieces ? tinPriceHTML(r, cp.pieces, 1, `Price per piece: ${tinLabel(r.tin)}, ${cp.pieces} pieces`, cp.pieces !== num(r.yield) ? `<button class="btn small primary" data-act="useCut">Price this recipe by this tin (${cp.pieces} pcs)</button>` : '') : ''}
       ${cutIntoHTML(r)}${sizeTable(r)}
-      ${sug.length && batchWeight(r).raw ? `<h4 style="margin:16px 0 6px">Tins that suit this batch</h4><div class="tbl"><table><thead><tr><th>Tin</th><th class="num">Pieces</th><th class="num">Each</th><th class="num">Depth</th><th></th></tr></thead><tbody>
-        ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(tinInUnit(x.tt, r.tin.unit))}</td><td class="num">${x.pieces}</td><td class="num">${fmtQty(Math.round(pg), 'g')}</td><td class="num">${trimN(x.depth, 1)} cm <span class="pill ${f2[0]}">${f2[1]}</span></td><td><button class="btn small" data-act="pickTin" data-i="${k}">Use this tin</button></td></tr>`; }).join('')}
+      ${sug.length && batchWeight(r).raw ? `<h4 style="margin:16px 0 6px">Tins that suit this batch</h4><div class="tbl"><table><thead><tr><th>Tin</th><th class="num">Pcs</th><th class="num">Price</th><th></th></tr></thead><tbody>
+        ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(tinInUnit(x.tt, r.tin.unit))}<div class="hint">${trimN(x.depth, 1)} cm deep <span class="pill ${f2[0]}">${f2[1]}</span></div></td><td class="num"><b>${x.pieces}</b><div class="hint nowrap">${fmtQty(Math.round(pg), 'g')} each</div></td><td class="num">${(p2 => isFinite(p2) ? inr(p2) : '—')(tinPrice(r, x.pieces).price)}</td><td><button class="btn small" data-act="pickTin" data-i="${k}" aria-label="Use this tin">Use</button></td></tr>`; }).join('')}
       </tbody></table></div><p class="hint" style="margin-top:6px">Batter depth assumes about 1 g per cm³. Pieces use your piece size; round tins use a typical slice count.</p>` : ''}`;
   }
 }
@@ -2840,13 +2841,45 @@ function gridFor(n, A, B){
   return best;
 }
 const pieceSizes = unit => unit === 'cm' ? [[4, 4], [5, 5], [6, 6], [7.5, 7.5], [5, 8]] : [[1.5, 1.5], [2, 2], [2.5, 2.5], [3, 3], [2, 3]];
+/* price per piece when this batch (scaled by f) is baked in a tin and cut into n pieces */
+function tinPrice(r, n, f = 1){
+  const c = recipeCost(r); n = Math.max(1, Math.round(num(n)));
+  const batchCost = c.ingW * f + c.elec + c.gas + c.labour;
+  const per = batchCost / n + c.pack + c.fixed + c.transport, price = roundPrice(priceFor(per, num(r.margin)));
+  return {n, batchCost, per, price, tin:isFinite(price) ? price * n : NaN, nowPer:c.perPiece, nowPrice:recPrice(r)};
+}
+function tinPriceHTML(r, n, f, label, act){
+  const T = tinPrice(r, n, f); if (!batchWeight(r).raw && !recipeCost(r).ingr) return '';
+  const diff = isFinite(T.price) && isFinite(T.nowPrice) ? T.price - T.nowPrice : 0;
+  return `<div class="pricebox"><div class="eyebrow">${esc(label)}</div>
+    <div class="tiles mini" style="margin-top:6px">
+      <div class="tile"><div class="eyebrow">Cost</div><div class="v">${inr(T.per)}</div><div class="hint">per piece</div></div>
+      <div class="tile"><div class="eyebrow">Sell at</div><div class="v">${isFinite(T.price) ? inr(T.price) : '—'}</div><div class="hint">per piece · ${num(r.margin)}% margin</div></div>
+      <div class="tile"><div class="eyebrow">Tin</div><div class="v">${isFinite(T.tin) ? inr(T.tin) : '—'}</div><div class="hint">${T.n} × ${isFinite(T.price) ? inr(T.price) : '—'}</div></div>
+    </div>
+    <p class="hint" style="margin-top:6px">Batch cost ${inr(T.batchCost)} ÷ ${T.n} pieces. ${T.n === Math.round(num(r.yield)) && f === 1 ? 'Same as the recipe now.' : `Recipe now: ${num(r.yield)} pieces at ${isFinite(T.nowPrice) ? inr(T.nowPrice) : '—'} each${diff ? ` (${diff > 0 ? '+' : '−'}${inr(Math.abs(diff))} per piece this way)` : ''}.`} Includes packaging, transport and your share of monthly costs per piece.</p>
+    ${act ? `<div class="actions" style="margin-top:6px">${act}</div>` : ''}</div>`;
+}
+/* batch sizes from the user's own data (no fixed presets) */
+function convChips(r){
+  const bw = batchWeight(r), out = [], seen = new Set(), add = (g, label, basis) => { g = Math.round(g); if (!(g > 0) || seen.has(basis + g)) return; seen.add(basis + g); out.push({g, label, basis}); };
+  if (!bw.raw) return out;
+  if (num(r.batterQty)) add(batterG(r), `Your weighed batter · ${fmtQty(batterG(r), 'g')}`, 'raw');
+  const pcs = openOrders().reduce((a, o) => a + o.items.filter(it => it.recipeId === r.id).reduce((b, it) => b + num(it.qty), 0), 0) - readyOf(r.id);
+  if (pcs > 0) add(bw.raw * pcs / Math.max(1, num(r.yield)), `Open orders · ${pcs} pcs · ${fmtQty(Math.round(bw.raw * pcs / Math.max(1, num(r.yield))), 'g')}`, 'raw');
+  (r.convSizes || []).forEach(x => add(x.g, `${fmtQty(x.g, 'g')} ${x.basis === 'raw' ? 'batter' : 'finished'} · used before`, x.basis));
+  [0.5, 2, 3].forEach(m => add(bw.raw * m, `${m === 0.5 ? '½' : m}× · ${fmtQty(Math.round(bw.raw * m), 'g')}`, 'raw'));
+  return out;
+}
+function rememberConv(r){ const g = Math.round(num(S.ui.convTarget)), basis = S.ui.convBasis || 'baked'; if (!(g > 0)) return; r.convSizes = [{g, basis}, ...(r.convSizes || []).filter(x => !(x.g === g && x.basis === basis))].slice(0, 5); }
 function sizeTable(r){
   const t = r.tin; if (t.shape === 'round') return '';
   const A = num(t.a), B = tinSideB(t), bw = batchWeight(r), u = t.unit === 'cm' ? ' cm' : '″';
   const rows = pieceSizes(t.unit).map(([pl, pw]) => { const c = Math.floor(A / pl + 1e-6), rr = Math.floor(B / pw + 1e-6), n = c * rr; if (!n) return '';
     const used = (c * pl * rr * pw) / (A * B), g = bw.baked * used / n;
-    return `<tr><td>${trimN(pl, 1)} × ${trimN(pw, 1)}${u}</td><td class="num">${c} × ${rr}</td><td class="num"><b>${n}</b></td><td class="num">${g ? fmtQty(Math.round(g), 'g') : '—'}</td><td><button class="btn small" data-act="useSize" data-pl="${pl}" data-pw="${pw}">Use ${n} pcs</button></td></tr>`; }).join('');
-  return `<h4 style="margin:16px 0 6px">Piece sizes you can cut from this tin</h4><div class="tbl"><table><thead><tr><th>Piece</th><th class="num">Grid</th><th class="num">Pieces</th><th class="num">Each</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const tp = tinPrice(r, n);
+    return `<tr><td><span class="nowrap">${trimN(pl, 1)}×${trimN(pw, 1)}${u}</span><div class="hint nowrap">${c} × ${rr} grid</div></td><td class="num"><b>${n}</b></td><td class="num">${g ? fmtQty(Math.round(g), 'g') : '—'}</td><td class="num">${isFinite(tp.price) ? inr(tp.price) : '—'}</td><td><button class="btn small" data-act="useSize" data-pl="${pl}" data-pw="${pw}" aria-label="Use ${n} pieces of this size">Use</button></td></tr>`; }).join('');
+  return `<h4 style="margin:16px 0 6px">Piece sizes you can cut from this tin</h4><div class="tbl"><table><thead><tr><th>Piece</th><th class="num">Pcs</th><th class="num">Each</th><th class="num">Price</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function cutIntoHTML(r){
   const n = Math.round(num(S.ui.cutN)), t = r.tin; if (!(n > 0) || t.shape === 'round') return '';
@@ -2907,7 +2940,7 @@ function piecesPlanHTML(r){
     </div>
     ${P.w && P.fit[1] !== 'Ideal' ? `<p class="hint" style="margin-top:8px">${P.fit[1] === 'Thin' ? 'Pieces this light will be thin. Make them smaller in size or heavier.' : 'Pieces this heavy will be very thick. Make them bigger in size or lighter.'} Ideal for ${P.id[2]} is ${P.id[0]}–${P.id[1]} cm of batter.</p>` : ''}
     ${bw.raw ? `<h4 style="margin:16px 0 6px">Ingredients for ${P.pick.pieces} pieces</h4><div class="tbl"><table><thead><tr><th>Ingredient</th><th class="num">Amount</th><th class="num">Cost</th></tr></thead><tbody>${scaledRows(r, P.factor)}</tbody></table></div>
-      <p class="small" style="margin-top:8px">Ingredients ${inr(c.ingW * P.factor)} · about ${inr(c.ingW * P.factor / P.pick.pieces)} per piece before time, fuel and packaging.</p>
+      ${tinPriceHTML(r, P.pick.pieces, P.factor, `Price per piece: ${P.mine ? tinLabel(P.mine) : 'this tin'}, ${P.pick.pieces} pieces`, '')}
       <div class="actions" style="margin-top:10px"><button class="btn small primary" data-act="planSave">Save as a new recipe</button>${confirmBtn('planApply', 'Change this recipe to this plan', 'planApply')}</div>`
       : '<p class="hint" style="margin-top:10px">Add ingredients in grams, kg, ml or litres so Swt-er can size the batch.</p>'}`;
 }
@@ -3477,10 +3510,10 @@ const ACT = {
   shareApp: () => { shareApp(); return false; },
   copyAppLink: () => { copyText(APP_URL); return false; },
   jump: el => { const t = $('#' + el.dataset.to); if (t) t.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
-  convSet: el => { S.ui.convTarget = num(el.dataset.v); },
+  convSet: el => { S.ui.convTarget = num(el.dataset.v); if (el.dataset.b) S.ui.convBasis = el.dataset.b; },
   convMul: el => { const r = curRecipe(), bw = batchWeight(r), base = S.ui.convBasis === 'raw' ? bw.raw : bw.baked; if (!base){ toast('Add ingredients first'); return false; } S.ui.convTarget = Math.round(base * num(el.dataset.v)); },
-  convSave: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const c = scaledRecipe(r, f, fmtQty(num(S.ui.convTarget), 'g')); if (num(c.batterQty)) c.batterQty = +(num(c.batterQty) * f).toFixed(2); S.recipes.push(c); S.ui.recipe = c.id; S.ui.convTarget = ''; markApplied(c, recipeSnap(r), 'top', `New recipe saved: ${c.name}`); window.scrollTo(0, 0); },
-  convApply: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const b = recipeSnap(r); r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); if (num(r.batterQty)) r.batterQty = +(num(r.batterQty) * f).toFixed(2); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.convTarget = ''; markApplied(r, b, 'sec-batch', 'Recipe resized'); },
+  convSave: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; rememberConv(r); const c = scaledRecipe(r, f, fmtQty(num(S.ui.convTarget), 'g')); if (num(c.batterQty)) c.batterQty = +(num(c.batterQty) * f).toFixed(2); S.recipes.push(c); S.ui.recipe = c.id; S.ui.convTarget = ''; markApplied(c, recipeSnap(r), 'top', `New recipe saved: ${c.name}`); window.scrollTo(0, 0); },
+  convApply: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; rememberConv(r); const b = recipeSnap(r); r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); if (num(r.batterQty)) r.batterQty = +(num(r.batterQty) * f).toFixed(2); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.convTarget = ''; markApplied(r, b, 'sec-batch', 'Recipe resized'); },
   usePieceW: () => { const r = curRecipe(), b = recipeSnap(r), bw = batchWeight(r); r.pieceWeight = Math.round(bw.baked / Math.max(1, num(r.yield))); markApplied(r, b, 'sec-batch', 'Piece weight updated'); },
   useCut: () => { const r = curRecipe(), b = recipeSnap(r), cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); markApplied(r, b, 'sec-tin', `This recipe now makes ${cp.pieces} pieces`); },
   pickTin: el => { const r = curRecipe(), b = recipeSnap(r), x = tinSuggestions(r)[+el.dataset.i]; if (!x) return false; const t2 = tinInUnit(x.tt, r.tin.unit); r.tin = Object.assign({}, r.tin, {shape:t2.shape, a:t2.a, b:t2.b, slices:t2.shape === 'round' ? x.pieces : r.tin.slices}); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); markApplied(r, b, 'sec-tin', 'Tin changed to ' + tinLabel(r.tin)); window.requestAnimationFrame(() => { const e = $('#sec-tin'); if (e) e.scrollIntoView({behavior:'smooth'}); }); },
