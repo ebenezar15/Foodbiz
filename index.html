@@ -396,6 +396,8 @@ dialog{overscroll-behavior:contain}
 .pickcard input{margin-top:3px}
 .cardprev{display:grid;place-items:center;background:var(--surface-2);border-radius:12px;padding:10px}
 .cardprev canvas{width:min(100%,320px);height:auto;border-radius:10px;box-shadow:0 6px 20px rgb(0 0 0 / .18)}
+.hint a{display:inline-block;padding:11px 2px;margin:-11px 0;font-weight:600}
+.margin-row{display:flex;gap:12px;align-items:center}.margin-row input[type=range]{flex:1;min-width:0}
 .pricebox{margin-top:14px;padding:12px;border-radius:12px;border:1px solid var(--accent-line);background:color-mix(in srgb, var(--accent-soft) 45%, var(--surface))}
 .needcol{display:none}
 #ingTable.show-need .needcol{display:table-cell;background:var(--accent-soft)}
@@ -744,14 +746,15 @@ function recipeCost(r){
   const elec = kwh * num(P.elecRate);
   const gas = num(r.gasMin) / 60 * num(P.burnerKgHr) * num(P.lpgPrice) / 14.2;
   const labour = num(r.activeMin) / 60 * num(P.labourRate);
-  const batch = ingW + elec + gas + labour;
+  const transBatch = num(r.transBatch), extra = num(r.extraPer);
+  const batch = ingW + elec + gas + labour + transBatch;
   const y = Math.max(1, num(r.yield));
   let pack = 0;
   r.pack.forEach(p => { const k = pkgById(p.pkgId); if (k) pack += num(k.price) / Math.max(1, num(p.perPieces)); });
   const fixed = sumFixed() / Math.max(1, num(P.monthlyPieces));
   const tr = transportPer(), transport = tr.total;
-  const perPiece = batch / y + pack + fixed + transport;
-  return {ingr, ingW, elec, gas, labour, batch, pack, fixed, transport, tr, perPiece, variable:perPiece - fixed, y, kwh};
+  const perPiece = batch / y + pack + fixed + transport + extra;
+  return {ingr, ingW, elec, gas, labour, batch, pack, fixed, transport, transBatch, extra, tr, perPiece, variable:perPiece - fixed, y, kwh};
 }
 function priceFor(cost, margin, fee = 0){ const d = 1 - margin / 100 - fee / 100; return d > 0.05 ? cost / d : NaN; }
 function roundPrice(p){
@@ -762,7 +765,8 @@ function roundPrice(p){
   if (step >= 5 && c % 10 === 0 && c - 1 >= p) c -= 1;
   return c;
 }
-const recPrice = r => roundPrice(priceFor(recipeCost(r).perPiece, num(r.margin)));
+const suggestedPrice = r => roundPrice(priceFor(recipeCost(r).perPiece, num(r.margin)));
+const recPrice = r => num(r.ownPrice) > 0 ? num(r.ownPrice) : suggestedPrice(r);
 function tierFor(qty){ let d = 0; [...S.profile.tiers].sort((a, b) => num(a.min) - num(b.min)).forEach(t => { if (num(qty) >= num(t.min)) d = num(t.disc); }); return d; }
 const autoUnit = (r, qty) => r ? Math.round(recPrice(r) * (1 - tierFor(qty) / 100)) : 0;
 const marginOf = (price, cost, fee = 0) => price > 0 ? (price * (1 - fee / 100) - cost) / price * 100 : NaN;
@@ -1282,7 +1286,7 @@ function vRecipes(){
       <section class="card" id="sec-batch"><div class="card-h"><h3>Batch size &amp; converter</h3><p class="hint">See how much this batch weighs, and convert it to any size. Every ingredient is recalculated for you.</p></div>
         <div data-applied="sec-batch"></div><div id="out-bw"></div>
         <div class="field" style="margin-top:14px"><span class="lbl">Make a batch of</span>
-          ${(() => { const ch = convChips(r); return ch.length ? `<div class="chips">${ch.map(x => `<button class="chip" data-act="convSet" data-v="${x.g}" data-b="${x.basis}" aria-pressed="${num(S.ui.convTarget) === x.g && (S.ui.convBasis || 'baked') === x.basis}">${esc(x.label)}</button>`).join('')}</div><span class="hint">From your recipe, weighed batter, open orders and sizes you used before.</span>` : '<span class="hint">Add ingredients (or the batter weight) above. Quick sizes then appear here from your own data.</span>'; })()}</div>
+          <div id="out-convchips">${convChipsHTML(r)}</div></div>
         <div class="row" style="margin-top:12px;max-width:520px">${F('Or type a weight (g)', 'ui.convTarget', S.ui.convTarget || '', '', 'num', 'placeholder="e.g. 1200"')}${fld('Weight means', sel('ui.convBasis', S.ui.convBasis || 'baked', [['baked', 'Finished weight (after baking)'], ['raw', 'Raw batter / dough weight']]), '', fid('ui.convBasis'))}</div>
         <div id="out-conv" style="margin-top:12px"></div>
       </section>
@@ -1313,6 +1317,12 @@ function vRecipes(){
           ${F('Your hands-on time (min)', `${p}.activeMin`, r.activeMin, 'Mixing, shaping, cutting, packing, washing up. Not waiting time.')}
           ${F('Oven temperature (°C)', `${p}.ovenTemp`, r.ovenTemp || '', 'Printed on the recipe card.', 'num', 'placeholder="e.g. 175"')}
         </div>
+        <h4 style="margin:16px 0 6px">Transport and other costs for this product</h4>
+        <div class="row">
+          ${F('Extra transport per batch (₹)', `${p}.transBatch`, r.transBatch || '', 'A special trip for this product only, e.g. fetching fresh cream.', 'money', 'placeholder="0"')}
+          ${F('Other costs per piece (₹)', `${p}.extraPer`, r.extraPer || '', 'Stickers, ribbons, toppings bought ready-made, card…', 'money', 'placeholder="0"')}
+        </div>
+        <p class="hint" style="margin-top:6px">Shopping travel and delivery for all products are set on the <a href="#pricing">Pricing</a> page (and in Setup). Now adding <b id="trans-now"></b> per piece.</p>
         <div class="field" style="margin-top:12px"><label for="${fid(`${p}.method`)}">Method (optional)</label><textarea id="${fid(`${p}.method`)}" data-path="${p}.method" rows="4" placeholder="1. Melt butter and chocolate…&#10;2. Whisk eggs and sugar…">${esc(r.method || '')}</textarea><span class="hint">Printed on the recipe card PDF for you or a helper.</span></div></section>
       <section class="card" id="sec-pack"><h3 style="margin-bottom:4px">Packaging</h3><p class="hint" style="margin-bottom:10px">How many pieces share one item: 1 butter paper per piece, 1 box per 6 pieces.</p>
         <div class="tbl"><table><thead><tr><th>Item</th><th>One for every</th><th class="num">Per piece</th><th></th></tr></thead><tbody>
@@ -1374,9 +1384,9 @@ function oRecipes(){
   const c = recipeCost(r);
   $$('[data-linecost]').forEach(el => { const l = r.lines[+el.dataset.linecost]; const g = l && ingById(l.ingId); el.textContent = g ? inr(lineBase(l) * perBase(g)) : '—'; });
   $$('[data-packcost]').forEach(el => { const k = r.pack[+el.dataset.packcost]; const x = k && pkgById(k.pkgId); el.textContent = x ? inr(num(x.price) / Math.max(1, num(k.perPieces))) : '—'; });
-  const parts = [['Ingredients (incl. wastage)', c.ingW / c.y], ['Your time', c.labour / c.y], ['Oven and gas', (c.elec + c.gas) / c.y], ['Packaging', c.pack], ['Transport', c.transport], ['Share of monthly costs', c.fixed]];
+  const parts = [['Ingredients (incl. wastage)', c.ingW / c.y], ['Your time', c.labour / c.y], ['Oven and gas', (c.elec + c.gas) / c.y], ['Packaging', c.pack], ['Transport', c.transport + c.transBatch / c.y], ['Share of monthly costs', c.fixed], ['Other costs', c.extra]];
   const max = Math.max(...parts.map(x => x[1]), 0.01), tot = parts.reduce((a, x) => a + x[1], 0) || 1;
-  const COLS = ['var(--accent)', 'var(--gold)', 'var(--good)', 'var(--chrome)', 'color-mix(in srgb, var(--accent) 45%, var(--surface))', 'var(--muted)'];
+  const COLS = ['var(--accent)', 'var(--gold)', 'var(--good)', 'var(--chrome)', 'color-mix(in srgb, var(--accent) 45%, var(--surface))', 'var(--muted)', 'color-mix(in srgb, var(--gold) 50%, var(--surface))'];
   const tips = [];
   if (c.labour / c.y > c.perPiece * 0.45) tips.push(['info', 'Your time is the biggest cost. Bigger batches, or baking two products in one oven session, spread it thinner.']);
   if (c.pack > c.perPiece * 0.25) tips.push(['warn', 'Packaging is over a quarter of the cost. Try sharing one box across more pieces, or buying boxes in 100s.']);
@@ -1393,12 +1403,16 @@ function oRecipes(){
     <dl class="kv" style="margin-top:14px">
       <dt>Ingredients for the batch</dt><dd>${inr(c.ingr)}</dd><dt>Electricity (${c.kwh.toFixed(2)} kWh)</dt><dd>${inr(c.elec)}</dd>
       <dt>Gas</dt><dd>${inr(c.gas)}</dd><dt>Your time</dt><dd>${inr(c.labour)}</dd>
-      ${c.transport ? `<dt>Transport per ${esc(r.unitName || 'piece')}</dt><dd>${inr(c.transport)}</dd>` : ''}
-      <dt class="total">Recommended price</dt><dd class="total">${inr(recPrice(r))}</dd>
+      ${c.transport + c.transBatch ? `<dt>Transport per ${esc(r.unitName || 'piece')}</dt><dd>${inr(c.transport + c.transBatch / c.y)}</dd>` : ''}
+      ${c.extra ? `<dt>Other costs per ${esc(r.unitName || 'piece')}</dt><dd>${inr(c.extra)}</dd>` : ''}
+      <dt>Cost of one ${esc(r.unitName || 'piece')}</dt><dd>${inr(c.perPiece)}</dd>
+      <dt class="total">${num(r.ownPrice) > 0 ? 'Your selling price' : 'Recommended price'}</dt><dd class="total">${inr(recPrice(r))}${num(r.ownPrice) > 0 ? ` <span class="pill ${health(marginOf(recPrice(r), c.perPiece))[0]}">${pct(marginOf(recPrice(r), c.perPiece))}</span>` : ''}</dd>
     </dl>
     ${tips.length ? `<div style="margin-top:14px">${tipList(tips)}</div>` : ''}
     <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a><button class="btn" data-act="recipePdf">Recipe card (PDF)</button><button class="btn" data-act="card" data-id="${r.id}">Product card for WhatsApp</button></div>`;
   recipeExtras(r, c);
+  const cc = $('#out-convchips'); if (cc) cc.innerHTML = convChipsHTML(r);
+  const tn = $('#trans-now'); if (tn) tn.textContent = inr(c.transport);
   const bwx = batchWeight(r), est = $('#bw-est'); if (est) est.innerHTML = bwx.est ? `Estimated from ingredients: <b>${fmtQty(Math.round(bwx.est), 'g')}</b>. ${bwx.measured ? 'Using your weighed amount.' : 'Weigh the bowl once for accuracy.'}${!bwx.measured ? ` <button class="btn small ghost" data-act="useEst">Use ${fmtQty(Math.round(bwx.est), 'g')}</button>` : ''}` : 'Add ingredients to estimate it.';
   const nf = needFactor(r), tbl = $('#ingTable');
   if (tbl) tbl.classList.toggle('show-need', nf > 0);
@@ -1434,13 +1448,34 @@ function vPricing(){
     <div class="stack">
       <section class="card"><h3 style="margin-bottom:12px">How much do you want to keep?</h3>
         <div class="field"><label for="${fid(p + '.margin')}">Profit margin: <b id="mval">${r.margin}%</b> of the selling price</label>
-          <input type="range" min="0" max="80" step="1" id="${fid(p + '.margin')}" data-path="${p}.margin" data-num value="${r.margin}">
+          <div class="margin-row"><input type="range" min="0" max="90" step="1" id="f-margin-slider" data-path="${p}.margin" data-num value="${r.margin}" aria-label="Margin slider">
+          <div class="unitin" style="max-width:120px">${numIn(p + '.margin', r.margin, 'aria-label="Margin percent"')}<span>%</span></div></div>
           <span class="hint">Margin is profit ÷ selling price. A 40% margin on ₹100 means ₹40 profit, which is a 67% markup on the ₹60 cost.</span></div>
+        <div class="row" style="margin-top:12px">
+          ${F('Or set your own selling price (₹ per piece)', `${p}.ownPrice`, r.ownPrice || '', 'Leave empty to use the recommended price from your margin.', 'money', 'placeholder="auto"')}
+          <div class="field"><span class="lbl">&nbsp;</span><div id="out-own" class="small"></div></div>
+        </div>
         <div class="row" style="margin-top:12px">
           ${F('Others charge, from', `${p}.mktLow`, r.mktLow, 'Check 3–5 home bakers or shops near you, same size.', 'money')}
           ${F('Others charge, up to', `${p}.mktHigh`, r.mktHigh, '', 'money')}
           ${F('Delivery-app commission (%)', 'profile.platformFee', P.platformFee, 'Leave 0 if you sell direct only.')}
         </div></section>
+      <section class="card" id="sec-costs"><h3 style="margin-bottom:4px">Costs added to every piece</h3>
+        <p class="hint" style="margin-bottom:10px">Change any of these and the price updates straight away. They are shared with Setup and apply to all products.</p>
+        <div class="row">
+          ${F('Travel to buy ingredients (₹ a month)', 'profile.shopTravel', P.shopTravel, 'Fuel or fares for shopping trips.', 'money')}
+          ${F('Pieces sold per month', 'profile.monthlyPieces', P.monthlyPieces, 'Travel and fixed costs are shared over these.')}
+          ${fld('Delivery to customers', sel('profile.delMode', P.delMode, [['separate', 'Charge per order'], ['include', 'Free (in my price)']]), '', fid('profile.delMode'))}
+          ${F('Base delivery cost (₹)', 'profile.delBase', P.delBase, 'Per trip.', 'money')}
+          ${F('Delivery cost per km (₹)', 'profile.delPerKm', P.delPerKm, '', 'money')}
+          ${F('Typical distance (km)', 'profile.delAvgKm', P.delAvgKm)}
+          ${P.delMode === 'include' ? F('Typical pieces per order', 'profile.delAvgPcs', P.delAvgPcs) : ''}
+          ${F('Your labour (₹ per hour)', 'profile.labourRate', P.labourRate, '', 'money')}
+          ${F('Extra transport for this product (₹ per batch)', `${p}.transBatch`, r.transBatch || '', '', 'money', 'placeholder="0"')}
+          ${F('Other costs for this product (₹ per piece)', `${p}.extraPer`, r.extraPer || '', 'Stickers, ribbons, cards…', 'money', 'placeholder="0"')}
+        </div>
+        <div id="out-costs" class="small" style="margin-top:10px"></div>
+        <p class="hint" style="margin-top:6px">Monthly fixed costs (rent, gas connection, phone…) are in <a href="#setup">Setup → Your business</a>.</p></section>
       <section class="card"><h3 style="margin-bottom:4px">Bulk and order-size discounts</h3>
         <p class="hint" style="margin-bottom:10px">Applies to every product by quantity in one order. A tier turns amber or red when the discount eats your margin.</p>
         <div class="tbl"><table><thead><tr><th>From qty</th><th>Discount %</th><th class="num">Price each</th><th class="num">Order at this qty</th><th class="num">Margin</th><th></th></tr></thead><tbody>
@@ -1456,6 +1491,12 @@ function oPricing(){
   const r = curRecipe(); if (!r) return;
   const P = S.profile, c = recipeCost(r), m = num(r.margin), fee = num(P.platformFee);
   $('#mval') && ($('#mval').textContent = m + '%');
+  const sl = $('#f-margin-slider'), mb = document.getElementById(fid(`recipes.${S.recipes.indexOf(r)}.margin`)), ae = document.activeElement;
+  if (sl && ae !== sl) sl.value = m; if (mb && ae !== mb) mb.value = m;
+  const sug = suggestedPrice(r), own = num(r.ownPrice), oo = $('#out-own');
+  if (oo) oo.innerHTML = own > 0 ? `Margin at ${inr(own)}: <span class="pill ${health(marginOf(own, c.perPiece))[0]}">${pct(marginOf(own, c.perPiece))}</span> · recommended ${inr(sug)} <button class="btn small ghost" data-act="clearOwnPrice">Use recommended</button>` : `Using the recommended price: <b>${inr(sug)}</b>`;
+  const t = transportPer(), oc = $('#out-costs');
+  if (oc) oc.innerHTML = `Per piece now: ingredients ${inr(c.ingW / c.y)} · time ${inr(c.labour / c.y)} · oven &amp; gas ${inr((c.elec + c.gas) / c.y)} · packaging ${inr(c.pack)} · transport <b>${inr(c.transport + c.transBatch / c.y)}</b> (shopping ${inr(t.shop)}${S.profile.delMode === 'include' ? `, delivery ${inr(t.del)}` : ''}${c.transBatch ? `, this product ${inr(c.transBatch / c.y)}` : ''}) · monthly costs ${inr(c.fixed)}${c.extra ? ` · other ${inr(c.extra)}` : ''} = <b>${inr(c.perPiece)}</b>`;
   const rung = (label, marg, desc, cls = '') => {
     const raw = priceFor(c.perPiece, marg), pr = marg === 0 ? Math.ceil(raw) : roundPrice(raw), mm = marginOf(pr, c.perPiece);
     return `<div class="rung ${cls}"><b>${label}</b><span class="p">${inr(pr)}</span><span class="d">${desc}${marg > 0 ? ` · keeps ${pct(mm)}, ${inr(pr - c.perPiece)} each` : ''}</span></div>`;
@@ -1474,6 +1515,7 @@ function oPricing(){
       ${rung('Break-even', 0, 'Covers every cost, earns nothing. Never go below this.')}
       ${rung('Lowest safe price', 15, 'For tastings, regulars or slow days.')}
       ${rung('Recommended', m, 'Your target margin, rounded to a friendly price.', 'rec')}
+      ${num(r.ownPrice) > 0 ? `<div class="rung rec"><b>Your price</b><span class="p">${inr(num(r.ownPrice))}</span><span class="d">Set by you · keeps ${pct(marginOf(num(r.ownPrice), c.perPiece))}, ${inr(num(r.ownPrice) - c.perPiece)} each</span></div>` : ''}
       ${rung('Premium', Math.min(m + 15, 80), 'Gift boxes, festivals, custom orders.')}
     </div>
     <dl class="kv" style="margin-top:14px">
@@ -1905,6 +1947,7 @@ function setupBusiness(){
       ${F('Typical distance (km)', 'profile.delAvgKm', P.delAvgKm)}
       ${P.delMode === 'include' ? F('Typical pieces per order', 'profile.delAvgPcs', P.delAvgPcs) : ''}
     </div><div id="out-trans" class="small" style="margin-top:10px"></div>`, 'Transport is a real cost. Swt-er adds it to the cost of every piece so your recommended price covers it.')}
+    <section class="card result" id="out-setcost" style="margin:14px 0"></section>
     ${q(6, 'Monthly fixed costs', `<div class="tbl"><table><thead><tr><th>Cost</th><th class="num">₹ / month</th><th></th></tr></thead><tbody>
       ${P.fixed.map((f, i) => `<tr><td>${txtIn(`profile.fixed.${i}.name`, f.name, 'aria-label="Cost name"')}</td><td class="num">${numIn(`profile.fixed.${i}.amt`, f.amt, 'aria-label="Amount per month"')}</td><td><button class="x" data-act="del" data-list="profile.fixed" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}
       </tbody><tfoot><tr><td>Total</td><td class="num" id="fixedTotal">${inr(sumFixed())}</td><td></td></tr></tfoot></table></div>
@@ -1980,6 +2023,9 @@ function setupData(){
 function oSetup(){
   $('#fixedTotal') && ($('#fixedTotal').textContent = inr(sumFixed()));
   $('#out-sugg') && ($('#out-sugg').innerHTML = tipList(suggestions()));
+  const sc = $('#out-setcost'); if (sc) sc.innerHTML = S.recipes.length ? `<div class="card-h"><h3>Your products now</h3><p class="hint">Updates as you change the numbers on this page.</p></div>
+    <div class="tbl"><table><thead><tr><th>Product</th><th class="num">Cost</th><th class="num">Price</th><th class="num">Margin</th></tr></thead><tbody>${S.recipes.map(r => { const c = recipeCost(r), pr = recPrice(r), mm = marginOf(pr, c.perPiece), h = health(mm);
+      return `<tr><td>${esc(r.name)}${num(r.ownPrice) > 0 ? ' <span class="hint">(your price)</span>' : ''}</td><td class="num">${inr(c.perPiece)}</td><td class="num"><b>${inr(pr)}</b>${num(S.profile.platformFee) > 0 ? `<div class="hint">apps ${inr(roundPrice(priceFor(c.perPiece, num(r.margin), num(S.profile.platformFee))))}</div>` : ''}</td><td class="num"><span class="pill ${h[0]}">${pct(mm)}</span></td></tr>`; }).join('')}</tbody></table></div>` : '<p class="hint">Add a product in Recipes to see its cost and price here.</p>';
   const ot = $('#out-trans'); if (ot){ const t = transportPer(); ot.innerHTML = `Adds <b>${inr(t.shop)}</b> shopping travel${S.profile.delMode === 'include' ? ` + <b>${inr(t.del)}</b> delivery` : ''} to every piece. A typical delivery (${trimN(num(S.profile.delAvgKm), 1)} km) costs <b>${inr(t.delOrder)}</b>${S.profile.delMode === 'separate' ? `; orders suggest charging <b>${inr(delCharge(S.profile.delAvgKm))}</b>` : ''}.`; }
   const nb = $('#f-profile-invPrefix'); if (nb && nb.nextElementSibling) nb.nextElementSibling.textContent = 'Next bill: ' + (S.profile.invPrefix || '') + String(num(S.profile.invNext) || 1).padStart(4, '0');
 }
@@ -2003,8 +2049,8 @@ window.addEventListener('popstate', () => { if (dlg.open){ MODAL_HIST = false; c
 dlg.addEventListener('focusin', e => { if (coarse && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) setTimeout(() => e.target.scrollIntoView({block:'center', behavior:'smooth'}), 350); });
 dlg.addEventListener('click', e => { if (e.target === dlg) closeModal(); });
 const dlgShell = (title, body, foot) => `<div class="dlg" tabindex="-1" style="outline:none"><div class="dlg-h"><h3 id="dlgTitle">${title}</h3><button class="x" data-act="closeModal" aria-label="Close">×</button></div><div class="dlg-b">${body}</div>${foot ? `<div class="dlg-f">${foot}</div>` : ''}</div>`;
-let DLG_TAP = null;
-document.addEventListener('pointerdown', e => { const f = e.target.closest && e.target.closest('input,textarea,select'); DLG_TAP = f && dlg.contains(f) && f.id ? {id:f.id, t:Date.now()} : null; }, true);
+let DLG_TAP = null, PAGE_TAP = null;
+document.addEventListener('pointerdown', e => { const f = e.target.closest && e.target.closest('input,textarea,select'); const hit = f && f.id ? {id:f.id, t:Date.now()} : null; DLG_TAP = hit && dlg.contains(f) ? hit : null; PAGE_TAP = hit && !dlg.contains(f) ? hit : null; }, true);
 function renderModal(){ if (!MODAL) return; const fn = MODALS[MODAL.type], ae = document.activeElement;
   let keep = DLG_TAP && Date.now() - DLG_TAP.t < 800 ? DLG_TAP.id : (ae && dlg.contains(ae) && ae.id && /INPUT|TEXTAREA|SELECT/.test(ae.tagName) ? ae.id : '');
   const body = $('#dlgBody'); body.innerHTML = fn ? fn() : '';
@@ -2882,6 +2928,7 @@ function convChips(r){
   [0.5, 2, 3].forEach(m => add(bw.raw * m, `${m === 0.5 ? '½' : m}× · ${fmtQty(Math.round(bw.raw * m), 'g')}`, 'raw'));
   return out;
 }
+function convChipsHTML(r){ const ch = convChips(r); return ch.length ? `<div class="chips">${ch.map(x => `<button class="chip" data-act="convSet" data-v="${x.g}" data-b="${x.basis}" aria-pressed="${num(S.ui.convTarget) === x.g && (S.ui.convBasis || 'baked') === x.basis}">${esc(x.label)}</button>`).join('')}</div><span class="hint">From your recipe, weighed batter, open orders and sizes you used before.</span>` : '<span class="hint">Add ingredients (or the batter weight) above. Quick sizes then appear here from your own data.</span>'; }
 function rememberConv(r){ const g = Math.round(num(S.ui.convTarget)), basis = S.ui.convBasis || 'baked'; if (!(g > 0)) return; r.convSizes = [{g, basis}, ...(r.convSizes || []).filter(x => !(x.g === g && x.basis === basis))].slice(0, 5); }
 function sizeTable(r){
   const t = r.tin; if (t.shape === 'round') return '';
@@ -3263,8 +3310,12 @@ function render(){
   applyLook(); renderNav();
   $('#pgTitle').textContent = VIEWS[t].title;
   $('#pgSub').textContent = VIEWS[t].sub();
-  $('#app').innerHTML = VIEWS[t].v();
+  const ae = document.activeElement, y = window.scrollY, app = $('#app');
+  const keep = PAGE_TAP && Date.now() - PAGE_TAP.t < 800 ? PAGE_TAP.id : (ae && app.contains(ae) && ae.id && /INPUT|TEXTAREA|SELECT/.test(ae.tagName) ? ae.id : '');
+  const same = app.dataset.view === t; app.dataset.view = t;
+  app.innerHTML = VIEWS[t].v();
   refresh();
+  if (same){ if (Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y); if (keep){ const n = document.getElementById(keep); if (n && app.contains(n)) n.focus({preventScroll:true}); } }
 }
 function refresh(){ const o = VIEWS[cur()].o; if (o) o(); }
 window.addEventListener('hashchange', () => { S.ui.confirm = ''; S.ui.applied = null; if (dlg.open){ MODAL_HIST = false; closeModal(true); } render(); window.scrollTo(0, 0); });
@@ -3277,6 +3328,7 @@ function getPath(path){ return path.split('.').reduce((o, k) => o == null ? o : 
 function setPath(path, val){ const ks = path.split('.'); let o = S; for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = val; }
 function valOf(t){ return t.dataset.bool != null ? t.checked : t.dataset.num != null ? (t.value === '' ? '' : num(t.value)) : t.value; }
 function afterPathChange(path, val){
+  if (/^recipes\.\d+\.margin$/.test(path)){ const r = getPath(path.split('.').slice(0, 2).join('.')); if (r && num(r.ownPrice) > 0) r.ownPrice = ''; }
   if (path === 'ui.of.delivery') S.ui.of._manualDel = true;
   if (path === 'ui.of.km') S.ui.of._manualDel = false;
   if (path === 'ui.of.deliveryCost') S.ui.of._autoCost = false;
@@ -3297,6 +3349,7 @@ document.addEventListener('input', e => {
   if (t.dataset.m != null && MODAL){ MODAL[t.dataset.m] = valOf(t); modalOut(); return; }
   const path = t.dataset.path; if (!path) return;
   setPath(path, valOf(t)); afterPathChange(path, valOf(t)); save();
+  document.querySelectorAll(`[data-path="${path}"]`).forEach(n => { if (n !== t && n.type !== 'checkbox') n.value = t.value; });
   if (t.type === 'date' || t.type === 'month') return;
   refresh(); if (dlg.contains(t)) modalOut();
 });
@@ -3321,6 +3374,7 @@ document.addEventListener('change', e => {
     return;
   }
   if (t.type === 'date' || t.type === 'month'){ if (/^ui\.of\./.test(path)) refresh(); else render(); return; }
+  if (!dlg.contains(t) && !VIEWS[cur()].o && !/\.(name|unitName)$/.test(path)){ render(); return; }
   if (/\.(name|unitName)$/.test(path)){ if (dlg.contains(t)){ const h = $('#dlgTitle'); if (h && /^(ingredients|packaging)\.\d+\.name$/.test(path)) h.textContent = t.value || 'Untitled'; render(); } else render(); }
 });
 const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, bakeLoss:10, tin:defaultTin(), lines:[], pack:[]});
@@ -3552,6 +3606,7 @@ const ACT = {
   shopList: () => { openModal({type:'shop'}); return false; },
   shopCopy: () => { copyText(shopListText(shopListItems())); return false; },
   shopShare: () => { const t = shopListText(shopListItems()); (async () => { try { if (navigator.share){ await navigator.share({title:'Shopping list', text:t}); return; } } catch(e){ if (e && e.name === 'AbortError') return; } copyText(t); })(); return false; },
+  clearOwnPrice: () => { const r = curRecipe(); if (r) r.ownPrice = ''; },
   /* account & lock */
   relink: () => { showGate('link', true); return false; },
   secBio: () => { showGate('setlock', true); return false; },

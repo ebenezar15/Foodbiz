@@ -86,6 +86,13 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 - **Recipe card (PDF)**: ingredients, batch weight, tin and cut, oven temperature, time, method and storage.
 - **Stock → Shopping list**: low, out-of-stock, expired and short-for-orders items with an estimated cost. Copy it or share it on WhatsApp.
 
+## Pricing you can type
+
+- Type an exact margin, or drag the slider. Both stay in step.
+- Or type **your own selling price**. The app shows the margin it gives, and *Use recommended* switches back. Orders, quotes and discounts use your price.
+- **Costs added to every piece** (Pricing page) lets you edit shopping travel, delivery, labour, monthly pieces, plus extra transport and other costs for one product. Every number updates as you type.
+- Setup shows a live *Your products now* table of cost, price and margin.
+
 ## Screen orientation
 
 Settings → Appearance → *Screen orientation on phones*: **Upright** (default), **Sideways** or **Auto-rotate**. The installed Android app locks to your choice. iPhone apps cannot lock themselves, so use Control Centre's Portrait Orientation Lock there.
