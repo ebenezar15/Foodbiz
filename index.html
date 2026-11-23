@@ -365,6 +365,30 @@ dialog{overscroll-behavior:contain}
   main{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
   .bottom .badge{position:static;margin-left:-2px}
 }
+.jump{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-6px 0 var(--gap);padding-bottom:2px}
+.jump::-webkit-scrollbar{display:none}
+.jump .chip{flex:none}
+#sec-ing,#sec-batch,#sec-tin,#sec-time,#sec-pack,#sec-measure{scroll-margin-top:96px}
+.unitsel{width:auto;min-width:72px;padding-inline:8px}
+.stackbar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface-2)}
+.stackbar i{display:block;height:100%}
+.bar-r .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+.tiles.mini{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.mini .tile{padding:10px 12px;box-shadow:none}
+.tiles.mini>.tile:last-child{grid-column:auto}
+.tiles.mini .eyebrow{font-size:.7rem;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:360px){.tiles.mini{gap:6px}.tiles.mini .tile{padding:8px}}
+.tiles.mini .v{font-size:1.15rem}
+.tinwrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center}
+.tinsvg svg{width:100%;height:auto;display:block}
+@media (max-width:640px){.tinwrap{grid-template-columns:minmax(0,1fr)}.tiles.mini .v{font-size:1rem}}
+.syncchip .lbl{font-weight:600}
+.syncchip[data-state="syncing"] svg{animation:spin 1.2s linear infinite}
+.syncchip[data-state="error"]{color:var(--bad);border-color:color-mix(in srgb, var(--bad) 50%, var(--line))}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.syncchip svg{animation:none !important}}
+.toast{display:flex;align-items:center;gap:12px}
+.toast-btn{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px 4px;min-height:36px}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
 </style>
 </head>
@@ -382,6 +406,7 @@ dialog{overscroll-behavior:contain}
     <header class="bar"><div class="wrap in">
       <img class="mlogo" src="brand/wordmark-cream.svg" alt="Swt-er" height="30">
       <div class="ttl"><h1 id="pgTitle">Dashboard</h1><p id="pgSub"></p></div>
+      <button class="btn syncchip" id="syncChip" data-act="syncNow" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 8a4.5 4.5 0 0 1-.5 9H7zM9 13l2 2 4-4"/></svg><span class="lbl">Synced</span></button>
       <button class="btn" data-act="scan" title="Scan a barcode"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span class="lbl">Scan</span></button>
       <button class="btn primary" data-act="newOrder" title="New order"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">New order</span></button>
     </div></header>
@@ -423,9 +448,10 @@ const trimN = (n, d) => Number(n.toFixed(d)).toLocaleString('en-IN');
 function fmtQty(q, unit){
   q = num(q);
   if (unit === 'g' || unit === 'ml'){ if (Math.abs(q) >= 1000) return trimN(q / 1000, 2) + (unit === 'g' ? ' kg' : ' L'); return trimN(q, Math.abs(q) < 10 ? 1 : 0) + ' ' + unit; }
+  if (unit && unit !== 'pcs'){ const n = trimN(q, q % 1 ? 1 : 0); return n + ' ' + (Math.abs(q) === 1 ? unit : ({packet:'packets', box:'boxes', bottle:'bottles', tin:'tins'}[unit] || unit)); }
   return trimN(q, q % 1 ? 1 : 0) + ' pcs';
 }
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800); }
+function toast(msg){ const t = $('#toast'); (typeof dlg !== 'undefined' && dlg.open ? dlg : document.body).appendChild(t); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800); }
 function copyText(text){
   try { navigator.clipboard.writeText(text).then(() => toast('Copied'), () => toast('Copy was blocked. Select the text and copy it.')); }
   catch(e){ toast('Copy was blocked. Select the text and copy it.'); }
@@ -451,7 +477,7 @@ const icon = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"${k === 
 /* =========================================================
    reference data
    ========================================================= */
-const UNITS = {kg:['g',1000], g:['g',1], L:['ml',1000], ml:['ml',1], pcs:['pcs',1], dozen:['pcs',12]};
+const UNITS = {g:['g',1], kg:['g',1000], ml:['ml',1], L:['ml',1000], pcs:['pcs',1], dozen:['pcs',12], tray:['pcs',30], packet:['packet',1], box:['box',1], bottle:['bottle',1], tin:['tin',1]};
 const CATS = [
   {id:'moist', name:'Moist bakes: brownies, tea cakes, muffins, banana bread', room:3, fridge:7, freezer:60,
    signs:'Sour or fermented smell, white or green fuzzy spots, a sticky wet surface.',
@@ -487,7 +513,7 @@ const CATS = [
 const catById = id => CATS.find(c => c.id === id) || CATS[0];
 const PRODUCTS = ['Brownies','Cookies','Cakes & cupcakes','Indian sweets','Chocolates','Savoury snacks','Pickles & preserves','Breads','Home meals'];
 const CHANNELS = ['WhatsApp / Instagram','Home pickup','Swiggy / Zomato','Cafés & shops (resale)','Exhibitions & pop-ups','Corporate & events'];
-const EXP_CATS = ['Ingredients','Packaging','Gas & electricity','Equipment','Delivery','Marketing','Licences & fees','Other'];
+const EXP_CATS = ['Ingredients','Packaging','Transport (shopping)','Delivery','Gas & electricity','Equipment','Marketing','Licences & fees','Other'];
 const SALE_CATS = ['Individual','Bulk','Corporate / event','Delivery app','Café / reseller'];
 const ORDER_TYPES = [['individual','Individual'],['bulk','Bulk'],['corporate','Corporate / event'],['reseller','Café / reseller']];
 const TYPE_TO_SALE = {individual:'Individual', bulk:'Bulk', corporate:'Corporate / event', reseller:'Café / reseller'};
@@ -565,6 +591,7 @@ function sample(){
     business:'', address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!', products:['Brownies','Cookies','Indian sweets'], channels:['WhatsApp / Instagram','Corporate & events','Cafés & shops (resale)'], buyers:'both',
     monthlyPieces:400, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150, climate:'hot',
     margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2,
+    shopTravel:0, delMode:'separate', delBase:20, delPerKm:6, delAvgKm:5, delAvgPcs:12,
     fixed:[F('Phone & internet (business share)',300), F('Instagram promotion',500), F('Equipment wear & repair',400), F('Cleaning supplies, foil, gloves',300), F('FSSAI registration (₹100 a year)',9)],
     tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]
   };
@@ -623,6 +650,7 @@ function blankState(){
     profile:{business:BRAND_NAME, address:'', phone:'', email:'', fssaiNo:'', gstin:'', upi:'', invPrefix:'INV-', invNext:1, billNote:'Thank you for your order!',
       products:[], channels:[], buyers:'both', monthlyPieces:200, ovenWatts:1500, elecRate:8, lpgPrice:900, burnerKgHr:0.17, labourRate:150, climate:'hot',
       margin:40, platformFee:0, gst:'no', gstRate:5, fssai:'no', rounding:'nice', minOrder:6, leadDays:2, fixed:[],
+      shopTravel:0, delMode:'separate', delBase:20, delPerKm:6, delAvgKm:5, delAvgPcs:12,
       tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]},
     ingredients:[], packaging:[], recipes:[], entries:[], orders:[], finished:[],
     be:{investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0},
@@ -667,9 +695,13 @@ function load(){
   for (const k of Object.keys(base.backup)) if (S.backup[k] == null) S.backup[k] = base.backup[k];
   S.ui = Object.assign(UI_DEFAULT(), S.ui || {}, {confirm:'', of:null});
   if (!recById(S.ui.recipe) && S.recipes[0]) S.ui.recipe = S.recipes[0].id;
-  save();
+  S.recipes.forEach(r => { if (r.bakeLoss == null) r.bakeLoss = DEFAULT_LOSS[r.cat] ?? 5; if (!r.tin) r.tin = defaultTin(); });
+  S.ingredients.forEach(g => { if (!UNITS[g.packUnit]) g.packUnit = 'g'; });
+  if (S.ui.convBasis == null) S.ui.convBasis = 'baked';
+  resetSnap();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
 }
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function save(){ try { stamp(); } catch(e){} try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} try { scheduleSync(); } catch(e){} }
 
 /* =========================================================
    calculations
@@ -681,12 +713,12 @@ const baseUnit = g => (UNITS[g.packUnit] || UNITS.g)[0];
 const packSize = g => num(g.packQty) * (UNITS[g.packUnit] || UNITS.g)[1];
 const perBase = g => { const q = packSize(g); return q > 0 ? num(g.packPrice) / q : 0; };
 const sumFixed = () => S.profile.fixed.reduce((a, f) => a + num(f.amt), 0);
-function rateText(g){ const b = baseUnit(g), pu = perBase(g); return b === 'pcs' ? inr(pu) + ' each' : inr(pu * 1000) + (b === 'g' ? ' / kg' : ' / L'); }
+function rateText(g){ const b = baseUnit(g), pu = perBase(g); return b === 'pcs' ? inr(pu) + ' each' : (b === 'g' || b === 'ml') ? inr(pu * 1000) + (b === 'g' ? ' / kg' : ' / L') : inr(pu) + ' / ' + b; }
 
 function recipeCost(r){
   const P = S.profile;
   let ingr = 0;
-  r.lines.forEach(l => { const g = ingById(l.ingId); if (g) ingr += num(l.qty) * perBase(g); });
+  r.lines.forEach(l => { const g = ingById(l.ingId); if (g) ingr += lineBase(l) * perBase(g); });
   const ingW = ingr * (1 + num(r.wastage) / 100);
   const ovenMin = num(r.bakeMin) > 0 ? num(r.bakeMin) + num(r.preheatMin) : 0;
   const kwh = num(P.ovenWatts) / 1000 * ovenMin / 60 * 0.7;
@@ -698,8 +730,9 @@ function recipeCost(r){
   let pack = 0;
   r.pack.forEach(p => { const k = pkgById(p.pkgId); if (k) pack += num(k.price) / Math.max(1, num(p.perPieces)); });
   const fixed = sumFixed() / Math.max(1, num(P.monthlyPieces));
-  const perPiece = batch / y + pack + fixed;
-  return {ingr, ingW, elec, gas, labour, batch, pack, fixed, perPiece, variable:perPiece - fixed, y, kwh};
+  const tr = transportPer(), transport = tr.total;
+  const perPiece = batch / y + pack + fixed + transport;
+  return {ingr, ingW, elec, gas, labour, batch, pack, fixed, transport, tr, perPiece, variable:perPiece - fixed, y, kwh};
 }
 function priceFor(cost, margin, fee = 0){ const d = 1 - margin / 100 - fee / 100; return d > 0.05 ? cost / d : NaN; }
 function roundPrice(p){
@@ -770,7 +803,7 @@ function takeReady(rid, pcs){ let need = pcs; for (const f of readyLots(rid)){ i
 function needsFor(r, pieces){
   const f = pieces / Math.max(1, num(r.yield)) * (1 + num(r.wastage) / 100);
   const ing = {}, pk = {};
-  r.lines.forEach(l => { ing[l.ingId] = (ing[l.ingId] || 0) + num(l.qty) * f; });
+  r.lines.forEach(l => { ing[l.ingId] = (ing[l.ingId] || 0) + lineBase(l) * f; });
   for (const k in ing){ const g = ingById(k); if (g && baseUnit(g) === 'pcs') ing[k] = Math.ceil(ing[k] - 1e-6); }
   r.pack.forEach(p => { pk[p.pkgId] = (pk[p.pkgId] || 0) + pieces / Math.max(1, num(p.perPieces)); });
   return {ing, pk};
@@ -1086,7 +1119,9 @@ function orderForm(){
     </tbody></table></div>
     <div class="actions" style="margin-top:8px"><button class="btn small" data-act="addOItem">+ Add product</button><span class="hint">Price each fills in from your recommended price and bulk discount. Change it if you agreed a different price.</span></div>
     <div class="row" style="margin-top:12px">
-      ${F('Delivery charge', P + '.delivery', o.delivery, '', 'money')}
+      ${F('Delivery charge to customer', P + '.delivery', o.delivery, '', 'money')}
+      ${F('Distance (km)', P + '.km', o.km, 'Fills a suggested charge.', 'num', 'placeholder="e.g. 6"')}
+      ${F('What delivery costs you', P + '.deliveryCost', o.deliveryCost, 'Logged as an expense when delivered.', 'money')}
       ${F('Packaging & extras', P + '.extras', o.extras, 'Custom boxes, toppers, rush work.', 'money')}
       ${F('Discount (₹ off)', P + '.discount', o.discount, '', 'money')}
       ${F('Advance received', P + '.advance', o.advance, '', 'money')}
@@ -1101,6 +1136,7 @@ function oOrders(){
     const c = orderCalc(o);
     $$('[data-ofl]').forEach(el => { const it = o.items[+el.dataset.ofl]; el.textContent = it ? inr(num(it.unit) * num(it.qty)) : ''; });
     const h = health(marginOf(c.sub - num(o.discount), c.cost));
+    const dc = $('#' + fid('ui.of.delivery')); if (dc && num(o.km) > 0 && !o._manualDel){ const v = delCharge(o.km); o.delivery = v; dc.value = v; if (!num(o.deliveryCost) || o._autoCost !== false){ o.deliveryCost = num(S.profile.delBase) + num(S.profile.delPerKm) * num(o.km); o._autoCost = true; const cc = $('#' + fid('ui.of.deliveryCost')); if (cc) cc.value = Math.round(o.deliveryCost); } }
     $('#out-of') && ($('#out-of').innerHTML = `<b class="tnum">${c.pcs} pcs · Total ${inr(c.total)}</b> · to collect ${inr(c.balance)} · profit ${inr(c.profit)} <span class="pill ${h[0]}">${h[1]}</span>`);
   }
   const p = plan(openOrders()), el = $('#out-plan');
@@ -1167,7 +1203,7 @@ function vStock(){
     <input type="search" id="stockSearch" placeholder="Search ingredients" value="${esc(S.ui.q)}" aria-label="Search ingredients" style="margin-bottom:6px">
     <div class="list" id="ingList">${S.ingredients.map((g, i) => { const s = ingStatus(g), u = baseUnit(g); return `<div class="lrow" data-name="${esc(g.name.toLowerCase())}">
       <div><button class="linkish" data-act="ingEdit" data-id="${g.id}">${esc(g.name)}</button>${g.barcode ? ' <span class="pill" title="Barcode saved">barcode</span>' : ''}${num(g.packPrice) ? '' : ' <span class="pill bad">Add price</span>'}
-        <div class="price"><span>${trimN(num(g.packQty), 2)} ${g.packUnit} pack</span>${moneyIn(`ingredients.${i}.packPrice`, g.packPrice, `aria-label="Price of one pack of ${esc(g.name)}"`)}<span data-rate="${i}">${rateText(g)}</span></div></div>
+        <div class="price"><span>Pack: ${trimN(num(g.packQty), 2)} ${g.packUnit}</span>${moneyIn(`ingredients.${i}.packPrice`, g.packPrice, `aria-label="Price of one pack of ${esc(g.name)}"`)}<span data-rate="${i}">${rateText(g)}</span></div></div>
       <div><div class="qty">${fmtQty(stockOf(g), u)}</div>${s[0] ? `<span class="pill ${s[0]}">${s[1]}</span>` : '<span class="hint">Not tracked</span>'}</div>
       <div class="acts"><button class="btn small primary" data-act="stockIn" data-kind="ing" data-id="${g.id}">+ Stock</button><button class="btn small" data-act="stockOut" data-kind="ing" data-id="${g.id}">Use</button><button class="btn small" data-act="ingEdit" data-id="${g.id}">Details</button></div></div>`; }).join('') || `<div class="empty">No ingredients yet. Start with a list of common baking ingredients and fill in your prices, scan a pack, or add your own.<div class="actions" style="justify-content:center;margin-top:12px"><button class="btn primary" data-act="starterIng">Add a starter list</button><button class="btn" data-act="scan">Scan a pack</button><button class="btn" data-act="addIng">Add one</button></div></div>`}</div>
   </section>`;
@@ -1185,10 +1221,12 @@ function vRecipes(){
   const r = curRecipe();
   if (!r) return `<div class="card empty">No products yet.<div class="actions" style="justify-content:center;margin-top:10px"><button class="btn primary" data-act="addRecipe">Add your first product</button></div></div>`;
   const i = S.recipes.indexOf(r), p = `recipes.${i}`;
+  if (!r.tin) r.tin = defaultTin(); if (r.bakeLoss == null) r.bakeLoss = DEFAULT_LOSS[r.cat] ?? 5;
   if (!num(S.ui.scale)) S.ui.scale = num(r.yield);
   return `
   <p class="lead">One batch, everything that goes into it: ingredients, wastage, oven and gas, your hands-on time, packaging and a share of monthly costs. Tap an ingredient's rate to change its price.</p>
   ${recipePicker()}
+  <nav class="jump" aria-label="Jump to a section">${[['sec-ing','Ingredients'],['sec-batch','Batch size'],['sec-tin','Tin & cutting'],['sec-time','Time & fuel'],['sec-pack','Packaging'],['sec-measure','Measure']].map(([id, l]) => `<button class="chip" data-act="jump" data-to="${id}">${l}</button>`).join('')}</nav>
   <div class="grid2">
     <div class="stack">
       <section class="card"><div class="card-h"><h3>About this product</h3><span class="actions"><button class="btn small" data-act="dupRecipe">Duplicate</button>${confirmBtn('delRecipe:' + r.id, 'Delete', 'delRecipe')}</span></div>
@@ -1199,27 +1237,48 @@ function vRecipes(){
           ${F('Call one piece a', `${p}.unitName`, r.unitName, 'piece, slice, cookie, laddoo, jar…', 'txt')}
           ${F('Weight of one piece (g)', `${p}.pieceWeight`, r.pieceWeight, 'Optional. Gives a per-kg price.')}
         </div></section>
-      <section class="card"><div class="card-h"><h3>Ingredients for one batch</h3></div>
+      <section class="card" id="sec-ing"><div class="card-h"><h3>Ingredients for one batch</h3></div>
         <div class="tbl"><table><thead><tr><th>Ingredient</th><th>Quantity</th><th class="num">Rate</th><th class="num">Cost</th><th></th></tr></thead><tbody>
         ${r.lines.map((l, j) => { const g = ingById(l.ingId); return `<tr>
           <td>${sel(`${p}.lines.${j}.ingId`, l.ingId, S.ingredients.map(x => [x.id, x.name]))}</td>
-          <td><div class="unitin">${numIn(`${p}.lines.${j}.qty`, l.qty, 'aria-label="Quantity"')}<span>${g ? baseUnit(g) : ''}</span></div></td>
+          <td><div class="unitin">${numIn(`${p}.lines.${j}.qty`, l.qty, 'aria-label="Quantity"')}${g ? sel(`${p}.lines.${j}.unit`, lineUnitName(g, l.unit), lineUnits(g).map(x => [x[0], x[1]]), 'aria-label="Unit" class="unitsel"') : ''}</div></td>
           <td class="num">${g ? `<button class="btn small ghost" data-act="ingEdit" data-id="${g.id}" title="Change the price of ${esc(g.name)}">${rateText(g)} ✎</button>` : ''}</td>
           <td class="num" data-linecost="${j}"></td>
           <td><button class="x" data-act="del" data-list="${p}.lines" data-i="${j}" aria-label="Remove">×</button></td></tr>`; }).join('')}
         </tbody></table></div>
         ${S.ingredients.length ? '' : '<p class="hint" style="margin-top:8px">You have no ingredients yet. <button class="btn small" data-act="starterIng">Add a starter list</button></p>'}
         <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addLine">+ Add ingredient</button><button class="btn small" data-act="addIng">Create a new ingredient</button></div>
-        <div class="row" style="margin-top:14px">${F('Wastage and loss (%)', `${p}.wastage`, r.wastage, 'Batter left in the bowl, trimmed edges, broken pieces, tasting. 3–8% is common.')}</div>
+        <div class="row" style="margin-top:14px">${F('Wastage and loss (%)', `${p}.wastage`, r.wastage, 'Batter left in the bowl, trimmed edges, broken pieces, tasting. 3–8% is common.')}${F('Weight lost in baking (%)', `${p}.bakeLoss`, r.bakeLoss, 'Moisture that bakes off. Brownies and cakes ≈10%, cookies ≈12%.')}</div>
       </section>
-      <section class="card"><h3 style="margin-bottom:12px">Time and fuel</h3>
+      <section class="card" id="sec-batch"><div class="card-h"><h3>Batch size &amp; converter</h3><p class="hint">See how much this batch weighs, and convert it to any size. Every ingredient is recalculated for you.</p></div>
+        <div id="out-bw"></div>
+        <div class="field" style="margin-top:14px"><span class="lbl">Make a batch of</span>
+          <div class="chips">${[250, 500, 750, 1000, 1500, 2000].map(w => `<button class="chip" data-act="convSet" data-v="${w}" aria-pressed="${num(S.ui.convTarget) === w}">${w >= 1000 ? trimN(w / 1000, 1) + ' kg' : w + ' g'}</button>`).join('')}
+            ${[0.5, 2, 3].map(f => `<button class="chip" data-act="convMul" data-v="${f}">${f === 0.5 ? '½' : f}× this batch</button>`).join('')}</div></div>
+        <div class="row" style="margin-top:12px;max-width:520px">${F('Or type a weight (g)', 'ui.convTarget', S.ui.convTarget || '', '', 'num', 'placeholder="e.g. 1200"')}${fld('Weight means', sel('ui.convBasis', S.ui.convBasis || 'baked', [['baked', 'Finished weight (after baking)'], ['raw', 'Raw batter / dough weight']]), '', fid('ui.convBasis'))}</div>
+        <div id="out-conv" style="margin-top:12px"></div>
+      </section>
+      <section class="card" id="sec-tin"><div class="card-h"><h3>Tin &amp; cutting planner</h3><p class="hint">Tell the app your tin. It shows how deep the batter will be, how many pieces you can cut and how much each weighs, and which tin suits this batch best.</p></div>
+        <div class="row">
+          ${fld('Tin shape', sel(`${p}.tin.shape`, r.tin.shape, [['square', 'Square'], ['rect', 'Rectangle / tray'], ['round', 'Round'], ['loaf', 'Loaf']]), '', fid(`${p}.tin.shape`))}
+          ${fld('Measured in', sel(`${p}.tin.unit`, r.tin.unit, [['in', 'inches'], ['cm', 'cm']]), '', fid(`${p}.tin.unit`))}
+          ${F(r.tin.shape === 'round' ? 'Diameter' : r.tin.shape === 'square' ? 'Side' : 'Length', `${p}.tin.a`, r.tin.a)}
+          ${r.tin.shape === 'rect' || r.tin.shape === 'loaf' ? F('Width', `${p}.tin.b`, r.tin.b) : ''}
+        </div>
+        <div class="row" style="margin-top:12px">
+          ${r.tin.shape === 'round' ? F('Number of slices', `${p}.tin.slices`, r.tin.slices) : F('Piece length', `${p}.tin.pl`, r.tin.pl, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Piece width', `${p}.tin.pw`, r.tin.pw, r.tin.unit === 'cm' ? 'cm' : 'inches')}
+          ${F('I want this many pieces', 'ui.tinGoal', S.ui.tinGoal || '', 'Optional. Finds the tin and batch size.', 'num', 'placeholder="e.g. 24"')}
+        </div>
+        <div id="out-tin" style="margin-top:14px"></div>
+      </section>
+      <section class="card" id="sec-time"><h3 style="margin-bottom:12px">Time and fuel</h3>
         <div class="row">
           ${F('Oven baking time (min)', `${p}.bakeMin`, r.bakeMin, 'All trays together. 0 if no oven.')}
           ${F('Preheat time (min)', `${p}.preheatMin`, r.preheatMin)}
           ${F('Gas stove time (min)', `${p}.gasMin`, r.gasMin, 'Melting, roasting, frying, syrup.')}
           ${F('Your hands-on time (min)', `${p}.activeMin`, r.activeMin, 'Mixing, shaping, cutting, packing, washing up. Not waiting time.')}
         </div></section>
-      <section class="card"><h3 style="margin-bottom:4px">Packaging</h3><p class="hint" style="margin-bottom:10px">How many pieces share one item: 1 butter paper per piece, 1 box per 6 pieces.</p>
+      <section class="card" id="sec-pack"><h3 style="margin-bottom:4px">Packaging</h3><p class="hint" style="margin-bottom:10px">How many pieces share one item: 1 butter paper per piece, 1 box per 6 pieces.</p>
         <div class="tbl"><table><thead><tr><th>Item</th><th>One for every</th><th class="num">Per piece</th><th></th></tr></thead><tbody>
         ${r.pack.map((k, j) => `<tr>
           <td>${sel(`${p}.pack.${j}.pkgId`, k.pkgId, S.packaging.map(x => [x.id, `${x.name} (${inr(num(x.price))})`]))}</td>
@@ -1228,20 +1287,59 @@ function vRecipes(){
           <td><button class="x" data-act="del" data-list="${p}.pack" data-i="${j}" aria-label="Remove">×</button></td></tr>`).join('')}
         </tbody></table></div>
         <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addPack">+ Add packaging</button></div></section>
-      <section class="card"><div class="card-h"><h3>Measure for any quantity</h3><p class="hint">Type how many ${esc(r.unitName || 'piece')}s you need. You get the amounts to weigh out (with wastage), the cost and whether your stock covers it.</p></div>
+      <section class="card" id="sec-measure"><div class="card-h"><h3>Measure for any quantity</h3><p class="hint">Type how many ${esc(r.unitName || 'piece')}s you need. You get the amounts to weigh out (with wastage), the cost and whether your stock covers it.</p></div>
         <div class="row" style="max-width:420px">${F('How many do you need?', 'ui.scale', S.ui.scale)}</div>
         <div id="out-scale" style="margin-top:12px"></div></section>
     </div>
     <aside class="card result sticky" id="out-recipe"></aside>
   </div>`;
 }
+function recipeExtras(r, c){
+  const bw = batchWeight(r), cp = cutPlan(r), el = $('#out-bw');
+  if (el) el.innerHTML = `<div class="tiles mini">
+      <div class="tile"><div class="eyebrow">Raw batch</div><div class="v">${bw.raw ? fmtQty(bw.raw, 'g') : '—'}</div><div class="hint">batter or dough</div></div>
+      <div class="tile"><div class="eyebrow">After baking</div><div class="v">${bw.raw ? fmtQty(bw.baked, 'g') : '—'}</div><div class="hint">${num(r.bakeLoss)}% bakes off</div></div>
+      <div class="tile"><div class="eyebrow">Each ${esc(r.unitName || 'piece')}</div><div class="v">${bw.raw ? fmtQty(bw.baked / Math.max(1, num(r.yield)), 'g') : '—'}</div><div class="hint">${num(r.yield)} per batch</div></div>
+    </div>${bw.unknown.length ? `<p class="hint" style="margin-top:8px">Not counted in the weight: ${bw.unknown.map(esc).join(', ')}. Add “one piece weighs” in their details to include them.</p>` : ''}
+    ${bw.raw && Math.abs(num(r.pieceWeight) - bw.baked / Math.max(1, num(r.yield))) > 2 ? `<div class="actions" style="margin-top:8px"><button class="btn small" data-act="usePieceW">Set piece weight to ${fmtQty(Math.round(bw.baked / Math.max(1, num(r.yield))), 'g')}</button></div>` : ''}`;
+  const oc = $('#out-conv');
+  if (oc){
+    const f = convFactor(r);
+    if (!f){ oc.innerHTML = bw.raw ? '<p class="hint">Pick a size above to see the converted recipe.</p>' : '<p class="hint">Add ingredients in grams, kg, ml or litres to work out the batch weight.</p>'; }
+    else {
+      const rows = r.lines.map(l => { const g = ingById(l.ingId); if (!g) return ''; const un = lineUnitName(g, l.unit), nq = num(l.qty) * f, base = lineBase(l) * f;
+        const egg = baseUnit(g) === 'pcs' && nq % 1 > 0.05 && /egg/i.test(g.name) ? ` <span class="hint">(beat and weigh ≈${Math.round((nq % 1) * 50)} g for the part egg)</span>` : '';
+        return `<tr><td>${esc(g.name)}</td><td class="num">${trimN(num(l.qty), 2)} ${un}</td><td class="num"><b>${trimN(nq, nq < 10 ? 2 : 0)} ${un}</b>${un !== baseUnit(g) && (baseUnit(g) === 'g' || baseUnit(g) === 'ml') ? `<div class="hint">${fmtQty(base, baseUnit(g))}</div>` : ''}${egg}</td><td class="num">${inr(base * perBase(g))}</td></tr>`; }).join('');
+      const tgt = num(S.ui.convTarget);
+      oc.innerHTML = `<p class="small" style="margin-bottom:8px"><span class="pill acc">× ${trimN(f, 2)}</span> ${fmtQty(tgt, 'g')} ${S.ui.convBasis === 'raw' ? 'raw' : 'finished'} · about <b>${Math.max(1, Math.round(num(r.yield) * f))} ${esc(r.unitName || 'piece')}s</b> · ingredients ${inr(c.ingW * f)}</p>
+        <div class="tbl"><table><thead><tr><th>Ingredient</th><th class="num">Now</th><th class="num">New</th><th class="num">Cost</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="actions" style="margin-top:10px"><button class="btn small primary" data-act="convSave">Save as a new recipe</button>${confirmBtn('convApply', 'Change this recipe to this size', 'convApply')}</div>`;
+    }
+  }
+  const ot = $('#out-tin');
+  if (ot){
+    const fit = depthFit(r, cp.depth), id = IDEAL[r.cat] || [2, 4, 'this bake'], sug = tinSuggestions(r), goal = num(S.ui.tinGoal), gfor = goal > 0 ? tinForGoal(r, goal) : null;
+    const u = r.tin.unit === 'cm' ? 'cm' : '″';
+    ot.innerHTML = `<div class="tinwrap"><div class="tinsvg">${tinSVG(cp)}</div><div class="stack" style="gap:10px">
+        <dl class="kv"><dt>Tin</dt><dd>${tinLabel(r.tin)}</dd><dt>Pieces</dt><dd><b>${cp.pieces}</b></dd><dt>Each piece</dt><dd>${cp.pieceG ? fmtQty(Math.round(cp.pieceG), 'g') : '—'}</dd>
+          <dt>Batter depth</dt><dd>${cp.depth ? trimN(cp.depth, 1) + ' cm' : '—'} ${cp.depth ? `<span class="pill ${fit[0]}">${fit[1]}</span>` : ''}</dd></dl>
+        <p class="hint">${cp.depth ? (fit[1] === 'Ideal' ? `Good depth for ${id[2]} (${id[0]}–${id[1]} cm of batter).` : fit[1] === 'Thin' ? `Shallow for ${id[2]}: it may bake dry. Use a smaller tin or a bigger batch.` : `Deep for ${id[2]}: the middle may stay raw. Use a bigger tin, two tins or a smaller batch.`) : 'Add ingredients to see the depth.'}${cp.used < 0.95 && cp.pieces ? ` About ${pct((1 - cp.used) * 100)} is left as an offcut with this piece size.` : ''}</p>
+        ${cp.pieces && cp.pieces !== num(r.yield) ? `<div class="actions"><button class="btn small" data-act="useCut">Use ${cp.pieces} pieces${cp.pieceG ? ' of ' + fmtQty(Math.round(cp.pieceG), 'g') : ''} for this recipe</button></div>` : ''}
+      </div></div>
+      ${gfor ? `<div class="banner" style="background:var(--accent-soft);margin:14px 0 0"><span>For <b>${goal} pieces</b> of ${trimN(num(r.tin.pl), 2)} × ${trimN(num(r.tin.pw), 2)}${u}: use a <b>${tinLabel(gfor.best.tt)}</b> (${gfor.best.pieces} pieces) and make about <b>${fmtQty(Math.round(gfor.rawNeed), 'g')}</b> of batter (× ${trimN(gfor.factor, 2)} this recipe).</span><span class="actions"><button class="btn small" data-act="goalTin">Use that tin</button><button class="btn small primary" data-act="goalScale">Convert the batch</button></span></div>` : goal > 0 ? '<p class="hint" style="margin-top:10px">No standard tin fits that many pieces at this size. Try smaller pieces or two tins.</p>' : ''}
+      ${sug.length && batchWeight(r).raw ? `<h4 style="margin:16px 0 6px">Tins that suit this batch</h4><div class="tbl"><table><thead><tr><th>Tin</th><th class="num">Pieces</th><th class="num">Each</th><th class="num">Depth</th><th></th></tr></thead><tbody>
+        ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(x.tt)}</td><td class="num">${x.pieces}</td><td class="num">${fmtQty(Math.round(pg), 'g')}</td><td class="num">${trimN(x.depth, 1)} cm <span class="pill ${f2[0]}">${f2[1]}</span></td><td><button class="btn small" data-act="pickTin" data-i="${k}">Use</button></td></tr>`; }).join('')}
+      </tbody></table></div><p class="hint" style="margin-top:6px">Batter depth assumes about 1 g per cm³. Pieces use your piece size; round tins use a typical slice count.</p>` : ''}`;
+  }
+}
 function oRecipes(){
   const r = curRecipe(); if (!r) return;
   const c = recipeCost(r);
-  $$('[data-linecost]').forEach(el => { const l = r.lines[+el.dataset.linecost]; const g = l && ingById(l.ingId); el.textContent = g ? inr(num(l.qty) * perBase(g)) : '—'; });
+  $$('[data-linecost]').forEach(el => { const l = r.lines[+el.dataset.linecost]; const g = l && ingById(l.ingId); el.textContent = g ? inr(lineBase(l) * perBase(g)) : '—'; });
   $$('[data-packcost]').forEach(el => { const k = r.pack[+el.dataset.packcost]; const x = k && pkgById(k.pkgId); el.textContent = x ? inr(num(x.price) / Math.max(1, num(k.perPieces))) : '—'; });
-  const parts = [['Ingredients (incl. wastage)', c.ingW / c.y], ['Your time', c.labour / c.y], ['Oven and gas', (c.elec + c.gas) / c.y], ['Packaging', c.pack], ['Share of monthly costs', c.fixed]];
-  const max = Math.max(...parts.map(x => x[1]), 0.01);
+  const parts = [['Ingredients (incl. wastage)', c.ingW / c.y], ['Your time', c.labour / c.y], ['Oven and gas', (c.elec + c.gas) / c.y], ['Packaging', c.pack], ['Transport', c.transport], ['Share of monthly costs', c.fixed]];
+  const max = Math.max(...parts.map(x => x[1]), 0.01), tot = parts.reduce((a, x) => a + x[1], 0) || 1;
+  const COLS = ['var(--accent)', 'var(--gold)', 'var(--good)', 'var(--chrome)', 'color-mix(in srgb, var(--accent) 45%, var(--surface))', 'var(--muted)'];
   const tips = [];
   if (c.labour / c.y > c.perPiece * 0.45) tips.push(['info', 'Your time is the biggest cost. Bigger batches, or baking two products in one oven session, spread it thinner.']);
   if (c.pack > c.perPiece * 0.25) tips.push(['warn', 'Packaging is over a quarter of the cost. Try sharing one box across more pieces, or buying boxes in 100s.']);
@@ -1253,14 +1351,17 @@ function oRecipes(){
     <p class="eyebrow">Cost of one ${esc(r.unitName || 'piece')}</p>
     <p class="big">${inr(c.perPiece)}</p>
     <p class="muted small" style="margin:4px 0 14px">Batch of ${c.y}: ${inr(c.batch)} in ingredients, fuel and time, before packaging.${num(r.pieceWeight) > 0 ? ` Cost per kg: ${inr(c.perPiece / num(r.pieceWeight) * 1000)}.` : ''}</p>
-    <div class="bars">${parts.map(([l, v]) => `<div class="bar-r"><span>${l}</span><span class="tnum">${inr(v)}</span><div class="track"><div class="fill" style="width:${(v / max * 100).toFixed(1)}%"></div></div></div>`).join('')}</div>
+    <div class="stackbar" role="img" aria-label="Cost split">${parts.map(([l, v], k) => v > 0 ? `<i style="width:${(v / tot * 100).toFixed(2)}%;background:${COLS[k]}" title="${l}: ${inr(v)}"></i>` : '').join('')}</div>
+    <div class="bars" style="margin-top:12px">${parts.map(([l, v], k) => `<div class="bar-r"><span><i class="sw" style="background:${COLS[k]}"></i>${l}</span><span class="tnum">${inr(v)} · ${pct(v / tot * 100)}</span><div class="track"><div class="fill" style="width:${(v / max * 100).toFixed(1)}%;background:${COLS[k]}"></div></div></div>`).join('')}</div>
     <dl class="kv" style="margin-top:14px">
       <dt>Ingredients for the batch</dt><dd>${inr(c.ingr)}</dd><dt>Electricity (${c.kwh.toFixed(2)} kWh)</dt><dd>${inr(c.elec)}</dd>
       <dt>Gas</dt><dd>${inr(c.gas)}</dd><dt>Your time</dt><dd>${inr(c.labour)}</dd>
+      ${c.transport ? `<dt>Transport per ${esc(r.unitName || 'piece')}</dt><dd>${inr(c.transport)}</dd>` : ''}
       <dt class="total">Recommended price</dt><dd class="total">${inr(recPrice(r))}</dd>
     </dl>
     ${tips.length ? `<div style="margin-top:14px">${tipList(tips)}</div>` : ''}
     <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a></div>`;
+  recipeExtras(r, c);
   const n = num(S.ui.scale), out = $('#out-scale');
   if (out){
     if (n <= 0){ out.innerHTML = ''; return; }
@@ -1749,6 +1850,16 @@ function setupBusiness(){
     ${q(3, 'How much do you sell in a month?', `<div class="row">${F('Pieces sold per month', 'profile.monthlyPieces', P.monthlyPieces, 'All products. Fixed costs are spread over this.')}${F('Minimum order (pieces)', 'profile.minOrder', P.minOrder)}${F('Lead time (days)', 'profile.leadDays', P.leadDays)}</div>`)}
     ${q(4, 'What does your kitchen run on?', `<div class="row">${F('Oven power (watts)', 'profile.ovenWatts', P.ovenWatts, 'On the oven sticker. OTGs are often 1,200–2,000 W.')}${F('Electricity rate (₹ per unit)', 'profile.elecRate', P.elecRate, 'From your bill. 1 unit = 1 kWh.')}${F('LPG cylinder price (14.2 kg)', 'profile.lpgPrice', P.lpgPrice, '', 'money')}${F('Burner use (kg of gas per hour)', 'profile.burnerKgHr', P.burnerKgHr, 'About 0.15–0.2 for a medium burner.')}${fld('Your kitchen climate', sel('profile.climate', P.climate, [['hot','Hot or humid, no AC'],['cool','Cool or air-conditioned']]), 'Used for best-before dates of ready products.', fid('profile.climate'))}</div>`)}
     ${q(5, 'What is your time worth?', `<div class="row">${F('Your labour (₹ per hour)', 'profile.labourRate', P.labourRate, 'What you would pay a helper. Counts only hands-on time.', 'money')}</div>`)}
+    ${q('₹', 'Travel and delivery', `<div class="row">
+      ${F('Travel to buy ingredients (₹ a month)', 'profile.shopTravel', P.shopTravel, 'Fuel, auto or cab fares for shopping trips.', 'money')}
+    </div><div class="actions" style="margin-top:8px"><button class="btn small" data-act="estShop">Estimate from my logged trips</button><span class="hint">Log trips when you add stock, or as “Transport (shopping)” expenses.</span></div>
+    <div class="row" style="margin-top:14px">
+      ${fld('Delivery to customers', sel('profile.delMode', P.delMode, [['separate', 'Charge it separately on each order'], ['include', 'Include it in my prices (free delivery)']]), '', fid('profile.delMode'))}
+      ${F('Base delivery cost (₹)', 'profile.delBase', P.delBase, 'Per trip, e.g. a minimum fare.', 'money')}
+      ${F('Cost per km (₹)', 'profile.delPerKm', P.delPerKm, 'Your fuel, or the courier rate.', 'money')}
+      ${F('Typical distance (km)', 'profile.delAvgKm', P.delAvgKm)}
+      ${P.delMode === 'include' ? F('Typical pieces per order', 'profile.delAvgPcs', P.delAvgPcs) : ''}
+    </div><div id="out-trans" class="small" style="margin-top:10px"></div>`, 'Transport is a real cost. Swt-er adds it to the cost of every piece so your recommended price covers it.')}
     ${q(6, 'Monthly fixed costs', `<div class="tbl"><table><thead><tr><th>Cost</th><th class="num">₹ / month</th><th></th></tr></thead><tbody>
       ${P.fixed.map((f, i) => `<tr><td>${txtIn(`profile.fixed.${i}.name`, f.name, 'aria-label="Cost name"')}</td><td class="num">${numIn(`profile.fixed.${i}.amt`, f.amt, 'aria-label="Amount per month"')}</td><td><button class="x" data-act="del" data-list="profile.fixed" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}
       </tbody><tfoot><tr><td>Total</td><td class="num" id="fixedTotal">${inr(sumFixed())}</td><td></td></tr></tfoot></table></div>
@@ -1823,6 +1934,7 @@ function setupData(){
 function oSetup(){
   $('#fixedTotal') && ($('#fixedTotal').textContent = inr(sumFixed()));
   $('#out-sugg') && ($('#out-sugg').innerHTML = tipList(suggestions()));
+  const ot = $('#out-trans'); if (ot){ const t = transportPer(); ot.innerHTML = `Adds <b>${inr(t.shop)}</b> shopping travel${S.profile.delMode === 'include' ? ` + <b>${inr(t.del)}</b> delivery` : ''} to every piece. A typical delivery (${trimN(num(S.profile.delAvgKm), 1)} km) costs <b>${inr(t.delOrder)}</b>${S.profile.delMode === 'separate' ? `; orders suggest charging <b>${inr(delCharge(S.profile.delAvgKm))}</b>` : ''}.`; }
   const nb = $('#f-profile-invPrefix'); if (nb && nb.nextElementSibling) nb.nextElementSibling.textContent = 'Next bill: ' + (S.profile.invPrefix || '') + String(num(S.profile.invNext) || 1).padStart(4, '0');
 }
 
@@ -1860,6 +1972,7 @@ const MODALS = {
         ${MF(ing ? 'Packs bought' : 'Quantity bought', 'packs', mNum('packs', 'autofocus'))}
         ${MF(ing ? 'Price per pack' : 'Price each', 'price', mMoney('price'), 'Updates the price used in all your recipes.')}
         ${MF('Bought on', 'date', mDate('date'))}
+        ${MF('Travel for this trip (₹)', 'travel', mMoney('travel'), 'Optional. Logged as shopping transport.')}
         ${ing ? MF('Expiry or best-before', 'exp', mDate('exp'), 'From the pack. Leave blank if none.') : ''}
       </div>
       ${mChk('expense', 'Also record this purchase as an expense')}
@@ -1889,8 +2002,9 @@ const MODALS = {
       <div class="row">
         ${F('Name', p + '.name', g.name, '', 'txt')}
         ${F('Pack size', p + '.packQty', g.packQty)}
-        ${fld('Unit', sel(p + '.packUnit', g.packUnit, Object.keys(UNITS)), '', fid(p + '.packUnit'))}
+        ${fld('Unit', sel(p + '.packUnit', g.packUnit, unitOpts()), 'Grams, kilograms, litres, pieces, packets, boxes…', fid(p + '.packUnit'))}
         ${F('Price per pack', p + '.packPrice', g.packPrice, 'Saved to the price history when you leave the box.', 'money')}
+        ${u === 'g' ? F('1 cup weighs (g)', p + '.cupG', g.cupG, 'Optional. Lets recipes use cups and spoons. Flour ≈125, sugar ≈200, butter ≈227, cocoa ≈100.') : u === 'ml' ? '' : F(`One ${u === 'pcs' ? 'piece' : u} weighs (g)`, p + '.pieceG', g.pieceG, 'Optional. Used for batch weight (an egg is about 50 g).')}
         ${F(`Warn me below (${u})`, p + '.low', g.low, 'Low-stock alert.')}
         ${F('Barcode', p + '.barcode', g.barcode, 'Filled in when you scan a pack.', 'txt', 'inputmode="numeric"')}
       </div>
@@ -1960,7 +2074,7 @@ const MODALS = {
       <p class="small">Barcode <b class="tnum">${esc(m.code)}</b> is not in your stock yet. ${m.looking ? 'Looking up the product…' : m.found ? 'Product details were found online. Check them, then add the price from the pack or bill.' : 'Type the name and pack size printed on the pack.'}</p>
       ${MF('This barcode is for', 'link', mSel('link', [['new','A new ingredient'], ['newpkg','A new packaging item'], ...S.ingredients.map(g => [g.id, 'My ingredient: ' + g.name])]))}
       ${m.link === 'new' || m.link === 'newpkg' ? `<div class="row">${MF('Name', 'name', mTxt('name'))}
-        ${m.link === 'new' ? MF('Pack size', 'packQty', mNum('packQty')) + MF('Unit', 'packUnit', mSel('packUnit', Object.keys(UNITS))) : ''}</div>` : ''}
+        ${m.link === 'new' ? MF('Pack size', 'packQty', mNum('packQty')) + MF('Unit', 'packUnit', mSel('packUnit', unitOpts())) : ''}</div>` : ''}
       <div class="row">${MF(m.link === 'newpkg' ? 'Price each' : 'Price per pack', 'price', mMoney('price', 'autofocus'), 'MRP or what you paid.')}${MF(m.link === 'newpkg' ? 'Quantity bought' : 'Packs bought', 'packs', mNum('packs'), 'Use 0 to only save the item.')}
         ${m.link !== 'newpkg' ? MF('Expiry or best-before', 'exp', mDate('exp')) : ''}</div>
       ${mChk('expense', 'Also record this purchase as an expense')}`,
@@ -2168,7 +2282,8 @@ function loadScript(src){
     const old = document.querySelector(`script[data-src="${src}"]`);
     if (old){ if (old.dataset.ok) return res(); old.addEventListener('load', () => res()); old.addEventListener('error', () => rej(new Error('load'))); return; }
     const s = document.createElement('script'); s.src = src; s.dataset.src = src;
-    s.onload = () => { s.dataset.ok = '1'; res(); }; s.onerror = () => { s.remove(); rej(new Error('load')); };
+    const to = setTimeout(() => { s.remove(); rej(new Error('load')); }, 15000);
+    s.onload = () => { clearTimeout(to); s.dataset.ok = '1'; res(); }; s.onerror = () => { clearTimeout(to); s.remove(); rej(new Error('load')); };
     document.head.appendChild(s);
   });
 }
@@ -2316,16 +2431,18 @@ const csvOf = rows => '﻿' + rows.map(r => r.map(v => `"${String(v ?? '').repla
 /* =========================================================
    backup: Google Drive, Gmail, files
    ========================================================= */
-const GSCOPE = 'https://www.googleapis.com/auth/drive.file', BK_NAME = 'Swt-er backup', OLD_BK_NAMES = ['Swt-er backup', 'Batch & Price backup'];
+const GSCOPE = 'openid email https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata', BK_NAME = 'Swt-er backup', OLD_BK_NAMES = ['Swe' + '-tr backup', 'Batch & Price backup'];
 let GTOK = null;
 const gClientId = () => ((S.backup && S.backup.clientId) || '').trim() || ((window.BP_CONFIG || {}).googleClientId || '').trim();
-async function gToken(){
+try { const t = JSON.parse(sessionStorage.getItem('swter.tok')); if (t && t.exp > Date.now() + 60000) GTOK = t; } catch(e){}
+async function gToken(silent){
   if (GTOK && GTOK.exp > Date.now() + 60000) return GTOK.token;
+  if (silent) throw new Error('needs-tap');
   const cid = gClientId(); if (!cid) throw new Error('Add the Google sign-in key first (Setup → Your data).');
   try { await loadScript('https://accounts.google.com/gsi/client'); } catch(e){ throw new Error('Google sign-in could not load here. Open the app from its own link (your Vercel address) and try again.'); }
   return new Promise((res, rej) => {
-    const tc = google.accounts.oauth2.initTokenClient({client_id:cid, scope:GSCOPE, login_hint:S.backup.email || undefined,
-      callback:r => { if (r.error) return rej(new Error('Google sign-in was not completed.')); GTOK = {token:r.access_token, exp:Date.now() + (num(r.expires_in) || 3600) * 1000}; res(r.access_token); },
+    const tc = google.accounts.oauth2.initTokenClient({client_id:cid, scope:GSCOPE, login_hint:(AUTH && AUTH.email) || S.backup.email || undefined,
+      callback:r => { if (r.error) return rej(new Error('Google sign-in was not completed.')); GTOK = {token:r.access_token, exp:Date.now() + (num(r.expires_in) || 3600) * 1000}; try { sessionStorage.setItem('swter.tok', JSON.stringify(GTOK)); } catch(e){} res(r.access_token); },
       error_callback:e => rej(new Error(e && e.type === 'popup_closed' ? 'The Google sign-in window was closed.' : 'Google sign-in was blocked. Allow pop-ups for this site and try again.'))});
     tc.requestAccessToken();
   });
@@ -2431,7 +2548,7 @@ async function googleButton(elId, onEmail){
 const gate = $('#gate'), gateCard = $('#gateCard');
 function gateMsg(msg, kind){ GATE.msg = msg; GATE.kind = kind || ''; renderGate(); }
 function showGate(step, fromApp){ LOCKED = true; GATE.fromApp = !!fromApp; GATE.step = step; GATE.msg = ''; if (dlg.open){ MODAL_HIST = false; closeModal(true); } $('#app').innerHTML = ''; gate.hidden = false; document.body.classList.add('gated'); renderGate(); }
-function openApp(){ LOCKED = false; gate.hidden = true; document.body.classList.remove('gated'); gateCard.innerHTML = ''; render(); }
+function openApp(){ LOCKED = false; gate.hidden = true; document.body.classList.remove('gated'); gateCard.innerHTML = ''; render(); paintSyncChip(); if (SYNC.on) syncNow(false); }
 function renderGate(){
   const msg = GATE.msg ? `<p class="gate-msg ${GATE.kind}" role="alert">${esc(GATE.msg)}</p>` : '';
   const who = AUTH.email ? `<div class="gate-who">${AUTH.picture ? `<img src="${esc(AUTH.picture)}" alt="" referrerpolicy="no-referrer">` : `<span>${esc((AUTH.name || AUTH.email)[0].toUpperCase())}</span>`}<div><b>${esc(AUTH.name || AUTH.email.split('@')[0])}</b><small>${esc(AUTH.email)}</small></div></div>` : '';
@@ -2547,7 +2664,199 @@ function setupSecurity(){
       <div class="field" style="margin-top:16px"><span class="lbl">Lock again after leaving the app for</span>${seg('lockAfter', la, [['0','Right away'],['1','1 min'],['5','5 min'],['15','15 min']], 'margin:0')}</div>
       <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="lockNow">Lock now</button></div>
       <p class="hint" style="margin-top:12px">The lock stops other people opening Swt-er on this phone. Your data is kept in this phone's browser, so keep the phone's own screen lock on too, and back up regularly.</p></section>
-  </div>`;
+  </div>
+  <div style="margin-top:var(--gap)">${syncCard()}</div>`;
+}
+
+/* =========================================================
+   units, batch weight, converter, tin planner, transport
+   ========================================================= */
+const UNIT_LABEL = {g:'grams (g)', kg:'kilograms (kg)', ml:'millilitres (ml)', L:'litres (L)', pcs:'pieces', dozen:'dozen (12)', tray:'egg tray (30)', packet:'packets', box:'boxes', bottle:'bottles', tin:'tins / cans'};
+const unitOpts = () => Object.keys(UNITS).map(k => [k, UNIT_LABEL[k] || k]);
+const PLURAL = {packet:'packets', box:'boxes', bottle:'bottles', tin:'tins'};
+function lineUnits(g){
+  const b = baseUnit(g);
+  if (b === 'g'){ const u = [['g', 'g', 1], ['kg', 'kg', 1000]]; const c = num(g.cupG); if (c > 0) u.push(['tsp', 'tsp', c / 48], ['tbsp', 'tbsp', c / 16], ['cup', 'cup', c]); return u; }
+  if (b === 'ml') return [['ml', 'ml', 1], ['L', 'L', 1000], ['tsp', 'tsp (5 ml)', 5], ['tbsp', 'tbsp (15 ml)', 15], ['cup', 'cup (240 ml)', 240]];
+  if (b === 'pcs') return [['pcs', 'pcs', 1], ['dozen', 'dozen', 12]];
+  return [[b, PLURAL[b] || b, 1]];
+}
+const lineFactor = (g, u) => { const us = lineUnits(g); return (us.find(x => x[0] === u) || us[0])[2]; };
+const lineBase = l => { const g = ingById(l.ingId); return g ? num(l.qty) * lineFactor(g, l.unit) : 0; };
+const lineUnitName = (g, u) => { const us = lineUnits(g); return (us.find(x => x[0] === u) || us[0])[0]; };
+const DEFAULT_LOSS = {moist:10, cream:10, bread:12, dry:12, choc:0, ghee:3, milk:5, fried:8, preserve:5, meal:5};
+const IN = 2.54;
+const IDEAL = {moist:[2, 3.5, 'fudgy brownies and tea cakes'], cream:[2.5, 4, 'cake layers'], bread:[4, 7, 'loaves'], dry:[0.8, 1.5, 'bar cookies'], choc:[1, 2, 'set chocolate bars'], ghee:[1.5, 2.5, 'barfi or chikki slabs'], milk:[1.5, 2.5, 'barfi slabs'], fried:[1, 2, 'slabs'], preserve:[1, 2, 'slabs'], meal:[3, 6, 'trays']};
+const TIN_STD = [['square',6],['square',7],['square',8],['square',9],['square',10],['square',12],['rect',11,7],['rect',13,9],['rect',15,10],['rect',16,12],['round',6],['round',7],['round',8],['round',9],['round',10],['loaf',8,4],['loaf',9,5]];
+const defaultTin = () => ({shape:'square', a:8, b:8, unit:'in', pl:2, pw:2, slices:8});
+function batchWeight(r){
+  let raw = 0; const unknown = [];
+  r.lines.forEach(l => { const g = ingById(l.ingId); if (!g) return; const b = baseUnit(g), q = lineBase(l);
+    if (b === 'g' || b === 'ml') raw += q; else if (num(g.pieceG) > 0) raw += q * num(g.pieceG); else if (b === 'pcs' && /egg/i.test(g.name)) raw += q * 50; else unknown.push(g.name); });
+  return {raw, baked:raw * (1 - num(r.bakeLoss) / 100), unknown};
+}
+const tinSideB = t => t.shape === 'square' ? num(t.a) : num(t.b);
+function tinArea(t){ const k = t.unit === 'cm' ? 1 : IN, a = num(t.a) * k, b = tinSideB(t) * k; return t.shape === 'round' ? Math.PI * (a / 2) ** 2 : a * b; }
+function tinLabel(t){ const u = t.unit === 'cm' ? ' cm' : '″'; return t.shape === 'round' ? `${trimN(num(t.a), 1)}${u} round` : `${trimN(num(t.a), 1)} × ${trimN(tinSideB(t), 1)}${u} ${t.shape === 'loaf' ? 'loaf tin' : t.shape === 'square' ? 'square tin' : 'tray'}`; }
+function cutPlan(r){
+  const t = r.tin || defaultTin(), bw = batchWeight(r), area = tinArea(t), depth = area ? bw.raw / area : 0;
+  let cols = 0, rows = 0, pieces = 0, used = 1;
+  if (t.shape === 'round') pieces = Math.max(1, Math.round(num(t.slices)) || 8);
+  else { const A = num(t.a), B = tinSideB(t), pl = Math.max(0.1, num(t.pl)), pw = Math.max(0.1, num(t.pw));
+    cols = Math.floor(A / pl + 1e-6); rows = Math.floor(B / pw + 1e-6); pieces = cols * rows; used = A && B ? (cols * pl) * (rows * pw) / (A * B) : 0; }
+  return {t, area, depth, cols, rows, pieces, used, pieceG:pieces ? bw.baked * used / pieces : 0, bw};
+}
+function depthFit(r, depth){ const id = IDEAL[r.cat] || [2, 4, 'this bake']; return depth < id[0] ? ['warn', 'Thin'] : depth > id[1] ? ['warn', 'Thick'] : ['good', 'Ideal']; }
+function tinSuggestions(r){
+  const bw = batchWeight(r), id = IDEAL[r.cat] || [2, 4], mid = (id[0] + id[1]) / 2, t = r.tin || defaultTin();
+  const pl = t.unit === 'cm' ? num(t.pl) / IN : num(t.pl), pw = t.unit === 'cm' ? num(t.pw) / IN : num(t.pw);
+  return TIN_STD.map(([shape, a, b]) => {
+    const tt = {shape, a, b:b || a, unit:'in', pl:pl || 2, pw:pw || 2, slices:Math.round(a * 1.25)};
+    const area = tinArea(tt), depth = bw.raw ? bw.raw / area : 0;
+    const pieces = shape === 'round' ? tt.slices : Math.floor(a / tt.pl + 1e-6) * Math.floor((b || a) / tt.pw + 1e-6);
+    return {tt, area, depth, pieces, score:Math.abs(depth - mid)};
+  }).filter(x => x.pieces > 0).sort((x, y) => x.score - y.score).slice(0, 5);
+}
+function tinForGoal(r, n){
+  const id = IDEAL[r.cat] || [2, 4], mid = (id[0] + id[1]) / 2, t = r.tin || defaultTin();
+  const pl = (t.unit === 'cm' ? num(t.pl) / IN : num(t.pl)) || 2, pw = (t.unit === 'cm' ? num(t.pw) / IN : num(t.pw)) || 2;
+  const opts = TIN_STD.filter(x => x[0] !== 'round').map(([shape, a, b]) => { const B = b || a, pieces = Math.floor(a / pl + 1e-6) * Math.floor(B / pw + 1e-6); return {tt:{shape, a, b:B, unit:'in', pl, pw}, pieces, area:a * B}; })
+    .filter(x => x.pieces >= n).sort((x, y) => x.area - y.area || x.pieces - y.pieces);
+  const best = opts[0]; if (!best) return null;
+  const rawNeed = tinArea(best.tt) * mid, bw = batchWeight(r);
+  return {best, rawNeed, factor:bw.raw ? rawNeed / bw.raw : 0, pl, pw};
+}
+function tinSVG(cp){
+  const t = cp.t, W = 300, H = 190;
+  if (t.shape === 'round'){
+    const R = 82, cx = W / 2, cy = H / 2, n = cp.pieces; let g = `<circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>`;
+    for (let i = 0; i < n; i++){ const a = 2 * Math.PI * i / n - Math.PI / 2; g += `<line x1="${cx}" y1="${cy}" x2="${(cx + R * Math.cos(a)).toFixed(1)}" y2="${(cy + R * Math.sin(a)).toFixed(1)}" stroke="var(--accent)" stroke-width="1.2" opacity=".8"/>`; }
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Round tin cut into ${n} slices">${g}</svg>`;
+  }
+  const A = num(t.a) || 1, B = tinSideB(t) || 1, s = Math.min((W - 20) / A, (H - 30) / B), w = A * s, h = B * s, x0 = (W - w) / 2, y0 = 8;
+  let g = `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" rx="6" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="2.5"/>`;
+  const cw = cp.cols * num(t.pl) * s, ch = cp.rows * num(t.pw) * s;
+  g += `<rect x="${x0}" y="${y0}" width="${cw}" height="${ch}" fill="var(--accent-soft)"/>`;
+  for (let i = 1; i < cp.cols; i++){ const x = x0 + i * num(t.pl) * s; g += `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0 + ch}" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 3"/>`; }
+  for (let j = 1; j < cp.rows; j++){ const y = y0 + j * num(t.pw) * s; g += `<line x1="${x0}" y1="${y}" x2="${x0 + cw}" y2="${y}" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 3"/>`; }
+  if (cp.used < 0.999 && cp.pieces) g += `<text x="${x0 + w - 6}" y="${y0 + h - 6}" text-anchor="end" font-size="11" fill="var(--muted)">offcut</text>`;
+  const u = t.unit === 'cm' ? ' cm' : '″';
+  g += `<text x="${W / 2}" y="${H - 4}" text-anchor="middle" font-size="11" fill="var(--muted)">${trimN(A, 1)}${u} × ${trimN(B, 1)}${u} · ${cp.cols} × ${cp.rows} pieces of ${trimN(num(t.pl), 2)} × ${trimN(num(t.pw), 2)}${u}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cutting plan: ${cp.pieces} pieces">${g}</svg>`;
+}
+function convFactor(r){ const bw = batchWeight(r), target = num(S.ui.convTarget), base = S.ui.convBasis === 'raw' ? bw.raw : bw.baked; return target > 0 && base > 0 ? target / base : 0; }
+function scaledRecipe(r, f, suffix){
+  const c = JSON.parse(JSON.stringify(r)); c.id = uid(); c.name = `${r.name} (${suffix})`;
+  c.lines.forEach(l => { l.id = uid(); l.qty = +(num(l.qty) * f).toFixed(2); });
+  c.yield = Math.max(1, Math.round(num(r.yield) * f)); c.activeMin = Math.round(num(r.activeMin) * Math.max(0.6, Math.sqrt(f)));
+  return c;
+}
+/* transport */
+function transportPer(){
+  const P = S.profile, shop = num(P.shopTravel) / Math.max(1, num(P.monthlyPieces));
+  const delOrder = num(P.delBase) + num(P.delPerKm) * num(P.delAvgKm);
+  const del = P.delMode === 'include' ? delOrder / Math.max(1, num(P.delAvgPcs)) : 0;
+  return {shop, del, delOrder, total:shop + del};
+}
+const delCharge = km => { const P = S.profile; const v = num(P.delBase) + num(P.delPerKm) * num(km); return v > 0 ? Math.ceil(v / 10) * 10 : 0; };
+function shopTravelFromLogs(){
+  const months = [1, 2, 3].map(k => shiftMonth(thisMonth(), -k));
+  const total = S.entries.filter(e => e.kind === 'expense' && e.cat === 'Transport (shopping)' && months.includes(e.date.slice(0, 7))).reduce((a, e) => a + num(e.amount), 0);
+  return Math.round(total / 3);
+}
+
+/* =========================================================
+   sync across devices (Google Drive app folder of the linked Gmail)
+   ========================================================= */
+const SYNC_KEY = 'swter.sync', SYNC_FILE = 'swt-er-sync.json';
+const SYNC_COLS = ['ingredients', 'packaging', 'recipes', 'entries', 'orders', 'finished'], SYNC_ONE = ['profile', 'be', 'quote', 'shelf', 'packAdv'];
+let SYNC = {}; try { SYNC = JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch(e){ SYNC = {}; }
+const saveSync = () => { try { localStorage.setItem(SYNC_KEY, JSON.stringify(SYNC)); } catch(e){} };
+let SNAP = null, SYNCING = false, SYNC_STATE = 'idle', SYNC_MSG = '', SYNC_TIMER = 0, PENDING_RENDER = false;
+const itemKey = it => JSON.stringify(it, (k, v) => k === '_u' ? undefined : v);
+function computeSnap(){ const s = {}; SYNC_COLS.forEach(c => (S[c] || []).forEach(it => { if (!it._u) it._u = 1; s[it.id] = itemKey(it); })); SYNC_ONE.forEach(k => s['one:' + k] = JSON.stringify(S[k])); return s; }
+function resetSnap(){ S.meta = S.meta || {one:{}, del:{}}; SNAP = computeSnap(); }
+function stamp(){
+  if (!SNAP) return resetSnap();
+  const now = Date.now(), snap = {}; S.meta = S.meta || {one:{}, del:{}}; S.meta.one = S.meta.one || {}; S.meta.del = S.meta.del || {};
+  SYNC_COLS.forEach(c => (S[c] || []).forEach(it => { const h = itemKey(it); if (SNAP[it.id] !== h) it._u = now; snap[it.id] = h; }));
+  for (const id in SNAP) if (!id.startsWith('one:') && !(id in snap)) S.meta.del[id] = now;
+  SYNC_ONE.forEach(k => { const h = JSON.stringify(S[k]); if (SNAP['one:' + k] !== h) S.meta.one[k] = now; snap['one:' + k] = h; });
+  SNAP = snap;
+}
+function mergeRemote(R){
+  const before = JSON.stringify(SYNC_COLS.map(c => S[c]).concat(SYNC_ONE.map(k => S[k])));
+  const Lm = S.meta || {one:{}, del:{}}, Rm = R.meta || {one:{}, del:{}}, del = Object.assign({}, Lm.del || {});
+  for (const id in (Rm.del || {})) del[id] = Math.max(del[id] || 0, Rm.del[id]);
+  SYNC_COLS.forEach(c => {
+    const map = new Map(); (S[c] || []).forEach(it => map.set(it.id, it));
+    (R[c] || []).forEach(it => { const cur = map.get(it.id); if (!cur || num(it._u) > num(cur._u)) map.set(it.id, it); });
+    S[c] = [...map.values()].filter(it => !(del[it.id] && del[it.id] >= num(it._u)));
+  });
+  S.meta = S.meta || {one:{}, del:{}}; S.meta.one = S.meta.one || {};
+  SYNC_ONE.forEach(k => { const lt = num((Lm.one || {})[k]), rt = num((Rm.one || {})[k]); if (rt > lt && R[k]){ S[k] = R[k]; S.meta.one[k] = rt; } });
+  const cutoff = Date.now() - 120 * 864e5; for (const id in del) if (del[id] < cutoff) delete del[id];
+  S.meta.del = del;
+  resetSnap(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
+  return before !== JSON.stringify(SYNC_COLS.map(c => S[c]).concat(SYNC_ONE.map(k => S[k])));
+}
+const syncPayload = () => { const o = {}; for (const k in S) if (k !== 'ui' && k !== 'settings') o[k] = S[k]; return o; };
+function setSyncState(st, msg){ SYNC_STATE = st; SYNC_MSG = msg || ''; paintSyncChip(); if (cur() === 'setup' && S.ui.setTab === 'security' && !LOCKED && !document.activeElement?.matches?.('input,select,textarea')) render(); }
+function paintSyncChip(){
+  const c = $('#syncChip'); if (!c) return;
+  c.hidden = !SYNC.on || LOCKED;
+  const label = SYNC_STATE === 'syncing' ? 'Syncing…' : SYNC_STATE === 'ok' ? 'Synced' : SYNC_STATE === 'error' ? 'Sync failed' : 'Tap to sync';
+  c.dataset.state = SYNC_STATE; c.title = SYNC_MSG || label; c.querySelector('.lbl').textContent = label;
+}
+async function checkAccount(){
+  if (SYNC.checked === AUTH.email) return;
+  const r = await gFetch('https://openidconnect.googleapis.com/v1/userinfo'); const u = await r.json();
+  if (AUTH.email && u.email && u.email.toLowerCase() !== AUTH.email){ GTOK = null; try { sessionStorage.removeItem('swter.tok'); } catch(e){} throw new Error(`You signed in as ${u.email}, but this phone is linked to ${AUTH.email}. Sync needs the same Gmail.`); }
+  SYNC.checked = AUTH.email; saveSync();
+}
+async function syncNow(interactive){
+  if (SYNCING || !SYNC.on || LOCKED) return; SYNCING = true; setSyncState('syncing');
+  try {
+    await gToken(!interactive);
+    await checkAccount();
+    const q = encodeURIComponent(`name = '${SYNC_FILE}' and trashed = false`);
+    const list = await (await gFetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,modifiedTime)`)).json();
+    const f = (list.files || [])[0];
+    let changed = false;
+    if (f){ const remote = migrate(await (await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`)).json()); if (remote) changed = mergeRemote(remote); }
+    const body = JSON.stringify(syncPayload());
+    if (f) await gFetch(`https://www.googleapis.com/upload/drive/v3/files/${f.id}?uploadType=media`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body});
+    else { const b = 'bp' + uid(); await gFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method:'POST', headers:{'Content-Type':'multipart/related; boundary=' + b},
+      body:`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:SYNC_FILE, parents:['appDataFolder']})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${b}--`}); }
+    SYNC.last = new Date().toISOString(); saveSync(); SYNCING = false; setSyncState('ok');
+    if (changed && !LOCKED){ if (document.activeElement && document.activeElement.matches('input,select,textarea')) PENDING_RENDER = true; else render(); if (interactive) toast('Synced with your other devices'); }
+  } catch(e){ SYNCING = false; setSyncState(e && e.message === 'needs-tap' ? 'tap' : 'error', e && e.message !== 'needs-tap' ? e.message : ''); if (interactive && e && e.message !== 'needs-tap') toast(e.message); }
+}
+function scheduleSync(){ if (!SYNC.on || !GTOK || GTOK.exp < Date.now() + 60000) { if (SYNC.on && SYNC_STATE !== 'syncing') setSyncState('tap'); return; } clearTimeout(SYNC_TIMER); SYNC_TIMER = setTimeout(() => syncNow(false), 5000); }
+document.addEventListener('focusout', () => { if (PENDING_RENDER){ setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('input,select,textarea')){ PENDING_RENDER = false; render(); } }, 50); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden && SYNC.on && GTOK && GTOK.exp > Date.now() + 60000){ clearTimeout(SYNC_TIMER); syncNow(false); } });
+function syncCard(){
+  const cid = gClientId(), last = SYNC.last ? new Date(SYNC.last).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
+  return `<section class="card"><div class="card-h"><h3>Sync across devices</h3>${SYNC.on ? `<span class="pill ${SYNC_STATE === 'error' ? 'bad' : 'good'}">${SYNC_STATE === 'error' ? 'Needs attention' : 'On'}</span>` : '<span class="pill">Off</span>'}</div>
+    <p class="small">Use Swt-er on your phone, tablet and computer with the same data. Each device signs in with <b>${esc(AUTH.email || 'your linked Gmail')}</b>, and changes are merged through a private Swt-er folder in that Google Drive. Only Swt-er can see that folder.</p>
+    ${cid ? (SYNC.on ? `<dl class="kv" style="margin-top:12px"><dt>Last synced</dt><dd>${last || 'Not yet'}</dd></dl>
+        ${SYNC_MSG && SYNC_STATE === 'error' ? `<p class="gate-msg bad" style="margin-top:10px">${esc(SYNC_MSG)}</p>` : ''}
+        <div class="actions" style="margin-top:12px"><button class="btn primary" data-act="syncNow">Sync now</button><button class="btn" data-act="syncOff">Turn off on this device</button></div>
+        <p class="hint" style="margin-top:10px">After you sign in once, changes sync by themselves for about an hour. After that, tap <b>Tap to sync</b> at the top of the screen.</p>`
+      : `<div class="actions" style="margin-top:12px"><button class="btn primary" data-act="syncOn">Turn on sync</button></div><p class="hint" style="margin-top:10px">Turn it on here and on each of your other devices, signed in with the same Gmail.</p>`)
+    : `<p class="gate-msg" style="margin-top:12px">Sync needs the one-time Google sign-in key for Swt-er. Add it under Setup → Your data → “Switch on Google Drive backup”, or put it in config.js.</p>`}
+  </section>`;
+}
+
+/* =========================================================
+   undo for deletes
+   ========================================================= */
+let UNDO = null;
+const UNDOABLE = {del:'Removed', delEntry:'Entry deleted', delOrder:'Order deleted', delRecipe:'Product deleted', delIng:'Ingredient deleted', delPkg:'Packaging item deleted', discardLot:'Stock removed', discardReady:'Ready stock discarded', clearEx:'Examples removed', applyBulk:'Prices changed', convApply:'Recipe rescaled'};
+function showUndo(msg, snap){
+  UNDO = snap; const t = $('#toast'); (dlg.open ? dlg : document.body).appendChild(t);
+  t.innerHTML = `<span>${esc(msg)}</span><button class="toast-btn" data-act="undo">Undo</button>`; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; UNDO = null; }, 6000);
 }
 
 /* =========================================================
@@ -2594,6 +2903,7 @@ function renderNav(){
 }
 function render(){
   if (LOCKED) return;
+  PENDING_RENDER = false;
   const t = cur();
   applyLook(); renderNav();
   $('#pgTitle').textContent = VIEWS[t].title;
@@ -2612,6 +2922,14 @@ function getPath(path){ return path.split('.').reduce((o, k) => o == null ? o : 
 function setPath(path, val){ const ks = path.split('.'); let o = S; for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = val; }
 function valOf(t){ return t.dataset.bool != null ? t.checked : t.dataset.num != null ? (t.value === '' ? '' : num(t.value)) : t.value; }
 function afterPathChange(path, val){
+  if (path === 'ui.of.delivery') S.ui.of._manualDel = true;
+  if (path === 'ui.of.km') S.ui.of._manualDel = false;
+  if (path === 'ui.of.deliveryCost') S.ui.of._autoCost = false;
+  const lm = path.match(/^(recipes\.\d+\.lines\.\d+)\.ingId$/);
+  if (lm){ const l = getPath(lm[1]), g = ingById(val); if (g) l.unit = lineUnits(g)[0][0]; }
+  if (/^recipes\.\d+\.cat$/.test(path)){ const r = getPath(path.split('.').slice(0, 2).join('.')); r.bakeLoss = DEFAULT_LOSS[val] ?? r.bakeLoss; }
+  if (/^recipes\.\d+\.tin\.shape$/.test(path)){ const t = getPath(path.split('.').slice(0, 3).join('.')); if (val === 'loaf'){ t.a = t.unit === 'cm' ? 23 : 9; t.b = t.unit === 'cm' ? 13 : 5; } if (val === 'round' && !num(t.slices)) t.slices = 8; }
+  if (/^recipes\.\d+\.tin\.unit$/.test(path)){ const t = getPath(path.split('.').slice(0, 3).join('.')); const k = val === 'cm' ? IN : 1 / IN; ['a', 'b', 'pl', 'pw'].forEach(x => t[x] = +(num(t[x]) * k).toFixed(1)); }
   if (path === 'ui.draft.kind') S.ui.draft.cat = val === 'sale' ? SALE_CATS[0] : EXP_CATS[0];
   const m = path.match(/^(ui\.of\.items\.\d+)\.(qty|recipeId)$/);
   if (m){ const it = getPath(m[1]); it.unit = autoUnit(recById(it.recipeId), it.qty); const u = $('#' + fid(m[1] + '.unit')); if (u) u.value = it.unit; }
@@ -2649,8 +2967,8 @@ document.addEventListener('change', e => {
   if (t.type === 'date' || t.type === 'month'){ if (/^ui\.of\./.test(path)) refresh(); else render(); return; }
   if (/\.(name|unitName)$/.test(path)){ if (dlg.contains(t)) { renderModal(); render(); } else render(); }
 });
-const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, lines:[], pack:[]});
-const blankOrder = () => { const r = S.recipes[0], q = num(S.profile.minOrder) || 6; return {id:'', customer:'', phone:'', due:dAdd(today(), num(S.profile.leadDays) || 2), type:'individual', items:r ? [{id:uid(), recipeId:r.id, qty:q, unit:autoUnit(r, q)}] : [], delivery:0, extras:0, discount:0, advance:0, notes:''}; };
+const blankRecipe = () => ({id:uid(), name:'New product', cat:'moist', yield:12, unitName:'piece', pieceWeight:0, wastage:5, bakeMin:25, preheatMin:10, gasMin:0, activeMin:45, margin:num(S.profile.margin), mktLow:0, mktHigh:0, bakeLoss:10, tin:defaultTin(), lines:[], pack:[]});
+const blankOrder = () => { const r = S.recipes[0], q = num(S.profile.minOrder) || 6; return {id:'', customer:'', phone:'', due:dAdd(today(), num(S.profile.leadDays) || 2), type:'individual', items:r ? [{id:uid(), recipeId:r.id, qty:q, unit:autoUnit(r, q)}] : [], delivery:0, km:'', deliveryCost:0, extras:0, discount:0, advance:0, notes:''}; };
 function makeOrder(o){
   let warn = [];
   o.items.forEach(it => { const r = recById(it.recipeId); if (!r) return; let pcs = num(it.qty); pcs -= takeReady(r.id, pcs); if (pcs > 0) warn = warn.concat(produce(r, pcs)); });
@@ -2662,6 +2980,7 @@ function deliver(o){
   o.status = 'delivered'; o.deliveredOn = today();
   const c = orderCalc(o);
   S.entries.push({id:uid(), date:today(), kind:'sale', cat:TYPE_TO_SALE[o.type] || 'Individual', desc:'Order: ' + o.customer, amount:c.total - c.gst, orderId:o.id});
+  if (num(o.deliveryCost) > 0) S.entries.push({id:uid(), date:today(), kind:'expense', cat:'Delivery', desc:'Delivery: ' + o.customer, amount:Math.round(num(o.deliveryCost)), orderId:o.id});
   return warn;
 }
 async function saveFile(name, data, type){
@@ -2716,6 +3035,7 @@ const ACT = {
   saveOrder: () => {
     const o = S.ui.of;
     if (!o.items.some(it => num(it.qty) > 0)){ toast('Add at least one product with a quantity'); return false; }
+    delete o._manualDel; delete o._autoCost;
     o.items = o.items.filter(it => num(it.qty) > 0); o.items.forEach(it => { if (!num(it.unit)) it.unit = autoUnit(recById(it.recipeId), it.qty); });
     if (!o.customer) o.customer = 'Order ' + (S.orders.length + 1);
     if (o.id){ const i = S.orders.findIndex(x => x.id === o.id); S.orders[i] = Object.assign(S.orders[i], o); toast('Order updated'); }
@@ -2747,6 +3067,7 @@ const ACT = {
       const q = num(m.packs) * packSize(item); item.lots = item.lots || []; item.lots.push({id:uid(), date:m.date || today(), qty:q, left:q, exp:m.exp || '', price:num(m.price)});
     } else { if (num(m.price) > 0) item.price = num(m.price); item.stock = num(item.stock) + num(m.packs); }
     if (m.expense && num(m.price) > 0) S.entries.push({id:uid(), date:m.date || today(), kind:'expense', cat:ing ? 'Ingredients' : 'Packaging', desc:`${num(m.packs)} × ${item.name}`, amount:Math.round(num(m.packs) * num(m.price))});
+    if (num(m.travel) > 0) S.entries.push({id:uid(), date:m.date || today(), kind:'expense', cat:'Transport (shopping)', desc:'Shopping trip: ' + item.name, amount:Math.round(num(m.travel))});
     closeModal(); toast('Stock added');
   },
   saveStockOut: () => {
@@ -2809,7 +3130,8 @@ const ACT = {
   go: el => { if (el.dataset.tab) S.ui.setTab = el.dataset.tab; if (el.dataset.stab) S.ui.stab = el.dataset.stab; if (el.dataset.mtab) S.ui.mtab = el.dataset.mtab; if (MODAL){ if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); } save(); if (cur() === el.dataset.hash){ render(); window.scrollTo(0, 0); } else location.hash = el.dataset.hash; return false; },
   toPlan: () => { const e = $('#out-plan'); if (e) e.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
   starterIng: () => { const have = new Set(S.ingredients.map(g => g.name.toLowerCase())); let n = 0;
-    STARTER_ING.forEach(([name, q, u]) => { if (!have.has(name.toLowerCase())){ S.ingredients.push({id:uid(), name, packQty:q, packUnit:u, packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[]}); n++; } });
+    const CUP = {'Maida (all-purpose flour)':125, 'Sugar':200, 'Powdered sugar':120, 'Brown sugar':220, 'Butter':227, 'Cocoa powder':100, 'Besan (gram flour)':90, 'Baking powder':192, 'Baking soda':288, 'Salt':288, 'Cashews':130, 'Walnuts':100};
+    STARTER_ING.forEach(([name, q, u]) => { if (!have.has(name.toLowerCase())){ S.ingredients.push({id:uid(), name, packQty:q, packUnit:u, packPrice:0, low:0, barcode:'', updated:today(), history:[], lots:[], cupG:CUP[name] || 0, pieceG:/^Eggs/.test(name) ? 50 : 0}); n++; } });
     S.ui.stab = 'ing'; toast(`${n} ingredients added. Fill in what you pay for one pack of each.`); if (cur() !== 'stock'){ save(); location.hash = 'stock'; return false; } },
   starterPkg: () => { STARTER_PKG.forEach(name => { if (!S.packaging.some(k => k.name === name)) S.packaging.push({id:uid(), name, price:0, note:'', stock:0, low:0, barcode:''}); }); toast('Packaging list added. Fill in the price of each.'); },
   addFixedNamed: el => { S.profile.fixed.push({id:uid(), name:el.dataset.v, amt:0}); },
@@ -2842,6 +3164,21 @@ const ACT = {
 
   shareApp: () => { shareApp(); return false; },
   copyAppLink: () => { copyText(APP_URL); return false; },
+  jump: el => { const t = $('#' + el.dataset.to); if (t) t.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
+  convSet: el => { S.ui.convTarget = num(el.dataset.v); },
+  convMul: el => { const r = curRecipe(), bw = batchWeight(r), base = S.ui.convBasis === 'raw' ? bw.raw : bw.baked; if (!base){ toast('Add ingredients first'); return false; } S.ui.convTarget = Math.round(base * num(el.dataset.v)); },
+  convSave: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const c = scaledRecipe(r, f, fmtQty(num(S.ui.convTarget), 'g')); S.recipes.push(c); S.ui.recipe = c.id; S.ui.convTarget = ''; toast('Saved as ' + c.name); window.scrollTo(0, 0); },
+  convApply: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.convTarget = ''; },
+  usePieceW: () => { const r = curRecipe(), bw = batchWeight(r); r.pieceWeight = Math.round(bw.baked / Math.max(1, num(r.yield))); toast('Piece weight updated'); },
+  useCut: () => { const r = curRecipe(), cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); toast(`Batch now makes ${cp.pieces} pieces`); },
+  pickTin: el => { const r = curRecipe(), x = tinSuggestions(r)[+el.dataset.i]; if (!x) return false; const keep = r.tin; r.tin = Object.assign({}, x.tt, {unit:'in', pl:keep.unit === 'cm' ? +(num(keep.pl) / IN).toFixed(2) : keep.pl, pw:keep.unit === 'cm' ? +(num(keep.pw) / IN).toFixed(2) : keep.pw}); toast('Tin changed to ' + tinLabel(r.tin)); },
+  goalTin: () => { const r = curRecipe(), g = tinForGoal(r, num(S.ui.tinGoal)); if (!g) return false; r.tin = Object.assign({}, r.tin, {shape:g.best.tt.shape, a:g.best.tt.a, b:g.best.tt.b, unit:'in', pl:+g.pl.toFixed(2), pw:+g.pw.toFixed(2)}); toast('Tin changed to ' + tinLabel(r.tin)); },
+  goalScale: () => { const r = curRecipe(), g = tinForGoal(r, num(S.ui.tinGoal)); if (!g) return false; S.ui.convBasis = 'raw'; S.ui.convTarget = Math.round(g.rawNeed); render(); const t = $('#sec-batch'); if (t) t.scrollIntoView({behavior:'smooth'}); return false; },
+  estShop: () => { const v = shopTravelFromLogs(); if (!v){ toast('No shopping trips logged in the last 3 months yet'); return false; } S.profile.shopTravel = v; toast(`Set to ${inr(v)} a month from your logs`); },
+  syncOn: () => { SYNC.on = true; saveSync(); syncNow(true); },
+  syncOff: () => { SYNC.on = false; saveSync(); setSyncState('idle'); },
+  syncNow: () => { if (!SYNC.on) return false; syncNow(true); return false; },
+  undo: () => { if (!UNDO) return false; const ui = S.ui, st = S.settings; S = JSON.parse(UNDO); S.ui = ui; S.settings = st; UNDO = null; $('#toast').hidden = true; if (dlg.open) renderModal(); toast('Restored'); },
   /* account & lock */
   relink: () => { showGate('link', true); return false; },
   secBio: () => { showGate('setlock', true); return false; },
@@ -2853,15 +3190,17 @@ const ACT = {
   backup: () => { copyText(JSON.stringify(S)); return false; },
   backupFile: () => { saveFile(`swt-er-backup-${today()}.json`, JSON.stringify(S), 'application/json'); return false; },
   restore: () => { if (!restoreFromText($('#restoreBox').value)) return false; },
-  reset: () => { const st = S.settings, bk = S.backup; S = sample(); S.settings = st; S.backup = bk; toast('Sample data loaded. Clear it from the Dashboard when you are done exploring.'); location.hash = 'home'; },
-  wipe: () => { const st = S.settings, bk = S.backup; S = blankState(); S.settings = st; S.backup = bk; save(); toast('Everything cleared. Start with Get started.'); location.hash = 'home'; }
+  reset: () => { const st = S.settings, bk = S.backup; S = sample(); resetSnap(); S.settings = st; S.backup = bk; toast('Sample data loaded. Clear it from the Dashboard when you are done exploring.'); location.hash = 'home'; },
+  wipe: () => { const st = S.settings, bk = S.backup; S = blankState(); resetSnap(); S.settings = st; S.backup = bk; save(); toast('Everything cleared. Start with Get started.'); location.hash = 'home'; }
 };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act; if (!ACT[a]) return;
   if (a !== 'closeModalNav') e.preventDefault();
   if (a !== 'askConfirm' && a !== 'cancelConfirm') S.ui.confirm = '';
+  const snap = UNDOABLE[a] ? JSON.stringify(S) : null;
   const res = ACT[a](el);
+  if (snap && res !== false) setTimeout(() => showUndo(UNDOABLE[a], snap), 0);
   save();
   if (res === 'nav') return;
   if (res !== false) render();

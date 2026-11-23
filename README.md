@@ -52,6 +52,17 @@ On iPhone the home-screen app keeps its own data, separate from Safari. If you a
 - **Can't unlock?** Sign in again with the same Google account (when the client ID is set up), or erase this phone's copy and restore your latest backup.
 - The lock keeps other people out of the app on your phone. Data is stored in the phone's browser, so keep the phone's own screen lock on and back up regularly.
 
+## Sync across devices
+
+Use Swt-er on several phones, tablets or computers with the same data:
+
+1. Make sure the Google sign-in key is set (Setup → Your data → *Switch on Google Drive backup*, or `googleClientId` in `config.js`). In Google Cloud Console the OAuth client must allow `https://swt-er.vercel.app`, and the **Google Drive API** must be enabled.
+2. On each device, link the **same Gmail**, then Setup → Account & lock → **Turn on sync**, and sign in with Google when asked.
+3. Changes merge automatically through a private Swt-er folder in that Google Drive (the app-data folder, which only Swt-er can read). Each record keeps the newest change, deletions carry across, and a device signed in with a different Gmail is refused.
+4. Google sign-in lasts about an hour. After that, tap **Tap to sync** in the top bar.
+
+Erasing data on one device clears only that device; the next sync brings the data back.
+
 ## Back up to your Gmail / Google account
 
 Data lives on the device. Two ways to keep a copy in your Google account:
@@ -73,8 +84,8 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 | **Orders** | Orders with due dates, agreed prices, extras, discount and advance. *Mark as made* deducts stock (oldest first, ready stock first); *Delivered & paid* records the sale. The production plan gives batches, measurements, stock left, a shopping list, cash needed, cost and profit. **Bill** makes a PDF invoice to download or share on WhatsApp or Gmail. |
 | **Quote** | Price an enquiry, copy a WhatsApp message, download a quotation PDF, turn it into an order. |
 | **Pricing** | Break-even, lowest safe, recommended and premium prices; market check; per-kg, delivery-app and GST prices; bulk tiers with margin warnings. |
-| **Recipes & cost** | Cost per batch and per piece; change ingredient prices from the recipe; measurements for any quantity. |
-| **Stock** | Ingredients (pack price editable inline, price history, bulk % change, purchase lots with expiry, low-stock alerts), packaging stock, ready-to-sell products with best-before dates. Starter lists to begin quickly. |
+| **Recipes & cost** | Cost per batch and per piece, including transport. Each ingredient line has its own unit (g/kg, ml/L/tsp/tbsp/cup, pcs/dozen; cups and spoons for dry goods once “1 cup weighs” is set). **Batch size & converter**: raw and baked batch weight, piece weight, convert to 250 g / 500 g / 1 kg / any weight or ½×/2×/3×, save as a new recipe. **Tin & cutting planner**: square, rectangle, round or loaf tin in inches or cm; drawn cut plan, pieces, piece weight, batter depth check, best-fit tins, and the tin and batch size for a target number of pieces. |
+| **Stock** | Ingredients with pack sizes in grams, kg, ml, litres, pieces, dozen, egg trays, packets, boxes, bottles or tins (pack price editable inline, price history, bulk % change, purchase lots with expiry, low-stock alerts), packaging stock, ready-to-sell products with best-before dates. Starter lists to begin quickly. |
 | **Barcode scan** | Camera, photo or typed number. A known barcode opens *Add stock*; a new one becomes an item, with the name looked up on Open Food Facts when possible. |
 | **Money** | Month-by-month break-even and the date it happened, start-up money payback, sales and expense log. |
 | **Reports** | Any period (this month, last month, 3 months, financial year, all time, custom): profit, monthly break-even, best sellers, sales by customer type, expenses by category, stock value, expiring items, price changes. Download or share as PDF; export entries and stock as CSV for Excel or Google Sheets. |
@@ -85,7 +96,10 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 
 - **Electricity** = oven watts ÷ 1000 × (bake + preheat minutes) ÷ 60 × 0.7 × ₹ per unit.
 - **Gas** = stove minutes ÷ 60 × burner kg per hour × (cylinder price ÷ 14.2 kg).
-- **Cost per piece** = (ingredients × (1 + wastage) + electricity + gas + labour) ÷ pieces + packaging per piece + monthly fixed costs ÷ pieces sold per month.
+- **Cost per piece** = (ingredients × (1 + wastage) + electricity + gas + labour) ÷ pieces + packaging per piece + monthly fixed costs ÷ pieces sold per month + transport.
+- **Transport per piece** = shopping travel per month ÷ pieces sold per month, plus (if delivery is included in prices) (base fare + ₹/km × typical km) ÷ typical pieces per order.
+- **Delivery charge suggestion** = base fare + ₹/km × distance, rounded up to ₹10.
+- **Batter depth** = raw batch weight ÷ tin area (about 1 g per cm³). Ideal ranges: brownies 2–3.5 cm, cakes 2.5–4 cm, bar cookies 0.8–1.5 cm.
 - **Price at a margin** = cost ÷ (1 − margin).
 - **Measurements for orders** = recipe quantity × pieces ÷ batch size × (1 + wastage), rounded up for items counted in pieces.
 - **Month break-even** = sales ≥ logged expenses + fixed costs (+ your pay if set); the date is when running sales first covered running costs.
