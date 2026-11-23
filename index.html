@@ -389,6 +389,12 @@ dialog{overscroll-behavior:contain}
 @media (prefers-reduced-motion:reduce){.syncchip svg{animation:none !important}}
 .toast{display:flex;align-items:center;gap:12px}
 .toast-btn{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px 4px;min-height:36px}
+.pickrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.pickcard{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;background:var(--surface)}
+.pickcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.pickcard input{margin-top:3px}
+.cardprev{display:grid;place-items:center;background:var(--surface-2);border-radius:12px;padding:10px}
+.cardprev canvas{width:min(100%,320px);height:auto;border-radius:10px;box-shadow:0 6px 20px rgb(0 0 0 / .18)}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
 </style>
 </head>
@@ -975,7 +981,7 @@ function vHome(){
       <section class="card"><div class="card-h"><h3>Needs attention</h3></div>${al.length ? tipList(al.slice(0, 7)) + (al.length > 7 ? `<p class="hint" style="margin-top:8px">${al.length - 7} more on the Stock and Orders pages.</p>` : '') : tipList([['good', 'Nothing urgent. Stock, expiry dates and orders look fine.']])}</section>
       <section class="card"><div class="card-h"><h3>Quick actions</h3></div><div class="actions">
         <button class="btn" data-act="newOrder">New order</button><button class="btn" data-act="stockIn" data-kind="ing">Add stock</button>
-        <button class="btn" data-act="scan">Scan a barcode</button><button class="btn" data-act="bake">Bake for stock</button><button class="btn" data-act="goLog">Log an expense</button></div></section>
+        <button class="btn" data-act="scan">Scan a barcode</button><button class="btn" data-act="bake">Bake for stock</button><button class="btn" data-act="card">Product card</button><button class="btn" data-act="goLog">Log an expense</button></div></section>
       <section class="card"><div class="card-h"><h3>Your products</h3><a class="btn small" href="#pricing">Pricing</a></div>${productTable()}</section>
     </div>
   </div>`;
@@ -1196,7 +1202,7 @@ function vStock(){
     <div class="list">${S.finished.filter(f => num(f.left) > 0).sort((a, b) => a.exp.localeCompare(b.exp)).map(f => { const r = recById(f.recipeId); if (!r) return ''; const n = daysUntil(f.exp); return `<div class="lrow">
       <div><b>${esc(r.name)}</b><div class="meta">Made ${fmtDate(f.made)} · best before ${fmtDate(f.exp)}</div></div>
       <div><div class="qty">${f.left} ${esc(r.unitName || 'pcs')}</div><span class="pill ${n < 0 ? 'bad' : n <= 2 ? 'warn' : 'good'}">${n < 0 ? 'Past best-before' : cap(expIn(f.exp))}</span></div>
-      <div class="acts">${n >= 0 ? `<button class="btn small primary" data-act="sellReady" data-id="${f.id}">Sell</button>` : ''}${confirmBtn('discardReady:' + f.id, 'Discard', 'discardReady', `data-id="${f.id}"`)}</div></div>`; }).join('') || '<div class="empty">Nothing made ahead. Use “Bake for stock” to add some.</div>'}</div></section>`;
+      <div class="acts">${n >= 0 ? `<button class="btn small primary" data-act="sellReady" data-id="${f.id}">Sell</button><button class="btn small" data-act="card" data-id="${r.id}" data-lot="${f.id}">Share card</button>` : ''}${confirmBtn('discardReady:' + f.id, 'Discard', 'discardReady', `data-id="${f.id}"`)}</div></div>`; }).join('') || '<div class="empty">Nothing made ahead. Use “Bake for stock” to add some.</div>'}</div></section>`;
   return head + `<section class="card">
     <div class="card-h"><h3>Ingredients ${nAlert ? `<span class="pill warn">${nAlert} need attention</span>` : ''}</h3>
       <span class="actions"><button class="btn small" data-act="scan">Scan</button><button class="btn small" data-act="bulkPrice">Change prices</button><button class="btn small primary" data-act="addIng">+ Add</button></span></div>
@@ -1258,17 +1264,22 @@ function vRecipes(){
         <div class="row" style="margin-top:12px;max-width:520px">${F('Or type a weight (g)', 'ui.convTarget', S.ui.convTarget || '', '', 'num', 'placeholder="e.g. 1200"')}${fld('Weight means', sel('ui.convBasis', S.ui.convBasis || 'baked', [['baked', 'Finished weight (after baking)'], ['raw', 'Raw batter / dough weight']]), '', fid('ui.convBasis'))}</div>
         <div id="out-conv" style="margin-top:12px"></div>
       </section>
-      <section class="card" id="sec-tin"><div class="card-h"><h3>Tin &amp; cutting planner</h3><p class="hint">Tell the app your tin. It shows how deep the batter will be, how many pieces you can cut and how much each weighs, and which tin suits this batch best.</p></div>
+      <section class="card" id="sec-tin"><div class="card-h"><h3>Plan a bake: tin &amp; pieces</h3><p class="hint">Start from the tin you have, or from the pieces you want. Swt-er works out the rest.</p></div>
+        ${seg('tinMode', S.ui.tinMode || 'tin', [['tin', 'I have a tin'], ['pieces', 'I want pieces']])}
         <div class="row">
-          ${fld('Tin shape', sel(`${p}.tin.shape`, r.tin.shape, [['square', 'Square'], ['rect', 'Rectangle / tray'], ['round', 'Round'], ['loaf', 'Loaf']]), '', fid(`${p}.tin.shape`))}
           ${fld('Measured in', sel(`${p}.tin.unit`, r.tin.unit, [['in', 'inches'], ['cm', 'cm']]), '', fid(`${p}.tin.unit`))}
+          ${(S.ui.tinMode || 'tin') === 'tin' ? `${fld('Tin shape', sel(`${p}.tin.shape`, r.tin.shape, [['square', 'Square'], ['rect', 'Rectangle / tray'], ['round', 'Round'], ['loaf', 'Loaf']]), '', fid(`${p}.tin.shape`))}
           ${F(r.tin.shape === 'round' ? 'Diameter' : r.tin.shape === 'square' ? 'Side' : 'Length', `${p}.tin.a`, r.tin.a)}
-          ${r.tin.shape === 'rect' || r.tin.shape === 'loaf' ? F('Width', `${p}.tin.b`, r.tin.b) : ''}
+          ${r.tin.shape === 'rect' || r.tin.shape === 'loaf' ? F('Width', `${p}.tin.b`, r.tin.b) : ''}` : ''}
         </div>
-        <div class="row" style="margin-top:12px">
-          ${r.tin.shape === 'round' ? F('Number of slices', `${p}.tin.slices`, r.tin.slices) : F('Piece length', `${p}.tin.pl`, r.tin.pl, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Piece width', `${p}.tin.pw`, r.tin.pw, r.tin.unit === 'cm' ? 'cm' : 'inches')}
-          ${F('I want this many pieces', 'ui.tinGoal', S.ui.tinGoal || '', 'Optional. Finds the tin and batch size.', 'num', 'placeholder="e.g. 24"')}
-        </div>
+        ${(S.ui.tinMode || 'tin') === 'tin' ? `<div class="row" style="margin-top:12px">
+          ${r.tin.shape === 'round' ? F('Number of slices', `${p}.tin.slices`, r.tin.slices) : F('Piece length', `${p}.tin.pl`, r.tin.pl, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Piece width', `${p}.tin.pw`, r.tin.pw, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Or cut into equal pieces', 'ui.cutN', S.ui.cutN || '', 'How many pieces you want from this tin.', 'num', 'placeholder="e.g. 20"')}
+        </div>` : `<div class="row" style="margin-top:12px">
+          ${F('Pieces you need', 'ui.goalN', S.ui.goalN || '', '', 'num', 'placeholder="e.g. 24"')}
+          ${F('Piece length', 'ui.goalPl', S.ui.goalPl || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches')}
+          ${F('Piece width', 'ui.goalPw', S.ui.goalPw || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches')}
+          ${F('Weight of one piece (g)', 'ui.goalW', S.ui.goalW || '', 'Optional. Leave empty for the ideal thickness.', 'num', 'placeholder="e.g. 60"')}
+        </div>`}
         <div id="out-tin" style="margin-top:14px"></div>
       </section>
       <section class="card" id="sec-time"><h3 style="margin-bottom:12px">Time and fuel</h3>
@@ -1317,7 +1328,8 @@ function recipeExtras(r, c){
     }
   }
   const ot = $('#out-tin');
-  if (ot){
+  if (ot && (S.ui.tinMode || 'tin') === 'pieces'){ ot.innerHTML = piecesPlanHTML(r); }
+  else if (ot){
     const fit = depthFit(r, cp.depth), id = IDEAL[r.cat] || [2, 4, 'this bake'], sug = tinSuggestions(r), goal = num(S.ui.tinGoal), gfor = goal > 0 ? tinForGoal(r, goal) : null;
     const u = r.tin.unit === 'cm' ? 'cm' : '″';
     ot.innerHTML = `<div class="tinwrap"><div class="tinsvg">${tinSVG(cp)}</div><div class="stack" style="gap:10px">
@@ -1326,7 +1338,7 @@ function recipeExtras(r, c){
         <p class="hint">${cp.depth ? (fit[1] === 'Ideal' ? `Good depth for ${id[2]} (${id[0]}–${id[1]} cm of batter).` : fit[1] === 'Thin' ? `Shallow for ${id[2]}: it may bake dry. Use a smaller tin or a bigger batch.` : `Deep for ${id[2]}: the middle may stay raw. Use a bigger tin, two tins or a smaller batch.`) : 'Add ingredients to see the depth.'}${cp.used < 0.95 && cp.pieces ? ` About ${pct((1 - cp.used) * 100)} is left as an offcut with this piece size.` : ''}</p>
         ${cp.pieces && cp.pieces !== num(r.yield) ? `<div class="actions"><button class="btn small" data-act="useCut">Use ${cp.pieces} pieces${cp.pieceG ? ' of ' + fmtQty(Math.round(cp.pieceG), 'g') : ''} for this recipe</button></div>` : ''}
       </div></div>
-      ${gfor ? `<div class="banner" style="background:var(--accent-soft);margin:14px 0 0"><span>For <b>${goal} pieces</b> of ${trimN(num(r.tin.pl), 2)} × ${trimN(num(r.tin.pw), 2)}${u}: use a <b>${tinLabel(gfor.best.tt)}</b> (${gfor.best.pieces} pieces) and make about <b>${fmtQty(Math.round(gfor.rawNeed), 'g')}</b> of batter (× ${trimN(gfor.factor, 2)} this recipe).</span><span class="actions"><button class="btn small" data-act="goalTin">Use that tin</button><button class="btn small primary" data-act="goalScale">Convert the batch</button></span></div>` : goal > 0 ? '<p class="hint" style="margin-top:10px">No standard tin fits that many pieces at this size. Try smaller pieces or two tins.</p>' : ''}
+      ${cutIntoHTML(r)}${sizeTable(r)}
       ${sug.length && batchWeight(r).raw ? `<h4 style="margin:16px 0 6px">Tins that suit this batch</h4><div class="tbl"><table><thead><tr><th>Tin</th><th class="num">Pieces</th><th class="num">Each</th><th class="num">Depth</th><th></th></tr></thead><tbody>
         ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(x.tt)}</td><td class="num">${x.pieces}</td><td class="num">${fmtQty(Math.round(pg), 'g')}</td><td class="num">${trimN(x.depth, 1)} cm <span class="pill ${f2[0]}">${f2[1]}</span></td><td><button class="btn small" data-act="pickTin" data-i="${k}">Use</button></td></tr>`; }).join('')}
       </tbody></table></div><p class="hint" style="margin-top:6px">Batter depth assumes about 1 g per cm³. Pieces use your piece size; round tins use a typical slice count.</p>` : ''}`;
@@ -1360,7 +1372,7 @@ function oRecipes(){
       <dt class="total">Recommended price</dt><dd class="total">${inr(recPrice(r))}</dd>
     </dl>
     ${tips.length ? `<div style="margin-top:14px">${tipList(tips)}</div>` : ''}
-    <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a></div>`;
+    <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a><button class="btn" data-act="card" data-id="${r.id}">Product card for WhatsApp</button></div>`;
   recipeExtras(r, c);
   const n = num(S.ui.scale), out = $('#out-scale');
   if (out){
@@ -2047,6 +2059,18 @@ const MODALS = {
       <div id="m-out"></div>`,
       `<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="saveBake">Add to ready stock</button>`);
   },
+  card(){
+    const m = MODAL;
+    return dlgShell('Product card for WhatsApp', `
+      <div class="cardprev"><canvas id="cardCanvas" width="1080" height="1350" aria-label="Product card preview"></canvas></div>
+      <div class="row">${MF('Product', 'recipeId', mSel('recipeId', S.recipes.map(x => [x.id, x.name])))}${MF('Baked on', 'made', mDate('made'))}${MF('Best before', 'best', mDate('best'), 'Leave empty to use the shelf-life estimate.')}</div>
+      <div class="row">${MF('Pieces in the box', 'pcs', mNum('pcs'))}${MF('Net weight (g)', 'weight', mNum('weight'))}${MF('Price', 'price', mMoney('price'))}</div>
+      ${mChk('showPrice', 'Show the price on the card')}
+      <div class="row">${MF('Best enjoyed', 'use', mTxt('use'))}${MF('Note (optional)', 'note', mTxt('note', 'placeholder="e.g. Eggless · Diwali special"'))}</div>
+      <div class="field"><label class="btn" for="cardPhoto" style="justify-self:start">${m.photo ? 'Change photo' : 'Add a product photo (optional)'}</label><input type="file" id="cardPhoto" accept="image/*" hidden></div>
+      <p class="hint">Allergens and the veg or non-veg mark are filled in from the recipe. Add your phone and FSSAI number in Setup so they print on the card.</p>`,
+      `<button class="btn" data-act="cardCaption">Copy caption</button><button class="btn primary" data-act="cardShare">Share on WhatsApp</button>`);
+  },
   sellReady(){
     const f = S.finished.find(x => x.id === MODAL.id), r = f && recById(f.recipeId);
     if (!r) return dlgShell('Sell', '<p>Not found.</p>');
@@ -2126,6 +2150,7 @@ const MODAL_OUT = {
     el.innerHTML = `<p class="small" style="margin-bottom:6px">${trimN(pcs / Math.max(1, num(r.yield)), 2)} batches · best before <b>${fmtDate(dAdd(today(), Math.max(0, Math.floor(productLifeDays(r)))))}</b> · cost ${inr(recipeCost(r).perPiece * pcs)}</p>
       <div class="tbl"><table><tbody>${rows}</tbody></table></div>`;
   },
+  card(){ clearTimeout(MODAL_OUT.t); MODAL_OUT.t = setTimeout(() => { const c = $('#cardCanvas'); if (c) drawCard(c); }, 120); },
   sellReady(){ const el = $('#m-out'); el && (el.innerHTML = `Sale total <b>${inr(num(MODAL.qty) * num(MODAL.price))}</b>`); }
 };
 
@@ -2765,6 +2790,152 @@ function shopTravelFromLogs(){
   return Math.round(total / 3);
 }
 
+/* ---------- plan a bake: tin → pieces, or pieces → tin + batch ---------- */
+function gridFor(n, A, B){
+  let best = null;
+  for (let c = 1; c <= n; c++){ const r = Math.ceil(n / c), pl = A / c, pw = B / r, sq = Math.max(pl / pw, pw / pl), score = sq + (c * r - n) * 0.6;
+    if (!best || score < best.score) best = {c, r, pl, pw, score}; }
+  return best;
+}
+const pieceSizes = unit => unit === 'cm' ? [[4, 4], [5, 5], [6, 6], [7.5, 7.5], [5, 8]] : [[1.5, 1.5], [2, 2], [2.5, 2.5], [3, 3], [2, 3]];
+function sizeTable(r){
+  const t = r.tin; if (t.shape === 'round') return '';
+  const A = num(t.a), B = tinSideB(t), bw = batchWeight(r), u = t.unit === 'cm' ? ' cm' : '″';
+  const rows = pieceSizes(t.unit).map(([pl, pw]) => { const c = Math.floor(A / pl + 1e-6), rr = Math.floor(B / pw + 1e-6), n = c * rr; if (!n) return '';
+    const used = (c * pl * rr * pw) / (A * B), g = bw.baked * used / n;
+    return `<tr><td>${trimN(pl, 1)} × ${trimN(pw, 1)}${u}</td><td class="num">${c} × ${rr}</td><td class="num"><b>${n}</b></td><td class="num">${g ? fmtQty(Math.round(g), 'g') : '—'}</td><td><button class="btn small" data-act="useSize" data-pl="${pl}" data-pw="${pw}">Use</button></td></tr>`; }).join('');
+  return `<h4 style="margin:16px 0 6px">Piece sizes you can cut from this tin</h4><div class="tbl"><table><thead><tr><th>Piece</th><th class="num">Grid</th><th class="num">Pieces</th><th class="num">Each</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function cutIntoHTML(r){
+  const n = Math.round(num(S.ui.cutN)), t = r.tin; if (!(n > 0) || t.shape === 'round') return '';
+  const g = gridFor(n, num(t.a), tinSideB(t)), bw = batchWeight(r), u = t.unit === 'cm' ? ' cm' : '″';
+  return `<div class="banner" style="background:var(--accent-soft);margin:14px 0 0"><span>For <b>${n} equal pieces</b>, cut a <b>${g.c} × ${g.r}</b> grid: each piece about <b>${trimN(g.pl, 2)} × ${trimN(g.pw, 2)}${u}</b>${bw.baked ? ` and <b>${fmtQty(Math.round(bw.baked / (g.c * g.r)), 'g')}</b>` : ''}${g.c * g.r > n ? ` (${g.c * g.r} pieces, ${g.c * g.r - n} extra)` : ''}.</span><button class="btn small primary" data-act="useCutN">Use this cut</button></div>`;
+}
+function planForPieces(r){
+  const t = r.tin, unit = t.unit, k = unit === 'cm' ? 1 : IN, n = Math.round(num(S.ui.goalN));
+  if (!(n > 0)) return null;
+  const pl = num(S.ui.goalPl) || (unit === 'cm' ? 5 : 2), pw = num(S.ui.goalPw) || pl, w = num(S.ui.goalW);
+  const id = IDEAL[r.cat] || [2, 4, 'this bake'], mid = (id[0] + id[1]) / 2, loss = Math.min(0.6, num(r.bakeLoss) / 100);
+  const depth = w > 0 ? (w / (1 - loss)) / (pl * pw * k * k) : mid;
+  const cols = Math.ceil(Math.sqrt(n * pw / pl)), rows = Math.ceil(n / cols);
+  const exact = {kind:'exact', shape:Math.abs(cols * pl - rows * pw) < 0.01 ? 'square' : 'rect', a:+(cols * pl).toFixed(2), b:+(rows * pw).toFixed(2), cols, rows, pieces:cols * rows};
+  const std = TIN_STD.filter(x => x[0] !== 'round').map(([shape, a, b]) => {
+    const A = unit === 'cm' ? Math.round(a * IN) : a, B = unit === 'cm' ? Math.round((b || a) * IN) : (b || a);
+    const c = Math.floor(A / pl + 1e-6), rr = Math.floor(B / pw + 1e-6);
+    return {kind:'std', shape, a:A, b:B, cols:c, rows:rr, pieces:c * rr};
+  }).filter(x => x.pieces >= n).sort((x, y) => x.a * x.b - y.a * y.b)[0] || null;
+  const pick = S.ui.goalPick === 'std' && std ? std : exact;
+  const area = pick.a * pick.b * k * k, raw = area * depth, baked = raw * (1 - loss);
+  const usedFrac = (pick.cols * pl * pick.rows * pw) / (pick.a * pick.b), pieceG = baked * usedFrac / pick.pieces;
+  const bw = batchWeight(r);
+  return {n, pl, pw, w, unit, depth, exact, std, pick, raw, baked, pieceG, factor:bw.raw ? raw / bw.raw : 0, fit:depthFit(r, depth), id};
+}
+function scaledRows(r, f){
+  return r.lines.map(l => { const g = ingById(l.ingId); if (!g) return ''; const un = lineUnitName(g, l.unit), nq = num(l.qty) * f, base = lineBase(l) * f, b = baseUnit(g);
+    const egg = b === 'pcs' && nq % 1 > 0.05 && /egg/i.test(g.name) ? ` <span class="hint">(≈${Math.round((nq % 1) * 50)} g beaten egg for the part egg)</span>` : '';
+    return `<tr><td>${esc(g.name)}</td><td class="num"><b>${trimN(nq, nq < 10 ? 2 : 0)} ${un}</b>${un !== b && (b === 'g' || b === 'ml') ? `<div class="hint">${fmtQty(base, b)}</div>` : ''}${egg}</td><td class="num">${inr(base * perBase(g))}</td></tr>`; }).join('');
+}
+function piecesPlanHTML(r){
+  const P = planForPieces(r), u = r.tin.unit === 'cm' ? ' cm' : '″';
+  if (!P) return '<p class="hint">Type how many pieces you need and the size of one piece. Swt-er works out the tin, the batch size and every ingredient.</p>';
+  const c = recipeCost(r), bw = batchWeight(r);
+  const opt = (o, label) => `<label class="pickcard ${P.pick.kind === o.kind ? 'on' : ''}"><input type="radio" name="goalPick" data-path="ui.goalPick" value="${o.kind}" ${P.pick.kind === o.kind ? 'checked' : ''}><span><b>${label}</b><span class="hint" style="display:block">${trimN(o.a, 1)} × ${trimN(o.b, 1)}${u} · ${o.cols} × ${o.rows} = ${o.pieces} pieces${o.pieces > P.n ? ` (${o.pieces - P.n} extra)` : ''}</span></span></label>`;
+  return `<div class="pickrow">${opt(P.exact, 'Exact tray for your pieces')}${P.std ? opt(P.std, `Nearest standard tin: ${tinLabel({shape:P.std.shape, a:P.std.a, b:P.std.b, unit:P.unit})}`) : '<p class="hint">No standard tin holds that many pieces at this size. Use the exact tray size, or two tins.</p>'}</div>
+    <div class="tiles mini" style="margin-top:12px">
+      <div class="tile"><div class="eyebrow">Batch to make</div><div class="v">${fmtQty(Math.round(P.raw), 'g')}</div><div class="hint">raw batter · × ${trimN(P.factor, 2)}</div></div>
+      <div class="tile"><div class="eyebrow">Each piece</div><div class="v">${fmtQty(Math.round(P.pieceG), 'g')}</div><div class="hint">after baking</div></div>
+      <div class="tile"><div class="eyebrow">Batter depth</div><div class="v">${trimN(P.depth, 1)} cm</div><div class="hint"><span class="pill ${P.fit[0]}">${P.fit[1]}</span></div></div>
+    </div>
+    ${P.w && P.fit[1] !== 'Ideal' ? `<p class="hint" style="margin-top:8px">${P.fit[1] === 'Thin' ? 'Pieces this light will be thin. Make them smaller in size or heavier.' : 'Pieces this heavy will be very thick. Make them bigger in size or lighter.'} Ideal for ${P.id[2]} is ${P.id[0]}–${P.id[1]} cm of batter.</p>` : ''}
+    ${bw.raw ? `<h4 style="margin:16px 0 6px">Ingredients for ${P.pick.pieces} pieces</h4><div class="tbl"><table><thead><tr><th>Ingredient</th><th class="num">Amount</th><th class="num">Cost</th></tr></thead><tbody>${scaledRows(r, P.factor)}</tbody></table></div>
+      <p class="small" style="margin-top:8px">Ingredients ${inr(c.ingW * P.factor)} · about ${inr(c.ingW * P.factor / P.pick.pieces)} per piece before time, fuel and packaging.</p>
+      <div class="actions" style="margin-top:10px"><button class="btn small primary" data-act="planSave">Save as a new recipe</button>${confirmBtn('planApply', 'Change this recipe to this plan', 'planApply')}</div>`
+      : '<p class="hint" style="margin-top:10px">Add ingredients in grams, kg, ml or litres so Swt-er can size the batch.</p>'}`;
+}
+function applyPlan(rec, P, r){
+  const f = P.factor; rec.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2));
+  rec.yield = P.pick.pieces; rec.pieceWeight = Math.round(P.pieceG);
+  rec.tin = Object.assign({}, r.tin, {shape:P.pick.shape, a:P.pick.a, b:P.pick.b, pl:P.pl, pw:P.pw});
+}
+
+/* =========================================================
+   WhatsApp product card (image with brand logo)
+   ========================================================= */
+const BEST_USE = {moist:'Best enjoyed fresh. Warm for 10 seconds for a gooey centre.', dry:'Keep the pouch sealed so they stay crisp.', cream:'Keep chilled. Take out 15 minutes before serving.',
+  milk:'Keep refrigerated and enjoy fresh.', ghee:'Enjoy at room temperature. Keep the box closed.', fried:'Reseal after opening to keep it crunchy.',
+  choc:'Store below 25 °C. Let it come to room temperature before eating.', preserve:'Use a clean, dry spoon. Refrigerate after opening.', bread:'Best on the day. Toast to refresh.', meal:'Refrigerate within 2 hours. Reheat until hot.'};
+const ALLERGENS = [['Wheat (gluten)', /maida|flour|wheat|atta|rava|sooji|semolina|bread|biscuit/i], ['Milk', /butter|milk|cream|ghee|cheese|khoya|mawa|paneer|condensed|curd|yog/i], ['Egg', /egg/i],
+  ['Tree nuts', /cashew|walnut|almond|pistachio|hazelnut|pecan/i], ['Peanut', /peanut|groundnut/i], ['Soy', /soy/i], ['Sesame', /sesame|\btil\b/i]];
+function allergensOf(r){ const names = r.lines.map(l => (ingById(l.ingId) || {}).name || '').join(' | '); return ALLERGENS.filter(([, re]) => re.test(names)).map(a => a[0]); }
+const hasEgg = r => r.lines.some(l => /egg/i.test((ingById(l.ingId) || {}).name || ''));
+function cardData(){
+  const m = MODAL, r = recById(m.recipeId); if (!r) return null;
+  const days = Math.max(0, Math.floor(productLifeDays(r))), made = m.made || today();
+  return {r, made, best:m.best || dAdd(made, days), days, store:catById(r.cat).store, use:m.use, pcs:num(m.pcs), weight:num(m.weight), price:num(m.price), showPrice:m.showPrice,
+    allergens:allergensOf(r), egg:hasEgg(r), photo:m.photo, note:m.note};
+}
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function wrapText(ctx, text, x, y, maxW, lh, maxLines){
+  const words = String(text || '').split(/\s+/); let line = '', n = 0;
+  for (let i = 0; i < words.length; i++){ const test = line ? line + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxW && line){ ctx.fillText(line, x, y); y += lh; n++; line = words[i]; if (maxLines && n >= maxLines - 1){ let rest = words.slice(i).join(' '); while (ctx.measureText(rest + '…').width > maxW && rest.length) rest = rest.slice(0, -1); ctx.fillText(rest + (rest.length < words.slice(i).join(' ').length ? '…' : ''), x, y); return y + lh; } }
+    else line = test; }
+  if (line) ctx.fillText(line, x, y); return y + lh;
+}
+function rrect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+async function drawCard(canvas){
+  const d = cardData(); if (!d) return;
+  const W = 1080, H = 1350, ctx = canvas.getContext('2d'); canvas.width = W; canvas.height = H;
+  const RED = '#C2315F', CREAM = '#FFF6E9', COCOA = '#3B2420', INK = '#2A1A16', MUTED = '#7A6760', FY = H - 130;
+  try { await Promise.all(['700 60px "Bricolage Grotesque"', '600 30px Inter', '400 30px Inter'].map(f => document.fonts.load(f))); } catch(e){}
+  const DISP = '"Bricolage Grotesque", "Segoe UI", sans-serif', BODY = 'Inter, "Segoe UI", sans-serif';
+  ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+  // header band with logo
+  ctx.fillStyle = COCOA; ctx.fillRect(0, 0, W, 250);
+  try { const logo = await loadImg('brand/logo-cream.svg'); const lw = 460, lh = lw * logo.height / logo.width; ctx.drawImage(logo, (W - lw) / 2, (250 - lh) / 2 + 6, lw, lh); }
+  catch(e){ ctx.fillStyle = CREAM; ctx.font = `700 96px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText('Swt-er', W / 2, 150); ctx.textAlign = 'left'; }
+  // photo or colour panel
+  let y = 250;
+  if (d.photo){ try { const img = await loadImg(d.photo); const ph = 340, s = Math.max(W / img.width, ph / img.height), sw = W / s, sh = ph / s; ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, y, W, ph); y += ph; } catch(e){} }
+  else { ctx.fillStyle = RED; ctx.fillRect(0, y, W, 16); y += 16; }
+  // product name
+  y += d.photo ? 64 : 76; ctx.fillStyle = INK; ctx.font = `700 ${d.photo ? 64 : 76}px ${DISP}`; y = wrapText(ctx, d.r.name, 70, y, W - 140, d.photo ? 72 : 84, 2);
+  ctx.fillStyle = MUTED; ctx.font = `500 30px ${BODY}`;
+  const sub = [d.pcs ? `${d.pcs} ${d.r.unitName || 'piece'}${d.pcs > 1 ? 's' : ''}` : '', d.weight ? fmtQty(d.weight, 'g') : '', d.showPrice && d.price ? inr(d.price) : ''].filter(Boolean).join('  ·  ');
+  if (sub){ ctx.fillText(sub, 70, y + 4); y += 50; }
+  // date tiles
+  y += 18; const tw = (W - 140 - 30) / 2;
+  [['BAKED ON', fmtLong(d.made)], ['BEST BEFORE', fmtLong(d.best)]].forEach(([k, v], i) => {
+    const x = 70 + i * (tw + 30); ctx.fillStyle = i ? RED : '#FFFFFF'; rrect(ctx, x, y, tw, 150, 26); ctx.fill();
+    if (!i){ ctx.strokeStyle = '#EAD7CB'; ctx.lineWidth = 3; ctx.stroke(); }
+    ctx.fillStyle = i ? CREAM : MUTED; ctx.font = `600 26px ${BODY}`; ctx.fillText(k, x + 34, y + 54);
+    ctx.fillStyle = i ? '#FFFFFF' : INK; ctx.font = `700 50px ${DISP}`; ctx.fillText(v, x + 34, y + 116); });
+  y += 150 + 46;
+  // info rows
+  const row = (label, text, lines) => { if (!text || y > FY - 110) return; lines = Math.max(1, Math.min(lines, Math.floor((FY - 30 - y - 40) / 42))); ctx.fillStyle = RED; ctx.font = `700 26px ${BODY}`; ctx.fillText(label.toUpperCase(), 70, y); y += 40; ctx.fillStyle = INK; ctx.font = `400 32px ${BODY}`; y = wrapText(ctx, text, 70, y, W - 140, 42, lines) + 14; };
+  if (d.allergens.length) row('Contains', d.allergens.join(', '), 1);
+  row('Best enjoyed', d.use, 2);
+  row('Storage', d.store, 2);
+  if (d.note) row('Note', d.note, 2);
+  // footer
+  const P = S.profile, fy = FY; ctx.fillStyle = COCOA; ctx.fillRect(0, fy, W, 130);
+  // veg / non-veg mark
+  const mx = 70, my = fy + 37, col = d.egg ? '#8B4513' : '#2E7D32'; ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.strokeRect(mx, my, 56, 56); ctx.fillStyle = col;
+  if (d.egg){ ctx.beginPath(); ctx.moveTo(mx + 28, my + 12); ctx.lineTo(mx + 46, my + 44); ctx.lineTo(mx + 10, my + 44); ctx.closePath(); ctx.fill(); } else { ctx.beginPath(); ctx.arc(mx + 28, my + 28, 15, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = CREAM; ctx.font = `600 30px ${BODY}`; ctx.fillText([P.phone ? 'Order: ' + P.phone : 'Swt-er · The Dessert Experience'].join(''), 150, fy + 58);
+  ctx.font = `400 24px ${BODY}`; ctx.fillStyle = 'rgba(255,246,233,.75)'; ctx.fillText([P.fssaiNo ? 'FSSAI ' + P.fssaiNo : '', P.upi ? 'UPI ' + P.upi : '', 'Home-made with care'].filter(Boolean).join('   ·   '), 150, fy + 96);
+}
+function cardCaption(){
+  const d = cardData(); if (!d) return '';
+  return [`*${d.r.name}* – fresh from ${S.profile.business || 'Swt-er'}`, `Baked on ${fmtLong(d.made)} · Best before ${fmtLong(d.best)}`, d.use ? `Tip: ${d.use}` : '', `Storage: ${d.store}`,
+    d.allergens.length ? `Contains: ${d.allergens.join(', ')}` : '', d.showPrice && d.price ? `Price: ${inr(d.price)}${d.pcs ? ` for ${d.pcs}` : ''}` : '', S.profile.phone ? `Order: ${S.profile.phone}` : ''].filter(Boolean).join('\n');
+}
+function openCard(recipeId, extra){
+  const r = recById(recipeId) || S.recipes[0]; if (!r){ toast('Add a product first'); return; }
+  const pcs = (extra && extra.pcs) || Math.min(num(r.yield) || 6, 6);
+  openModal(Object.assign({type:'card', recipeId:r.id, made:today(), best:'', pcs, weight:Math.round(pcs * num(r.pieceWeight)) || '', price:autoUnit(r, pcs) * pcs, showPrice:true, use:BEST_USE[r.cat] || '', note:'', photo:''}, extra || {}));
+}
+
 /* =========================================================
    sync across devices (Google Drive app folder of the linked Gmail)
    ========================================================= */
@@ -2938,7 +3109,7 @@ document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'stockSearch'){ S.ui.q = t.value; oStock(); return; }
   if (t.dataset.actInput === 'accent'){ S.settings.accent = t.value; applyLook(); save(); return; }
-  if (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'file' || t.dataset.mcheck) return;
+  if (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'radio' || t.type === 'file' || t.dataset.mcheck) return;
   if (t.dataset.m != null && MODAL){ MODAL[t.dataset.m] = valOf(t); modalOut(); return; }
   const path = t.dataset.path; if (!path) return;
   setPath(path, valOf(t)); afterPathChange(path, valOf(t)); save();
@@ -2948,18 +3119,19 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'scanFile' && t.files && t.files[0]){ scanImage(t.files[0]); return; }
+  if (t.id === 'cardPhoto' && t.files && t.files[0] && MODAL){ const fr = new FileReader(); fr.onload = () => { MODAL.photo = fr.result; renderModal(); }; fr.readAsDataURL(t.files[0]); return; }
   if (t.id === 'restoreFile' && t.files && t.files[0]){ const r = new FileReader(); r.onload = () => { if (restoreFromText(r.result)) render(); }; r.readAsText(t.files[0]); return; }
   if (t.dataset.actInput === 'accent'){ render(); return; }
   if (t.dataset.mcheck && MODAL){ MODAL.sel[t.dataset.mcheck] = t.checked; modalOut(); return; }
   if (t.dataset.m != null && MODAL){
     MODAL[t.dataset.m] = valOf(t);
-    if (t.tagName === 'SELECT'){ if (MODAL.type === 'stockIn' && t.dataset.m === 'id'){ const it = MODAL.kind === 'ing' ? ingById(MODAL.id) : pkgById(MODAL.id); if (it) MODAL.price = MODAL.kind === 'ing' ? num(it.packPrice) : num(it.price); } renderModal(); }
+    if (t.tagName === 'SELECT'){ if (MODAL.type === 'card' && t.dataset.m === 'recipeId'){ const r = recById(MODAL.recipeId); if (r){ MODAL.use = BEST_USE[r.cat] || ''; MODAL.best = ''; MODAL.weight = Math.round(num(MODAL.pcs) * num(r.pieceWeight)) || ''; MODAL.price = autoUnit(r, num(MODAL.pcs)) * num(MODAL.pcs); } } if (MODAL.type === 'stockIn' && t.dataset.m === 'id'){ const it = MODAL.kind === 'ing' ? ingById(MODAL.id) : pkgById(MODAL.id); if (it) MODAL.price = MODAL.kind === 'ing' ? num(it.packPrice) : num(it.price); } renderModal(); }
     else modalOut();
     return;
   }
   const path = t.dataset.path; if (!path) return;
   if (/^ingredients\.\d+\.packPrice$/.test(path)){ logPrice(getPath(path.split('.').slice(0, 2).join('.'))); save(); if (dlg.open && MODAL && MODAL.type === 'ingEdit') renderModal(); return; }
-  if (t.tagName === 'SELECT' || t.type === 'checkbox'){
+  if (t.tagName === 'SELECT' || t.type === 'checkbox' || t.type === 'radio'){
     setPath(path, valOf(t)); afterPathChange(path, valOf(t)); save();
     if (dlg.contains(t)){ renderModal(); refresh(); } else if (/^ui\.of\.items/.test(path)) refresh(); else render();
     return;
@@ -3179,6 +3351,13 @@ const ACT = {
   syncOff: () => { SYNC.on = false; saveSync(); setSyncState('idle'); },
   syncNow: () => { if (!SYNC.on) return false; syncNow(true); return false; },
   undo: () => { if (!UNDO) return false; const ui = S.ui, st = S.settings; S = JSON.parse(UNDO); S.ui = ui; S.settings = st; UNDO = null; $('#toast').hidden = true; if (dlg.open) renderModal(); toast('Restored'); },
+  useSize: el => { const r = curRecipe(); r.tin.pl = num(el.dataset.pl); r.tin.pw = num(el.dataset.pw); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); toast(`${cp.pieces} pieces of ${fmtQty(Math.round(cp.pieceG), 'g')}`); },
+  useCutN: el => { const r = curRecipe(), n = Math.round(num(S.ui.cutN)), g = gridFor(n, num(r.tin.a), tinSideB(r.tin)); r.tin.pl = +g.pl.toFixed(2); r.tin.pw = +g.pw.toFixed(2); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); S.ui.cutN = ''; toast(`Cut set: ${cp.pieces} pieces`); },
+  planSave: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; const c = JSON.parse(JSON.stringify(r)); c.id = uid(); c.lines.forEach(l => l.id = uid()); c.name = `${r.name} (${P.pick.pieces} pcs)`; applyPlan(c, P, r); S.recipes.push(c); S.ui.recipe = c.id; S.ui.tinMode = 'tin'; toast('Saved as ' + c.name); window.scrollTo(0, 0); },
+  planApply: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; applyPlan(r, P, r); S.ui.tinMode = 'tin'; toast('Recipe changed to the plan'); },
+  card: el => { openCard(el.dataset.id || S.ui.recipe, el.dataset.lot ? (() => { const f = S.finished.find(x => x.id === el.dataset.lot); return f ? {made:f.made, best:f.exp, pcs:Math.min(num(f.left), 6)} : {}; })() : null); return false; },
+  cardShare: () => { (async () => { const c = $('#cardCanvas'); await drawCard(c); c.toBlob(async b => { if (!b) return toast('Could not make the image'); const n = `${(recById(MODAL.recipeId) || {}).name || 'product'}`.replace(/[^\w-]+/g, '-'); const res = await shareOrSave(`Swt-er-${n}.png`, b, 'Swt-er', cardCaption()); if (res === 'saved') toast('Image downloaded. Send it on WhatsApp with the caption.'); }, 'image/png'); })(); return false; },
+  cardCaption: () => { copyText(cardCaption()); return false; },
   /* account & lock */
   relink: () => { showGate('link', true); return false; },
   secBio: () => { showGate('setlock', true); return false; },
