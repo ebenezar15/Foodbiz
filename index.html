@@ -395,6 +395,17 @@ dialog{overscroll-behavior:contain}
 .pickcard input{margin-top:3px}
 .cardprev{display:grid;place-items:center;background:var(--surface-2);border-radius:12px;padding:10px}
 .cardprev canvas{width:min(100%,320px);height:auto;border-radius:10px;box-shadow:0 6px 20px rgb(0 0 0 / .18)}
+.needcol{display:none}
+#ingTable.show-need .needcol{display:table-cell;background:var(--accent-soft)}
+.batterbox{margin-top:14px;padding:12px;border:1px dashed var(--accent-line);border-radius:12px;background:color-mix(in srgb, var(--accent-soft) 40%, var(--surface))}
+.applied-box{border:1.5px solid var(--good);background:var(--good-soft);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:grid;gap:8px}
+.applied-h{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--good)}
+.applied-box ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.88rem}
+.applied-box li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.applied-box s{color:var(--muted)}
+.flash{animation:flash 2.6s ease}
+@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--good);background:var(--good-soft)}100%{box-shadow:none}}
+#sec-about{scroll-margin-top:96px}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
 </style>
 </head>
@@ -634,7 +645,7 @@ function sample(){
   const st = {
     v:3, sample:true, backup:{email:'', last:'', clientId:''}, profile, ingredients, packaging, recipes, entries, orders, finished,
     be:{investment:25000, invNote:'OTG oven, moulds, hand mixer, scale', start:entries[0].date.slice(0, 7), autoFixed:true, ownerPay:0},
-    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100},
+    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100, orient:'portrait'},
     quote:{customer:'Office festive order', type:'bulk', rows:[{id:uid(), recipeId:rB.id, qty:60},{id:uid(), recipeId:rC.id, qty:30}], delivery:80, customPack:5, rush:0, advance:50, validDays:7},
     shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'high', pack:'airtight'},
     packAdv:{cat:'moist', purpose:'gift', distance:'city', eco:false},
@@ -660,7 +671,7 @@ function blankState(){
       tiers:[{id:uid(),min:1,disc:0},{id:uid(),min:12,disc:5},{id:uid(),min:25,disc:8},{id:uid(),min:50,disc:12},{id:uid(),min:100,disc:15}]},
     ingredients:[], packaging:[], recipes:[], entries:[], orders:[], finished:[],
     be:{investment:0, invNote:'', start:thisMonth(), autoFixed:true, ownerPay:0},
-    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100},
+    settings:{palette:'swetr', mode:'system', accent:'', density:'comfortable', textSize:100, orient:'portrait'},
     quote:{customer:'', type:'individual', rows:[], delivery:0, customPack:0, rush:0, advance:50, validDays:7},
     shelf:{cat:'moist', climate:'hot', fresh:false, dairy:false, moisture:'normal', pack:'airtight'},
     packAdv:{cat:'moist', purpose:'everyday', distance:'local', eco:false},
@@ -1205,7 +1216,7 @@ function vStock(){
       <div class="acts">${n >= 0 ? `<button class="btn small primary" data-act="sellReady" data-id="${f.id}">Sell</button><button class="btn small" data-act="card" data-id="${r.id}" data-lot="${f.id}">Share card</button>` : ''}${confirmBtn('discardReady:' + f.id, 'Discard', 'discardReady', `data-id="${f.id}"`)}</div></div>`; }).join('') || '<div class="empty">Nothing made ahead. Use “Bake for stock” to add some.</div>'}</div></section>`;
   return head + `<section class="card">
     <div class="card-h"><h3>Ingredients ${nAlert ? `<span class="pill warn">${nAlert} need attention</span>` : ''}</h3>
-      <span class="actions"><button class="btn small" data-act="scan">Scan</button><button class="btn small" data-act="bulkPrice">Change prices</button><button class="btn small primary" data-act="addIng">+ Add</button></span></div>
+      <span class="actions"><button class="btn small" data-act="scan">Scan</button><button class="btn small" data-act="shopList">Shopping list</button><button class="btn small" data-act="bulkPrice">Change prices</button><button class="btn small primary" data-act="addIng">+ Add</button></span></div>
     <input type="search" id="stockSearch" placeholder="Search ingredients" value="${esc(S.ui.q)}" aria-label="Search ingredients" style="margin-bottom:6px">
     <div class="list" id="ingList">${S.ingredients.map((g, i) => { const s = ingStatus(g), u = baseUnit(g); return `<div class="lrow" data-name="${esc(g.name.toLowerCase())}">
       <div><button class="linkish" data-act="ingEdit" data-id="${g.id}">${esc(g.name)}</button>${g.barcode ? ' <span class="pill" title="Barcode saved">barcode</span>' : ''}${num(g.packPrice) ? '' : ' <span class="pill bad">Add price</span>'}
@@ -1235,7 +1246,8 @@ function vRecipes(){
   <nav class="jump" aria-label="Jump to a section">${[['sec-ing','Ingredients'],['sec-batch','Batch size'],['sec-tin','Tin & cutting'],['sec-time','Time & fuel'],['sec-pack','Packaging'],['sec-measure','Measure']].map(([id, l]) => `<button class="chip" data-act="jump" data-to="${id}">${l}</button>`).join('')}</nav>
   <div class="grid2">
     <div class="stack">
-      <section class="card"><div class="card-h"><h3>About this product</h3><span class="actions"><button class="btn small" data-act="dupRecipe">Duplicate</button>${confirmBtn('delRecipe:' + r.id, 'Delete', 'delRecipe')}</span></div>
+      <div data-applied="top"></div>
+      <section class="card" id="sec-about"><div class="card-h"><h3>About this product</h3><span class="actions"><button class="btn small" data-act="dupRecipe">Duplicate</button>${confirmBtn('delRecipe:' + r.id, 'Delete', 'delRecipe')}</span></div>
         <div class="row">
           ${F('Product name', `${p}.name`, r.name, '', 'txt')}
           ${fld('Type', sel(`${p}.cat`, r.cat, CATS.map(c => [c.id, c.name])), 'Sets shelf-life and packaging advice.', fid(`${p}.cat`))}
@@ -1243,28 +1255,36 @@ function vRecipes(){
           ${F('Call one piece a', `${p}.unitName`, r.unitName, 'piece, slice, cookie, laddoo, jar…', 'txt')}
           ${F('Weight of one piece (g)', `${p}.pieceWeight`, r.pieceWeight, 'Optional. Gives a per-kg price.')}
         </div></section>
-      <section class="card" id="sec-ing"><div class="card-h"><h3>Ingredients for one batch</h3></div>
-        <div class="tbl"><table><thead><tr><th>Ingredient</th><th>Quantity</th><th class="num">Rate</th><th class="num">Cost</th><th></th></tr></thead><tbody>
+      <section class="card" id="sec-ing"><div class="card-h"><h3>Ingredients for one batch</h3></div><div data-applied="sec-ing"></div>
+        <div class="tbl"><table id="ingTable"><thead><tr><th>Ingredient</th><th>Quantity</th><th class="num needcol" id="needHead">For</th><th class="num">Rate</th><th class="num">Cost</th><th></th></tr></thead><tbody>
         ${r.lines.map((l, j) => { const g = ingById(l.ingId); return `<tr>
           <td>${sel(`${p}.lines.${j}.ingId`, l.ingId, S.ingredients.map(x => [x.id, x.name]))}</td>
           <td><div class="unitin">${numIn(`${p}.lines.${j}.qty`, l.qty, 'aria-label="Quantity"')}${g ? sel(`${p}.lines.${j}.unit`, lineUnitName(g, l.unit), lineUnits(g).map(x => [x[0], x[1]]), 'aria-label="Unit" class="unitsel"') : ''}</div></td>
+          <td class="num needcol" data-need="${j}"></td>
           <td class="num">${g ? `<button class="btn small ghost" data-act="ingEdit" data-id="${g.id}" title="Change the price of ${esc(g.name)}">${rateText(g)} ✎</button>` : ''}</td>
           <td class="num" data-linecost="${j}"></td>
           <td><button class="x" data-act="del" data-list="${p}.lines" data-i="${j}" aria-label="Remove">×</button></td></tr>`; }).join('')}
         </tbody></table></div>
         ${S.ingredients.length ? '' : '<p class="hint" style="margin-top:8px">You have no ingredients yet. <button class="btn small" data-act="starterIng">Add a starter list</button></p>'}
         <div class="actions" style="margin-top:10px"><button class="btn small" data-act="addLine">+ Add ingredient</button><button class="btn small" data-act="addIng">Create a new ingredient</button></div>
+        <div class="batterbox">
+          <div class="row">
+            ${fld('This batch makes (batter)', `<div class="unitin">${numIn(`${p}.batterQty`, r.batterQty || '', 'aria-label="Batter weight" placeholder="weigh it"')}${sel(`${p}.batterUnit`, r.batterUnit || 'g', [['g', 'g'], ['kg', 'kg']], 'aria-label="Batter unit" class="unitsel"')}</div>`, '<span id="bw-est"></span>', fid(`${p}.batterQty`))}
+            ${fld('I need this much batter', `<div class="unitin">${numIn('ui.needQty', S.ui.needQty || '', 'aria-label="Batter needed" placeholder="e.g. 2"')}${sel('ui.needUnit', S.ui.needUnit || 'kg', [['g', 'g'], ['kg', 'kg']], 'aria-label="Unit" class="unitsel"')}</div>`, 'The table shows the amount of each ingredient to use.', fid('ui.needQty'))}
+          </div>
+          <div id="out-need" style="margin-top:10px"></div>
+        </div>
         <div class="row" style="margin-top:14px">${F('Wastage and loss (%)', `${p}.wastage`, r.wastage, 'Batter left in the bowl, trimmed edges, broken pieces, tasting. 3–8% is common.')}${F('Weight lost in baking (%)', `${p}.bakeLoss`, r.bakeLoss, 'Moisture that bakes off. Brownies and cakes ≈10%, cookies ≈12%.')}</div>
       </section>
       <section class="card" id="sec-batch"><div class="card-h"><h3>Batch size &amp; converter</h3><p class="hint">See how much this batch weighs, and convert it to any size. Every ingredient is recalculated for you.</p></div>
-        <div id="out-bw"></div>
+        <div data-applied="sec-batch"></div><div id="out-bw"></div>
         <div class="field" style="margin-top:14px"><span class="lbl">Make a batch of</span>
           <div class="chips">${[250, 500, 750, 1000, 1500, 2000].map(w => `<button class="chip" data-act="convSet" data-v="${w}" aria-pressed="${num(S.ui.convTarget) === w}">${w >= 1000 ? trimN(w / 1000, 1) + ' kg' : w + ' g'}</button>`).join('')}
             ${[0.5, 2, 3].map(f => `<button class="chip" data-act="convMul" data-v="${f}">${f === 0.5 ? '½' : f}× this batch</button>`).join('')}</div></div>
         <div class="row" style="margin-top:12px;max-width:520px">${F('Or type a weight (g)', 'ui.convTarget', S.ui.convTarget || '', '', 'num', 'placeholder="e.g. 1200"')}${fld('Weight means', sel('ui.convBasis', S.ui.convBasis || 'baked', [['baked', 'Finished weight (after baking)'], ['raw', 'Raw batter / dough weight']]), '', fid('ui.convBasis'))}</div>
         <div id="out-conv" style="margin-top:12px"></div>
       </section>
-      <section class="card" id="sec-tin"><div class="card-h"><h3>Plan a bake: tin &amp; pieces</h3><p class="hint">Start from the tin you have, or from the pieces you want. Swt-er works out the rest.</p></div>
+      <section class="card" id="sec-tin"><div class="card-h"><h3>Plan a bake: tin &amp; pieces</h3><p class="hint">Start from the tin you have, or from the pieces you want. Swt-er works out the rest.</p></div><div data-applied="sec-tin"></div>
         ${seg('tinMode', S.ui.tinMode || 'tin', [['tin', 'I have a tin'], ['pieces', 'I want pieces']])}
         <div class="row">
           ${fld('Measured in', sel(`${p}.tin.unit`, r.tin.unit, [['in', 'inches'], ['cm', 'cm']]), '', fid(`${p}.tin.unit`))}
@@ -1274,10 +1294,11 @@ function vRecipes(){
         </div>
         ${(S.ui.tinMode || 'tin') === 'tin' ? `<div class="row" style="margin-top:12px">
           ${r.tin.shape === 'round' ? F('Number of slices', `${p}.tin.slices`, r.tin.slices) : F('Piece length', `${p}.tin.pl`, r.tin.pl, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Piece width', `${p}.tin.pw`, r.tin.pw, r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Or cut into equal pieces', 'ui.cutN', S.ui.cutN || '', 'How many pieces you want from this tin.', 'num', 'placeholder="e.g. 20"')}
-        </div>` : `<div class="row" style="margin-top:12px">
+        </div>` : `<div class="field" style="margin-top:12px"><span class="lbl">Work it out from</span>${seg('goalBy', S.ui.goalBy || 'piece', [['piece', 'The piece size I want'], ['tin', 'The tin I am using']], 'margin:0')}</div>
+        <div class="row" style="margin-top:12px">
           ${F('Pieces you need', 'ui.goalN', S.ui.goalN || '', '', 'num', 'placeholder="e.g. 24"')}
-          ${F('Piece length', 'ui.goalPl', S.ui.goalPl || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches')}
-          ${F('Piece width', 'ui.goalPw', S.ui.goalPw || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches')}
+          ${(S.ui.goalBy || 'piece') === 'piece' ? F('Piece length', 'ui.goalPl', S.ui.goalPl || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches') + F('Piece width', 'ui.goalPw', S.ui.goalPw || (r.tin.unit === 'cm' ? 5 : 2), r.tin.unit === 'cm' ? 'cm' : 'inches')
+            : fld('Your tin', sel('ui.myShape', S.ui.myShape || 'square', [['square', 'Square'], ['rect', 'Rectangle / tray'], ['round', 'Round']]), '', fid('ui.myShape')) + F((S.ui.myShape || 'square') === 'round' ? 'Diameter' : (S.ui.myShape || 'square') === 'square' ? 'Side' : 'Length', 'ui.myA', S.ui.myA || (r.tin.unit === 'cm' ? 20 : 8), r.tin.unit === 'cm' ? 'cm' : 'inches') + ((S.ui.myShape || 'square') === 'rect' ? F('Width', 'ui.myB', S.ui.myB || (r.tin.unit === 'cm' ? 30 : 12), r.tin.unit === 'cm' ? 'cm' : 'inches') : '')}
           ${F('Weight of one piece (g)', 'ui.goalW', S.ui.goalW || '', 'Optional. Leave empty for the ideal thickness.', 'num', 'placeholder="e.g. 60"')}
         </div>`}
         <div id="out-tin" style="margin-top:14px"></div>
@@ -1288,7 +1309,9 @@ function vRecipes(){
           ${F('Preheat time (min)', `${p}.preheatMin`, r.preheatMin)}
           ${F('Gas stove time (min)', `${p}.gasMin`, r.gasMin, 'Melting, roasting, frying, syrup.')}
           ${F('Your hands-on time (min)', `${p}.activeMin`, r.activeMin, 'Mixing, shaping, cutting, packing, washing up. Not waiting time.')}
-        </div></section>
+          ${F('Oven temperature (°C)', `${p}.ovenTemp`, r.ovenTemp || '', 'Printed on the recipe card.', 'num', 'placeholder="e.g. 175"')}
+        </div>
+        <div class="field" style="margin-top:12px"><label for="${fid(`${p}.method`)}">Method (optional)</label><textarea id="${fid(`${p}.method`)}" data-path="${p}.method" rows="4" placeholder="1. Melt butter and chocolate…&#10;2. Whisk eggs and sugar…">${esc(r.method || '')}</textarea><span class="hint">Printed on the recipe card PDF for you or a helper.</span></div></section>
       <section class="card" id="sec-pack"><h3 style="margin-bottom:4px">Packaging</h3><p class="hint" style="margin-bottom:10px">How many pieces share one item: 1 butter paper per piece, 1 box per 6 pieces.</p>
         <div class="tbl"><table><thead><tr><th>Item</th><th>One for every</th><th class="num">Per piece</th><th></th></tr></thead><tbody>
         ${r.pack.map((k, j) => `<tr>
@@ -1340,7 +1363,7 @@ function recipeExtras(r, c){
       </div></div>
       ${cutIntoHTML(r)}${sizeTable(r)}
       ${sug.length && batchWeight(r).raw ? `<h4 style="margin:16px 0 6px">Tins that suit this batch</h4><div class="tbl"><table><thead><tr><th>Tin</th><th class="num">Pieces</th><th class="num">Each</th><th class="num">Depth</th><th></th></tr></thead><tbody>
-        ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(x.tt)}</td><td class="num">${x.pieces}</td><td class="num">${fmtQty(Math.round(pg), 'g')}</td><td class="num">${trimN(x.depth, 1)} cm <span class="pill ${f2[0]}">${f2[1]}</span></td><td><button class="btn small" data-act="pickTin" data-i="${k}">Use</button></td></tr>`; }).join('')}
+        ${sug.map((x, k) => { const f2 = depthFit(r, x.depth), pg = x.pieces ? batchWeight(r).baked / x.pieces : 0; return `<tr><td>${tinLabel(tinInUnit(x.tt, r.tin.unit))}</td><td class="num">${x.pieces}</td><td class="num">${fmtQty(Math.round(pg), 'g')}</td><td class="num">${trimN(x.depth, 1)} cm <span class="pill ${f2[0]}">${f2[1]}</span></td><td><button class="btn small" data-act="pickTin" data-i="${k}">Use this tin</button></td></tr>`; }).join('')}
       </tbody></table></div><p class="hint" style="margin-top:6px">Batter depth assumes about 1 g per cm³. Pieces use your piece size; round tins use a typical slice count.</p>` : ''}`;
   }
 }
@@ -1372,8 +1395,16 @@ function oRecipes(){
       <dt class="total">Recommended price</dt><dd class="total">${inr(recPrice(r))}</dd>
     </dl>
     ${tips.length ? `<div style="margin-top:14px">${tipList(tips)}</div>` : ''}
-    <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a><button class="btn" data-act="card" data-id="${r.id}">Product card for WhatsApp</button></div>`;
+    <div class="actions" style="margin-top:14px"><a class="btn primary" href="#pricing">Set the selling price</a><button class="btn" data-act="recipePdf">Recipe card (PDF)</button><button class="btn" data-act="card" data-id="${r.id}">Product card for WhatsApp</button></div>`;
   recipeExtras(r, c);
+  const bwx = batchWeight(r), est = $('#bw-est'); if (est) est.innerHTML = bwx.est ? `Estimated from ingredients: <b>${fmtQty(Math.round(bwx.est), 'g')}</b>. ${bwx.measured ? 'Using your weighed amount.' : 'Weigh the bowl once for accuracy.'}${!bwx.measured ? ` <button class="btn small ghost" data-act="useEst">Use ${fmtQty(Math.round(bwx.est), 'g')}</button>` : ''}` : 'Add ingredients to estimate it.';
+  const nf = needFactor(r), tbl = $('#ingTable');
+  if (tbl) tbl.classList.toggle('show-need', nf > 0);
+  if (nf > 0){ const nh = $('#needHead'); if (nh) nh.textContent = 'For ' + fmtQty(needG(), 'g');
+    $$('[data-need]').forEach(el => { const l = r.lines[+el.dataset.need], g = l && ingById(l.ingId); if (!g) { el.textContent = ''; return; } const un = lineUnitName(g, l.unit), q = num(l.qty) * nf, b = baseUnit(g);
+      el.innerHTML = `<b>${trimN(q, q < 10 ? 2 : 0)} ${un}</b>${un !== b && (b === 'g' || b === 'ml') ? `<div class="hint">${fmtQty(lineBase(l) * nf, b)}</div>` : ''}`; }); }
+  const on = $('#out-need'); if (on) on.innerHTML = nf > 0 ? `<div class="banner" style="background:var(--accent-soft);margin:0"><span><span class="pill acc">× ${trimN(nf, 2)}</span> ${fmtQty(needG(), 'g')} of batter makes about <b>${Math.max(1, Math.round(num(r.yield) * nf))} ${esc(r.unitName || 'piece')}s</b> · ingredients ${inr(c.ingW * nf)}. The amounts are in the “For” column above.</span><span class="actions"><button class="btn small primary" data-act="needSave">Save as a new recipe</button>${confirmBtn('needApply', 'Change this recipe', 'needApply')}</span></div>` : (needG() > 0 ? '<p class="hint">Add ingredients (or the batter weight) first.</p>' : '');
+  paintApplied();
   const n = num(S.ui.scale), out = $('#out-scale');
   if (out){
     if (n <= 0){ out.innerHTML = ''; return; }
@@ -1906,6 +1937,7 @@ function setupLook(){
       <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', st.mode, [['system','Match my device'],['light','Light'],['dark','Dark']], segS)}</div>
       <div class="field" style="margin-top:14px"><span class="lbl">Spacing</span>${seg('settings.density', st.density, [['comfortable','Comfortable'],['compact','Compact']], segS)}<span class="hint">Compact fits more on small screens.</span></div>
       <div class="field" style="margin-top:14px"><span class="lbl">Text size</span>${seg('settings.textSize', String(st.textSize), [['90','Small'],['100','Normal'],['112','Large'],['125','Extra large']], segS)}</div>
+      <div class="field" style="margin-top:14px"><span class="lbl">Screen orientation on phones</span>${seg('settings.orient', st.orient || 'portrait', ORIENTS, segS)}<span class="hint" id="orientHint">${orientHint()}</span></div>
     </section>
   </div>`;
 }
@@ -2059,6 +2091,14 @@ const MODALS = {
       <div id="m-out"></div>`,
       `<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="saveBake">Add to ready stock</button>`);
   },
+  shop(){
+    const items = shopListItems(), total = items.reduce((a, x) => a + x.cost, 0);
+    return dlgShell('Shopping list', items.length ? `<p class="small">Everything that is low, out of stock, expired or needed for open orders.</p>
+      <div class="tbl"><table><thead><tr><th>Item</th><th class="num">Buy</th><th class="num">About</th></tr></thead><tbody>${items.map(x => `<tr><td>${esc(x.name)}<div class="hint">${esc(x.why)}</div></td><td class="num">${x.packs} × ${esc(x.pack)}</td><td class="num">${x.cost ? inr(x.cost) : '—'}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>Total</td><td></td><td class="num">${inr(total)}</td></tr></tfoot></table></div><p class="hint">Set “Warn me below” on ingredients and packaging so they appear here when running low.</p>`
+      : '<p>Nothing to buy right now. Items appear here when they run low, expire or are short for open orders.</p><p class="hint">Set “Warn me below” in each ingredient’s details.</p>',
+      items.length ? `<button class="btn" data-act="shopCopy">Copy</button><button class="btn primary" data-act="shopShare">Share on WhatsApp</button>` : '');
+  },
   card(){
     const m = MODAL;
     return dlgShell('Product card for WhatsApp', `
@@ -2123,6 +2163,7 @@ const MODALS = {
   more(){
     return dlgShell('All pages', `<div class="morelist">${Object.entries(VIEWS).map(([k, v]) => `<a href="#${k}" ${k === cur() ? 'aria-current="page"' : ''} data-act="closeModalNav">${icon(v.icon)}${v.title}</a>`).join('')}</div>
       <div class="field"><span class="lbl">Light or dark</span>${seg('settings.mode', S.settings.mode, [['system','Auto'],['light','Light'],['dark','Dark']], 'margin:0')}</div>
+      <div class="field" style="margin-top:12px"><span class="lbl">Screen orientation</span>${seg('settings.orient', S.settings.orient || 'portrait', ORIENTS, 'margin:0')}</div>
       ${hasLock() ? `<button class="btn big-btn" data-act="lockNow">Lock Swt-er now</button>` : ''}`);
   }
 };
@@ -2718,7 +2759,8 @@ function batchWeight(r){
   let raw = 0; const unknown = [];
   r.lines.forEach(l => { const g = ingById(l.ingId); if (!g) return; const b = baseUnit(g), q = lineBase(l);
     if (b === 'g' || b === 'ml') raw += q; else if (num(g.pieceG) > 0) raw += q * num(g.pieceG); else if (b === 'pcs' && /egg/i.test(g.name)) raw += q * 50; else unknown.push(g.name); });
-  return {raw, baked:raw * (1 - num(r.bakeLoss) / 100), unknown};
+  const est = raw, meas = num(r.batterQty) * (r.batterUnit === 'kg' ? 1000 : 1); if (meas > 0) raw = meas;
+  return {raw, est, measured:meas > 0, baked:raw * (1 - num(r.bakeLoss) / 100), unknown};
 }
 const tinSideB = t => t.shape === 'square' ? num(t.a) : num(t.b);
 function tinArea(t){ const k = t.unit === 'cm' ? 1 : IN, a = num(t.a) * k, b = tinSideB(t) * k; return t.shape === 'round' ? Math.PI * (a / 2) ** 2 : a * b; }
@@ -2803,7 +2845,7 @@ function sizeTable(r){
   const A = num(t.a), B = tinSideB(t), bw = batchWeight(r), u = t.unit === 'cm' ? ' cm' : '″';
   const rows = pieceSizes(t.unit).map(([pl, pw]) => { const c = Math.floor(A / pl + 1e-6), rr = Math.floor(B / pw + 1e-6), n = c * rr; if (!n) return '';
     const used = (c * pl * rr * pw) / (A * B), g = bw.baked * used / n;
-    return `<tr><td>${trimN(pl, 1)} × ${trimN(pw, 1)}${u}</td><td class="num">${c} × ${rr}</td><td class="num"><b>${n}</b></td><td class="num">${g ? fmtQty(Math.round(g), 'g') : '—'}</td><td><button class="btn small" data-act="useSize" data-pl="${pl}" data-pw="${pw}">Use</button></td></tr>`; }).join('');
+    return `<tr><td>${trimN(pl, 1)} × ${trimN(pw, 1)}${u}</td><td class="num">${c} × ${rr}</td><td class="num"><b>${n}</b></td><td class="num">${g ? fmtQty(Math.round(g), 'g') : '—'}</td><td><button class="btn small" data-act="useSize" data-pl="${pl}" data-pw="${pw}">Use ${n} pcs</button></td></tr>`; }).join('');
   return `<h4 style="margin:16px 0 6px">Piece sizes you can cut from this tin</h4><div class="tbl"><table><thead><tr><th>Piece</th><th class="num">Grid</th><th class="num">Pieces</th><th class="num">Each</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function cutIntoHTML(r){
@@ -2814,6 +2856,19 @@ function cutIntoHTML(r){
 function planForPieces(r){
   const t = r.tin, unit = t.unit, k = unit === 'cm' ? 1 : IN, n = Math.round(num(S.ui.goalN));
   if (!(n > 0)) return null;
+  if ((S.ui.goalBy || 'piece') === 'tin'){
+    const shape = S.ui.myShape || 'square', A = num(S.ui.myA) || (unit === 'cm' ? 20 : 8), B = shape === 'rect' ? (num(S.ui.myB) || A) : A;
+    const id = IDEAL[r.cat] || [2, 4, 'this bake'], mid = (id[0] + id[1]) / 2, loss = Math.min(0.6, num(r.bakeLoss) / 100), w = num(S.ui.goalW);
+    const tt = {shape, a:A, b:B, unit, slices:n};
+    const area = tinArea(tt);
+    let g, pl, pw, pieceArea;
+    if (shape === 'round'){ g = {c:0, r:0}; pieceArea = area / n; pl = pw = 0; }
+    else { g = gridFor(n, A, B); pl = +g.pl.toFixed(2); pw = +g.pw.toFixed(2); pieceArea = pl * pw * k * k; tt.pl = pl; tt.pw = pw; }
+    const depth = w > 0 ? (w / (1 - loss)) / pieceArea : mid, raw = area * depth, baked = raw * (1 - loss);
+    const pieces = shape === 'round' ? n : g.c * g.r, pieceG = baked / pieces, bw = batchWeight(r);
+    const pick = {kind:'mine', shape, a:A, b:B, cols:g.c, rows:g.r, pieces};
+    return {n, pl, pw, w, unit, depth, exact:null, std:null, pick, mine:tt, raw, baked, pieceG, factor:bw.raw ? raw / bw.raw : 0, fit:depthFit(r, depth), id};
+  }
   const pl = num(S.ui.goalPl) || (unit === 'cm' ? 5 : 2), pw = num(S.ui.goalPw) || pl, w = num(S.ui.goalW);
   const id = IDEAL[r.cat] || [2, 4, 'this bake'], mid = (id[0] + id[1]) / 2, loss = Math.min(0.6, num(r.bakeLoss) / 100);
   const depth = w > 0 ? (w / (1 - loss)) / (pl * pw * k * k) : mid;
@@ -2837,10 +2892,14 @@ function scaledRows(r, f){
 }
 function piecesPlanHTML(r){
   const P = planForPieces(r), u = r.tin.unit === 'cm' ? ' cm' : '″';
-  if (!P) return '<p class="hint">Type how many pieces you need and the size of one piece. Swt-er works out the tin, the batch size and every ingredient.</p>';
+  if (!P) return `<p class="hint">${(S.ui.goalBy || 'piece') === 'tin' ? 'Type how many pieces you need from your tin. Swt-er gives the cut lengths, the weight of each piece and how much batter to make.' : 'Type how many pieces you need and the size of one piece. Swt-er works out the tin, the batch size and every ingredient.'}</p>`;
   const c = recipeCost(r), bw = batchWeight(r);
   const opt = (o, label) => `<label class="pickcard ${P.pick.kind === o.kind ? 'on' : ''}"><input type="radio" name="goalPick" data-path="ui.goalPick" value="${o.kind}" ${P.pick.kind === o.kind ? 'checked' : ''}><span><b>${label}</b><span class="hint" style="display:block">${trimN(o.a, 1)} × ${trimN(o.b, 1)}${u} · ${o.cols} × ${o.rows} = ${o.pieces} pieces${o.pieces > P.n ? ` (${o.pieces - P.n} extra)` : ''}</span></span></label>`;
-  return `<div class="pickrow">${opt(P.exact, 'Exact tray for your pieces')}${P.std ? opt(P.std, `Nearest standard tin: ${tinLabel({shape:P.std.shape, a:P.std.a, b:P.std.b, unit:P.unit})}`) : '<p class="hint">No standard tin holds that many pieces at this size. Use the exact tray size, or two tins.</p>'}</div>
+  const top = P.mine ? `<div class="tinwrap"><div class="tinsvg">${tinSVG({t:P.mine, cols:P.pick.cols, rows:P.pick.rows, pieces:P.pick.pieces, used:1})}</div><div class="stack" style="gap:8px">
+      <dl class="kv"><dt>Your tin</dt><dd>${tinLabel(P.mine)}</dd>${P.mine.shape === 'round' ? `<dt>Cut</dt><dd><b>${P.n} equal slices</b></dd>` : `<dt>Cut</dt><dd><b>${P.pick.cols} × ${P.pick.rows}</b> grid</dd><dt>Cut lengths</dt><dd><b>${trimN(P.pl, 2)} × ${trimN(P.pw, 2)}${u}</b></dd>`}<dt>Pieces</dt><dd>${P.pick.pieces}${P.pick.pieces > P.n ? ` (${P.pick.pieces - P.n} extra)` : ''}</dd></dl>
+      ${P.mine.shape !== 'round' ? `<p class="hint">Mark the long side every ${trimN(P.pl, 2)}${u} and the short side every ${trimN(P.pw, 2)}${u}, then cut.</p>` : ''}</div></div>`
+    : `<div class="pickrow">${opt(P.exact, 'Exact tray for your pieces')}${P.std ? opt(P.std, `Nearest standard tin: ${tinLabel({shape:P.std.shape, a:P.std.a, b:P.std.b, unit:P.unit})}`) : '<p class="hint">No standard tin holds that many pieces at this size. Use the exact tray size, or two tins.</p>'}</div>`;
+  return `${top}
     <div class="tiles mini" style="margin-top:12px">
       <div class="tile"><div class="eyebrow">Batch to make</div><div class="v">${fmtQty(Math.round(P.raw), 'g')}</div><div class="hint">raw batter · × ${trimN(P.factor, 2)}</div></div>
       <div class="tile"><div class="eyebrow">Each piece</div><div class="v">${fmtQty(Math.round(P.pieceG), 'g')}</div><div class="hint">after baking</div></div>
@@ -2855,7 +2914,7 @@ function piecesPlanHTML(r){
 function applyPlan(rec, P, r){
   const f = P.factor; rec.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2));
   rec.yield = P.pick.pieces; rec.pieceWeight = Math.round(P.pieceG);
-  rec.tin = Object.assign({}, r.tin, {shape:P.pick.shape, a:P.pick.a, b:P.pick.b, pl:P.pl, pw:P.pw});
+  rec.tin = Object.assign({}, r.tin, P.mine ? {shape:P.mine.shape, a:P.mine.a, b:P.mine.b, pl:P.pl || r.tin.pl, pw:P.pw || r.tin.pw, slices:P.mine.shape === 'round' ? P.n : r.tin.slices} : {shape:P.pick.shape, a:P.pick.a, b:P.pick.b, pl:P.pl, pw:P.pw});
 }
 
 /* =========================================================
@@ -2935,6 +2994,66 @@ function openCard(recipeId, extra){
   const pcs = (extra && extra.pcs) || Math.min(num(r.yield) || 6, 6);
   openModal(Object.assign({type:'card', recipeId:r.id, made:today(), best:'', pcs, weight:Math.round(pcs * num(r.pieceWeight)) || '', price:autoUnit(r, pcs) * pcs, showPrice:true, use:BEST_USE[r.cat] || '', note:'', photo:''}, extra || {}));
 }
+
+/* ---------- batter yield, "I need" converter, applied-change banners ---------- */
+const batterG = r => num(r.batterQty) * (r.batterUnit === 'kg' ? 1000 : 1);
+const needG = () => num(S.ui.needQty) * ((S.ui.needUnit || 'kg') === 'kg' ? 1000 : 1);
+function needFactor(r){ const bw = batchWeight(r), n = needG(); return n > 0 && bw.raw > 0 ? n / bw.raw : 0; }
+function tinInUnit(tt, unit){ if (unit !== 'cm') return Object.assign({}, tt, {unit:'in'}); const k = x => Math.round(num(x) * IN * 2) / 2; return Object.assign({}, tt, {unit:'cm', a:k(tt.a), b:k(tt.b)}); }
+function recipeSnap(r){ const u = r.tin.unit === 'cm' ? ' cm' : '″';
+  return {yield:String(num(r.yield)), pieceWeight:num(r.pieceWeight) ? fmtQty(num(r.pieceWeight), 'g') : '—', tin:tinLabel(r.tin),
+    cut:r.tin.shape === 'round' ? `${num(r.tin.slices)} slices` : `${trimN(num(r.tin.pl), 2)} × ${trimN(num(r.tin.pw), 2)}${u}`, batch:batchWeight(r).raw ? fmtQty(Math.round(batchWeight(r).raw), 'g') : '—', weighed:num(r.batterQty) ? fmtQty(Math.round(batterG(r)), 'g') : 'not weighed'}; }
+const SNAP_LABEL = {yield:'Pieces one batch makes', pieceWeight:'Weight of one piece', tin:'Tin', cut:'Piece size', batch:'Batch (batter) weight', weighed:'Batter you entered'};
+function markApplied(r, before, sec, title){
+  const i = S.recipes.indexOf(r), after = recipeSnap(r), items = [];
+  for (const k in SNAP_LABEL) if (before[k] !== after[k]) items.push([SNAP_LABEL[k], before[k], after[k]]);
+  const fid2 = {yield:`recipes.${i}.yield`, pieceWeight:`recipes.${i}.pieceWeight`, tin:`recipes.${i}.tin.a`, cut:`recipes.${i}.tin.pl`};
+  S.ui.applied = {sec, title:title || 'Applied', items, rid:r.id};
+  S.ui.flash = items.map(x => Object.keys(SNAP_LABEL).find(k => SNAP_LABEL[k] === x[0])).filter(k => fid2[k]).map(k => fid(fid2[k]));
+}
+function appliedHTML(sec){
+  const a = S.ui.applied; if (!a || a.sec !== sec || a.rid !== S.ui.recipe) return '';
+  return `<div class="applied-box" role="status"><div class="applied-h"><b>✓ ${esc(a.title)}</b><button class="x" data-act="dismissApplied" aria-label="Close">×</button></div>
+    ${a.items.length ? `<ul>${a.items.map(([l, f, t]) => `<li><span>${esc(l)}</span><span class="tnum"><s>${esc(f)}</s> → <b>${esc(t)}</b></span></li>`).join('')}</ul>` : '<p class="small">Nothing needed to change. The recipe already matched.</p>'}
+    <div class="actions"><button class="btn small" data-act="undo">Undo</button><button class="btn small" data-act="jump" data-to="sec-about">See product details</button>${sec !== 'sec-tin' ? '<button class="btn small" data-act="jump" data-to="sec-tin">See cut plan</button>' : ''}</div></div>`;
+}
+function paintApplied(){
+  $$('[data-applied]').forEach(el => el.innerHTML = appliedHTML(el.dataset.applied));
+  (S.ui.flash || []).forEach(id => { const e = document.getElementById(id); if (e){ e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } });
+  S.ui.flash = [];
+}
+/* ---------- recipe card PDF ---------- */
+async function recipePDF(r){
+  await pdfLibs();
+  const f = needFactor(r) || 1, bw = batchWeight(r), cp = cutPlan(r), d = newDoc(), M = 16, ac = hexRgb(accentHex());
+  let y = pdfHeader(d, 'RECIPE', [['Product', r.name.length > 26 ? r.name.slice(0, 25) + '…' : r.name], ['Makes', `${Math.max(1, Math.round(num(r.yield) * f))} ${r.unitName || 'pieces'}`], ['Date', fmtLong(today())]]);
+  d.setFont('Noto', 'bold'); d.setFontSize(13); d.setTextColor(30, 30, 30); d.text(r.name + (f !== 1 ? `  (× ${trimN(f, 2)})` : ''), M, y); y += 4;
+  d.autoTable({startY:y, margin:{left:M, right:M}, theme:'striped', head:[['Ingredient', 'Amount', 'In grams / ml']],
+    body:r.lines.map(l => { const g = ingById(l.ingId); if (!g) return null; const un = lineUnitName(g, l.unit), q = num(l.qty) * f, b = baseUnit(g); return [g.name, `${trimN(q, q < 10 ? 2 : 0)} ${un}`, (b === 'g' || b === 'ml') ? fmtQty(lineBase(l) * f, b) : '']; }).filter(Boolean),
+    styles:{font:'Noto', fontSize:10, cellPadding:2.6}, headStyles:{fillColor:ac, textColor:255, fontStyle:'bold'}, alternateRowStyles:{fillColor:[247, 245, 242]}});
+  y = d.lastAutoTable.finalY + 8;
+  const facts = [['Batter', bw.raw ? fmtQty(Math.round(bw.raw * f), 'g') + (bw.measured ? ' (weighed)' : ' (estimated)') : '—'], ['After baking', bw.raw ? fmtQty(Math.round(bw.baked * f), 'g') : '—'],
+    ['Tin', tinLabel(r.tin) + (r.tin.shape !== 'round' ? `, cut ${cp.cols} × ${cp.rows} pieces of ${trimN(num(r.tin.pl), 2)} × ${trimN(num(r.tin.pw), 2)}${r.tin.unit === 'cm' ? ' cm' : '″'}` : `, ${cp.pieces} slices`)],
+    ['Oven', [num(r.ovenTemp) ? `${num(r.ovenTemp)} °C` : '', num(r.bakeMin) ? `${num(r.bakeMin)} min` : ''].filter(Boolean).join(', ') || '—'], ['Best before', `${dur(productLifeDays(r))} from baking`], ['Storage', catById(r.cat).store]];
+  d.autoTable({startY:y, margin:{left:M, right:M}, theme:'plain', body:facts, styles:{font:'Noto', fontSize:10, cellPadding:2}, columnStyles:{0:{fontStyle:'bold', cellWidth:34}}});
+  y = d.lastAutoTable.finalY + 8;
+  if (r.method){ if (y > 250){ d.addPage(); y = 20; } d.setFont('Noto', 'bold'); d.setFontSize(12); d.setTextColor(30, 30, 30); d.text('Method', M, y); y += 6; d.setFont('Noto', 'normal'); d.setFontSize(10); d.setTextColor(50, 50, 50);
+    String(r.method).split(/\n+/).forEach((para, k) => d.splitTextToSize(para, 178).forEach((ln, j) => { if (y > 280){ d.addPage(); y = 20; } d.text(ln, M, y); y += 5; })); }
+  pdfFooter(d, S.profile.business || 'Swt-er');
+  return d;
+}
+/* ---------- shopping list from stock ---------- */
+function shopListItems(){
+  const out = new Map();
+  S.ingredients.forEach(g => { const s = stockOf(g), low = num(g.low), ps = packSize(g) || 1;
+    if (low > 0 && s <= low){ const packs = Math.max(1, Math.ceil((low * 2 - s) / ps)); out.set(g.id, {name:g.name, packs, pack:`${trimN(num(g.packQty), 2)} ${g.packUnit}`, cost:packs * num(g.packPrice), why:s <= 0 ? 'Out of stock' : 'Running low'}); }
+    if (expiredQty(g) > 0 && !out.has(g.id)) out.set(g.id, {name:g.name, packs:1, pack:`${trimN(num(g.packQty), 2)} ${g.packUnit}`, cost:num(g.packPrice), why:'Expired stock to replace'}); });
+  plan(openOrders()).ingRows.filter(x => x.short > 0).forEach(x => { const cur = out.get(x.g.id); const packs = Math.max(x.packs, cur ? cur.packs : 0);
+    out.set(x.g.id, {name:x.g.name, packs, pack:`${trimN(num(x.g.packQty), 2)} ${x.g.packUnit}`, cost:packs * num(x.g.packPrice), why:'Needed for open orders'}); });
+  S.packaging.forEach(k => { if (num(k.low) > 0 && num(k.stock) <= num(k.low)){ const n = Math.max(1, num(k.low) * 2 - num(k.stock)); out.set(k.id, {name:k.name, packs:n, pack:'pcs', cost:n * num(k.price), why:'Packaging running low'}); } });
+  return [...out.values()];
+}
+function shopListText(items){ return ['Shopping list – ' + (S.profile.business || 'Swt-er') + ' – ' + fmtLong(today()), '', ...items.map(x => `• ${x.name}: ${x.packs} × ${x.pack}${x.cost ? ` ≈ ${inr(x.cost)}` : ''} (${x.why})`), '', `Estimated total: ${inr(items.reduce((a, x) => a + x.cost, 0))}`].join('\n'); }
 
 /* =========================================================
    sync across devices (Google Drive app folder of the linked Gmail)
@@ -3023,11 +3142,11 @@ function syncCard(){
    undo for deletes
    ========================================================= */
 let UNDO = null;
-const UNDOABLE = {del:'Removed', delEntry:'Entry deleted', delOrder:'Order deleted', delRecipe:'Product deleted', delIng:'Ingredient deleted', delPkg:'Packaging item deleted', discardLot:'Stock removed', discardReady:'Ready stock discarded', clearEx:'Examples removed', applyBulk:'Prices changed', convApply:'Recipe rescaled'};
+const UNDOABLE = {useSize:'Piece size applied', useCutN:'Cut applied', useCut:'Pieces applied', pickTin:'Tin changed', usePieceW:'Piece weight updated', planApply:'Recipe changed to the plan', needApply:'Recipe resized', useEst:'Batter weight set', del:'Removed', delEntry:'Entry deleted', delOrder:'Order deleted', delRecipe:'Product deleted', delIng:'Ingredient deleted', delPkg:'Packaging item deleted', discardLot:'Stock removed', discardReady:'Ready stock discarded', clearEx:'Examples removed', applyBulk:'Prices changed', convApply:'Recipe rescaled'};
 function showUndo(msg, snap){
   UNDO = snap; const t = $('#toast'); (dlg.open ? dlg : document.body).appendChild(t);
   t.innerHTML = `<span>${esc(msg)}</span><button class="toast-btn" data-act="undo">Undo</button>`; t.hidden = false;
-  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; UNDO = null; }, 6000);
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 6000);
 }
 
 /* =========================================================
@@ -3050,8 +3169,29 @@ const VIEWS = {
 };
 const BOTTOM = ['home', 'orders', 'stock', 'money'];
 const cur = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'home'; };
+const ORIENTS = [['portrait', 'Upright'], ['landscape', 'Sideways'], ['auto', 'Auto-rotate']];
+const canLockOrient = () => !!(screen.orientation && screen.orientation.lock);
+function orientHint(){
+  const o = S.settings.orient || 'portrait';
+  if (o === 'auto') return 'The screen turns when you turn the phone.';
+  const what = o === 'portrait' ? 'upright' : 'sideways';
+  if (canLockOrient() && isStandalone()) return `Locked ${what}. Turning the phone will not rotate Swt-er.`;
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) return `iPhone apps cannot lock themselves. Swipe down from the top-right corner and tap the lock icon (Portrait Orientation Lock) to stop rotating.`;
+  return `Locks ${what} in the installed app. In the browser, turn off Auto-rotate in your phone's quick settings.`;
+}
+function applyOrient(){
+  const o = S.settings.orient || 'portrait';
+  if (!screen.orientation) return;
+  try {
+    if (o === 'auto'){ if (screen.orientation.unlock) screen.orientation.unlock(); }
+    else if (canLockOrient()) screen.orientation.lock(o === 'portrait' ? 'portrait-primary' : 'landscape').catch(() => {});
+  } catch(e){}
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) applyOrient(); });
+document.addEventListener('pointerdown', () => applyOrient(), {once:true});
 function applyLook(){
   const st = S.settings, root = document.documentElement;
+  applyOrient(); const oh = document.getElementById('orientHint'); if (oh) oh.textContent = orientHint();
   root.dataset.palette = st.palette || 'swetr';
   if (st.mode === 'light' || st.mode === 'dark') root.dataset.mode = st.mode; else delete root.dataset.mode;
   root.dataset.density = st.density || 'comfortable';
@@ -3083,7 +3223,7 @@ function render(){
   refresh();
 }
 function refresh(){ const o = VIEWS[cur()].o; if (o) o(); }
-window.addEventListener('hashchange', () => { S.ui.confirm = ''; if (dlg.open){ MODAL_HIST = false; closeModal(true); } render(); window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { S.ui.confirm = ''; S.ui.applied = null; if (dlg.open){ MODAL_HIST = false; closeModal(true); } render(); window.scrollTo(0, 0); });
 if (window.matchMedia){ const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener && mq.addEventListener('change', applyLook); }
 
 /* =========================================================
@@ -3177,7 +3317,7 @@ const ACT = {
   closeModalNav: () => { if (MODAL_HIST){ MODAL_HIST = false; try { history.replaceState(null, '', location.href); } catch(e){} } closeModal(true); return 'nav'; },
   keepSample: () => { S.sample = false; },
   goLog: () => { S.ui.mtab = 'log'; S.ui.draft.kind = 'expense'; S.ui.draft.cat = EXP_CATS[0]; location.hash = 'money'; return false; },
-  pickRecipe: el => { S.ui.recipe = el.dataset.id; S.ui.scale = 0; },
+  pickRecipe: el => { S.ui.recipe = el.dataset.id; S.ui.scale = 0; S.ui.applied = null; },
   addRecipe: () => { const r = blankRecipe(); if (S.ingredients[0]) r.lines.push({id:uid(), ingId:S.ingredients[0].id, qty:100}); S.recipes.push(r); S.ui.recipe = r.id; S.ui.scale = 0; if (cur() !== 'recipes'){ save(); location.hash = 'recipes'; return false; } },
   dupRecipe: () => { const r = JSON.parse(JSON.stringify(curRecipe())); r.id = uid(); r.name += ' (copy)'; S.recipes.push(r); S.ui.recipe = r.id; },
   delRecipe: () => { S.recipes = S.recipes.filter(r => r.id !== S.ui.recipe); S.ui.recipe = S.recipes[0] ? S.recipes[0].id : ''; S.quote.rows = S.quote.rows.filter(q => recById(q.recipeId)); },
@@ -3339,25 +3479,33 @@ const ACT = {
   jump: el => { const t = $('#' + el.dataset.to); if (t) t.scrollIntoView({behavior:'smooth', block:'start'}); return false; },
   convSet: el => { S.ui.convTarget = num(el.dataset.v); },
   convMul: el => { const r = curRecipe(), bw = batchWeight(r), base = S.ui.convBasis === 'raw' ? bw.raw : bw.baked; if (!base){ toast('Add ingredients first'); return false; } S.ui.convTarget = Math.round(base * num(el.dataset.v)); },
-  convSave: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const c = scaledRecipe(r, f, fmtQty(num(S.ui.convTarget), 'g')); S.recipes.push(c); S.ui.recipe = c.id; S.ui.convTarget = ''; toast('Saved as ' + c.name); window.scrollTo(0, 0); },
-  convApply: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.convTarget = ''; },
-  usePieceW: () => { const r = curRecipe(), bw = batchWeight(r); r.pieceWeight = Math.round(bw.baked / Math.max(1, num(r.yield))); toast('Piece weight updated'); },
-  useCut: () => { const r = curRecipe(), cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); toast(`Batch now makes ${cp.pieces} pieces`); },
-  pickTin: el => { const r = curRecipe(), x = tinSuggestions(r)[+el.dataset.i]; if (!x) return false; const keep = r.tin; r.tin = Object.assign({}, x.tt, {unit:'in', pl:keep.unit === 'cm' ? +(num(keep.pl) / IN).toFixed(2) : keep.pl, pw:keep.unit === 'cm' ? +(num(keep.pw) / IN).toFixed(2) : keep.pw}); toast('Tin changed to ' + tinLabel(r.tin)); },
+  convSave: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const c = scaledRecipe(r, f, fmtQty(num(S.ui.convTarget), 'g')); if (num(c.batterQty)) c.batterQty = +(num(c.batterQty) * f).toFixed(2); S.recipes.push(c); S.ui.recipe = c.id; S.ui.convTarget = ''; markApplied(c, recipeSnap(r), 'top', `New recipe saved: ${c.name}`); window.scrollTo(0, 0); },
+  convApply: () => { const r = curRecipe(), f = convFactor(r); if (!f) return false; const b = recipeSnap(r); r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); if (num(r.batterQty)) r.batterQty = +(num(r.batterQty) * f).toFixed(2); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.convTarget = ''; markApplied(r, b, 'sec-batch', 'Recipe resized'); },
+  usePieceW: () => { const r = curRecipe(), b = recipeSnap(r), bw = batchWeight(r); r.pieceWeight = Math.round(bw.baked / Math.max(1, num(r.yield))); markApplied(r, b, 'sec-batch', 'Piece weight updated'); },
+  useCut: () => { const r = curRecipe(), b = recipeSnap(r), cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); markApplied(r, b, 'sec-tin', `This recipe now makes ${cp.pieces} pieces`); },
+  pickTin: el => { const r = curRecipe(), b = recipeSnap(r), x = tinSuggestions(r)[+el.dataset.i]; if (!x) return false; const t2 = tinInUnit(x.tt, r.tin.unit); r.tin = Object.assign({}, r.tin, {shape:t2.shape, a:t2.a, b:t2.b, slices:t2.shape === 'round' ? x.pieces : r.tin.slices}); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); markApplied(r, b, 'sec-tin', 'Tin changed to ' + tinLabel(r.tin)); window.requestAnimationFrame(() => { const e = $('#sec-tin'); if (e) e.scrollIntoView({behavior:'smooth'}); }); },
   goalTin: () => { const r = curRecipe(), g = tinForGoal(r, num(S.ui.tinGoal)); if (!g) return false; r.tin = Object.assign({}, r.tin, {shape:g.best.tt.shape, a:g.best.tt.a, b:g.best.tt.b, unit:'in', pl:+g.pl.toFixed(2), pw:+g.pw.toFixed(2)}); toast('Tin changed to ' + tinLabel(r.tin)); },
   goalScale: () => { const r = curRecipe(), g = tinForGoal(r, num(S.ui.tinGoal)); if (!g) return false; S.ui.convBasis = 'raw'; S.ui.convTarget = Math.round(g.rawNeed); render(); const t = $('#sec-batch'); if (t) t.scrollIntoView({behavior:'smooth'}); return false; },
   estShop: () => { const v = shopTravelFromLogs(); if (!v){ toast('No shopping trips logged in the last 3 months yet'); return false; } S.profile.shopTravel = v; toast(`Set to ${inr(v)} a month from your logs`); },
   syncOn: () => { SYNC.on = true; saveSync(); syncNow(true); },
   syncOff: () => { SYNC.on = false; saveSync(); setSyncState('idle'); },
   syncNow: () => { if (!SYNC.on) return false; syncNow(true); return false; },
-  undo: () => { if (!UNDO) return false; const ui = S.ui, st = S.settings; S = JSON.parse(UNDO); S.ui = ui; S.settings = st; UNDO = null; $('#toast').hidden = true; if (dlg.open) renderModal(); toast('Restored'); },
-  useSize: el => { const r = curRecipe(); r.tin.pl = num(el.dataset.pl); r.tin.pw = num(el.dataset.pw); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); toast(`${cp.pieces} pieces of ${fmtQty(Math.round(cp.pieceG), 'g')}`); },
-  useCutN: el => { const r = curRecipe(), n = Math.round(num(S.ui.cutN)), g = gridFor(n, num(r.tin.a), tinSideB(r.tin)); r.tin.pl = +g.pl.toFixed(2); r.tin.pw = +g.pw.toFixed(2); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); S.ui.cutN = ''; toast(`Cut set: ${cp.pieces} pieces`); },
-  planSave: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; const c = JSON.parse(JSON.stringify(r)); c.id = uid(); c.lines.forEach(l => l.id = uid()); c.name = `${r.name} (${P.pick.pieces} pcs)`; applyPlan(c, P, r); S.recipes.push(c); S.ui.recipe = c.id; S.ui.tinMode = 'tin'; toast('Saved as ' + c.name); window.scrollTo(0, 0); },
-  planApply: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; applyPlan(r, P, r); S.ui.tinMode = 'tin'; toast('Recipe changed to the plan'); },
+  undo: () => { if (!UNDO) return false; const ui = S.ui, st = S.settings; S = JSON.parse(UNDO); S.ui = ui; S.ui.applied = null; S.settings = st; UNDO = null; $('#toast').hidden = true; if (dlg.open) renderModal(); toast('Restored'); },
+  useSize: el => { const r = curRecipe(), b = recipeSnap(r); r.tin.pl = num(el.dataset.pl); r.tin.pw = num(el.dataset.pw); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); markApplied(r, b, 'sec-tin', `Cutting ${cp.pieces} pieces of ${trimN(num(r.tin.pl), 2)} × ${trimN(num(r.tin.pw), 2)}${r.tin.unit === 'cm' ? ' cm' : '″'}`); window.requestAnimationFrame(() => { const e = $('#sec-tin'); if (e) e.scrollIntoView({behavior:'smooth'}); }); },
+  useCutN: el => { const r = curRecipe(), b = recipeSnap(r), n = Math.round(num(S.ui.cutN)), g = gridFor(n, num(r.tin.a), tinSideB(r.tin)); r.tin.pl = +g.pl.toFixed(2); r.tin.pw = +g.pw.toFixed(2); const cp = cutPlan(r); r.yield = cp.pieces; if (cp.pieceG) r.pieceWeight = Math.round(cp.pieceG); S.ui.cutN = ''; markApplied(r, b, 'sec-tin', `Cut set to ${g.c} × ${g.r} = ${cp.pieces} pieces`); },
+  planSave: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; const c = JSON.parse(JSON.stringify(r)); c.id = uid(); c.lines.forEach(l => l.id = uid()); c.name = `${r.name} (${P.pick.pieces} pcs)`; c.batterQty = ''; const b = recipeSnap(c); applyPlan(c, P, r); S.recipes.push(c); S.ui.recipe = c.id; S.ui.tinMode = 'tin'; markApplied(c, b, 'top', `New recipe saved: ${c.name}`); window.scrollTo(0, 0); },
+  planApply: () => { const r = curRecipe(), P = planForPieces(r); if (!P || !P.factor) return false; const b = recipeSnap(r); applyPlan(r, P, r); if (num(r.batterQty)) r.batterQty = r.batterUnit === 'kg' ? +(P.raw / 1000).toFixed(2) : Math.round(P.raw); S.ui.tinMode = 'tin'; markApplied(r, b, 'sec-tin', 'Recipe changed to the plan'); },
   card: el => { openCard(el.dataset.id || S.ui.recipe, el.dataset.lot ? (() => { const f = S.finished.find(x => x.id === el.dataset.lot); return f ? {made:f.made, best:f.exp, pcs:Math.min(num(f.left), 6)} : {}; })() : null); return false; },
   cardShare: () => { (async () => { const c = $('#cardCanvas'); await drawCard(c); c.toBlob(async b => { if (!b) return toast('Could not make the image'); const n = `${(recById(MODAL.recipeId) || {}).name || 'product'}`.replace(/[^\w-]+/g, '-'); const res = await shareOrSave(`Swt-er-${n}.png`, b, 'Swt-er', cardCaption()); if (res === 'saved') toast('Image downloaded. Send it on WhatsApp with the caption.'); }, 'image/png'); })(); return false; },
   cardCaption: () => { copyText(cardCaption()); return false; },
+  needSave: () => { const r = curRecipe(), f = needFactor(r); if (!f) return false; const c = scaledRecipe(r, f, fmtQty(needG(), 'g') + ' batter'); if (num(r.batterQty)) c.batterQty = +(num(r.batterQty) * f).toFixed(2); S.recipes.push(c); S.ui.recipe = c.id; S.ui.needQty = ''; markApplied(c, recipeSnap(r), 'top', `New recipe saved: ${c.name}`); window.scrollTo(0, 0); },
+  needApply: () => { const r = curRecipe(), f = needFactor(r); if (!f) return false; const b = recipeSnap(r); r.lines.forEach(l => l.qty = +(num(l.qty) * f).toFixed(2)); if (num(r.batterQty)) r.batterQty = +(num(r.batterQty) * f).toFixed(2); r.yield = Math.max(1, Math.round(num(r.yield) * f)); S.ui.needQty = ''; markApplied(r, b, 'sec-ing', 'Recipe resized to ' + fmtQty(Math.round(batchWeight(r).raw), 'g') + ' of batter'); },
+  useEst: () => { const r = curRecipe(), b = recipeSnap(r), bw = batchWeight(r); r.batterUnit = bw.est >= 1000 ? 'kg' : 'g'; r.batterQty = r.batterUnit === 'kg' ? +(bw.est / 1000).toFixed(2) : Math.round(bw.est); markApplied(r, b, 'sec-ing', 'Batter weight set from the estimate'); },
+  dismissApplied: () => { S.ui.applied = null; },
+  recipePdf: () => { (async () => { try { const r = curRecipe(), d = await recipePDF(r); await saveFile(`Recipe-${r.name.replace(/[^\w-]+/g, '-')}.pdf`, d.output('blob')); toast('Recipe card ready'); } catch(e){ toast('The PDF could not be made here.'); } })(); return false; },
+  shopList: () => { openModal({type:'shop'}); return false; },
+  shopCopy: () => { copyText(shopListText(shopListItems())); return false; },
+  shopShare: () => { const t = shopListText(shopListItems()); (async () => { try { if (navigator.share){ await navigator.share({title:'Shopping list', text:t}); return; } } catch(e){ if (e && e.name === 'AbortError') return; } copyText(t); })(); return false; },
   /* account & lock */
   relink: () => { showGate('link', true); return false; },
   secBio: () => { showGate('setlock', true); return false; },

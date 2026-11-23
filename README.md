@@ -76,6 +76,18 @@ Data lives on the device. Two ways to keep a copy in your Google account:
 
   The app asks only for the `drive.file` permission, so it can see only the backup files it created. The last 10 backups are kept.
 
+## Recipe tools
+
+- **Batter yield**: under the ingredients, enter how much batter one batch makes (g or kg), or tap *Use estimate*. Type *I need this much batter* (for example 2 kg) and a **For 2 kg** column shows every ingredient amount. Save it as a new recipe or change this one.
+- **Plan a bake → I want pieces → The tin I am using**: give the number of pieces and your tin size. Swt-er gives the cut grid, the cut lengths, the weight of each piece, the batter to make and the ingredients.
+- **Use buttons** now show a green **✓ Applied** box saying exactly what changed (old → new), highlight the changed field, and offer *Undo*. Suggested tins stay in your own unit (cm or inches).
+- **Recipe card (PDF)**: ingredients, batch weight, tin and cut, oven temperature, time, method and storage.
+- **Stock → Shopping list**: low, out-of-stock, expired and short-for-orders items with an estimated cost. Copy it or share it on WhatsApp.
+
+## Screen orientation
+
+Settings → Appearance → *Screen orientation on phones*: **Upright** (default), **Sideways** or **Auto-rotate**. The installed Android app locks to your choice. iPhone apps cannot lock themselves, so use Control Centre's Portrait Orientation Lock there.
+
 ## Pages
 
 | Page | What it does |
